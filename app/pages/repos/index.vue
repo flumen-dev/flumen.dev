@@ -23,6 +23,8 @@ const availableLanguages = computed(() => {
   return [...set].sort()
 })
 
+const activityFilterKeys = ['hasIssues', 'hasPrs', 'hasNotifications']
+
 const filteredRepos = computed(() => {
   if (!repos.value) return []
 
@@ -38,20 +40,32 @@ const filteredRepos = computed(() => {
     )
   }
 
-  // Type filters (additive — each active filter includes matching repos)
-  if (filters.value.length) {
+  // Type filters (OR — each active filter includes matching repos)
+  const typeFilters = filters.value.filter(f => !activityFilterKeys.includes(f))
+  if (typeFilters.length) {
     result = result.filter((r) => {
-      if (filters.value.includes('public') && r.visibility === 'public') return true
-      if (filters.value.includes('private') && r.visibility === 'private') return true
-      if (filters.value.includes('forks') && r.fork) return true
-      if (filters.value.includes('templates') && r.isTemplate) return true
-      if (filters.value.includes('archived') && r.archived) return true
+      if (typeFilters.includes('public') && r.visibility === 'public') return true
+      if (typeFilters.includes('private') && r.visibility === 'private') return true
+      if (typeFilters.includes('forks') && r.fork) return true
+      if (typeFilters.includes('templates') && r.isTemplate) return true
+      if (typeFilters.includes('archived') && r.archived) return true
       return false
     })
   }
   else {
-    // No filters active — hide archived by default
+    // No type filters active — hide archived by default
     result = result.filter(r => !r.archived)
+  }
+
+  // Activity filters (AND — each narrows the result)
+  if (filters.value.includes('hasIssues')) {
+    result = result.filter(r => issueCounts.value?.[r.fullName])
+  }
+  if (filters.value.includes('hasPrs')) {
+    result = result.filter(r => pullCounts.value?.[r.fullName])
+  }
+  if (filters.value.includes('hasNotifications')) {
+    result = result.filter(r => notificationCounts.value?.[r.fullName])
   }
 
   // Languages (additive)
@@ -60,14 +74,21 @@ const filteredRepos = computed(() => {
   }
 
   // Sort
-  if (sort.value === 'stars') {
+  const s = sort.value
+  if (s === 'stars') {
     result = [...result].sort((a, b) => b.stargazersCount - a.stargazersCount)
   }
-  else if (sort.value === 'name') {
+  else if (s === 'name') {
     result = [...result].sort((a, b) => a.name.localeCompare(b.name))
   }
-  else if (sort.value === 'issues') {
-    result = [...result].sort((a, b) => b.openIssuesCount - a.openIssuesCount)
+  else if (s === 'issues') {
+    result = [...result].sort((a, b) => (issueCounts.value?.[b.fullName] ?? 0) - (issueCounts.value?.[a.fullName] ?? 0))
+  }
+  else if (s === 'prs') {
+    result = [...result].sort((a, b) => (pullCounts.value?.[b.fullName] ?? 0) - (pullCounts.value?.[a.fullName] ?? 0))
+  }
+  else if (s === 'notifications') {
+    result = [...result].sort((a, b) => (notificationCounts.value?.[b.fullName] ?? 0) - (notificationCounts.value?.[a.fullName] ?? 0))
   }
 
   return result

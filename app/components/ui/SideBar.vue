@@ -21,6 +21,12 @@ const mainItems = computed<NavigationMenuItem[]>(() => [
     to: localePath('/'),
   },
   {
+    label: t('nav.repos'),
+    icon: 'i-lucide-book-marked',
+    to: localePath('/repos'),
+    disabled: !loggedIn.value,
+  },
+  {
     label: t('nav.issues'),
     icon: 'i-lucide-circle-dot',
     to: localePath('/issues'),
