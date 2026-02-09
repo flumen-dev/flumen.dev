@@ -1,7 +1,7 @@
 {
   "common": {
     "title": "Flumen",
-    "description": "ein schneller, moderner Browser für Maintainer und Teammitglieder",
+    "description": "Open source, streamlined.",
     "yes": "Ja",
     "no": "Nein",
     "cancel": "Abbrechen",
@@ -26,6 +26,9 @@
     "login": "Anmelden",
     "logout": "Abmelden",
     "forbidden": "Du musst dich anmelden, um auf diese Seite zuzugreifen."
+  },
+  "welcome": {
+    "greeting": "Willkommen bei"
   },
   "theme": {
     "light": "Hell",
