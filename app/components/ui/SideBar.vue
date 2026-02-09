@@ -2,6 +2,7 @@
 import type { NavigationMenuItem } from '@nuxt/ui'
 
 const { t } = useI18n()
+const { loggedIn, user, clear } = useUserSession()
 const colorMode = useColorMode()
 
 const isDark = computed({
@@ -132,12 +133,25 @@ const bottomItems = computed<NavigationMenuItem[]>(() => [
         :class="collapsed ? 'flex-col' : 'w-full justify-between'"
       >
         <UButton
+          v-if="!loggedIn"
           icon="i-lucide-github"
           :label="collapsed ? undefined : t('auth.login')"
           color="neutral"
           variant="ghost"
           :square="collapsed"
           class="shrink-0"
+          to="/auth/github"
+          external
+        />
+        <UButton
+          v-else
+          :avatar="{ src: user?.avatarUrl, alt: user?.login }"
+          :label="collapsed ? undefined : (user?.name || user?.login)"
+          color="neutral"
+          variant="ghost"
+          :square="collapsed"
+          class="shrink-0"
+          @click="clear"
         />
 
         <ClientOnly>
