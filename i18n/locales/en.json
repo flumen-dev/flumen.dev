@@ -53,9 +53,31 @@
       "name": "Name",
       "issues": "Open issues"
     },
+    "activity": {
+      "recent": "Active this week",
+      "moderate": "Active this month",
+      "inactive": "Inactive",
+      "archived": "Archived"
+    },
     "openIssues": "{count} open issue | {count} open issues",
     "openPrs": "{count} open pull request | {count} open pull requests",
     "unreadNotifications": "{count} unread notification | {count} unread notifications",
+    "badge": {
+      "archived": "archived",
+      "fork": "fork",
+      "private": "private",
+      "draft": "draft"
+    },
+    "reason": {
+      "mention": "mentioned",
+      "author": "author",
+      "comment": "comment",
+      "subscribed": "watching",
+      "review_requested": "review requested",
+      "assign": "assigned",
+      "state_change": "state changed",
+      "ci_activity": "CI"
+    },
     "filter": {
       "all": "All",
       "public": "Public",

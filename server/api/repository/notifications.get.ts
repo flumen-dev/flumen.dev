@@ -1,7 +1,3 @@
-interface GitHubNotification {
-  repository: { full_name: string }
-}
-
 const fetchNotificationCounts = defineCachedFunction(
   async (_login: string, token: string) => {
     const { data } = await githubFetchAllWithToken<GitHubNotification>(
@@ -11,8 +7,7 @@ const fetchNotificationCounts = defineCachedFunction(
 
     const counts: Record<string, number> = {}
     for (const n of data) {
-      const name = n.repository.full_name
-      counts[name] = (counts[name] || 0) + 1
+      counts[n.repository.full_name] = (counts[n.repository.full_name] || 0) + 1
     }
 
     return counts

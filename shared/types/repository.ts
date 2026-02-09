@@ -71,6 +71,8 @@ export interface GitHubIssue {
   updated_at: string
   user: { login: string, avatar_url: string }
   labels: Array<{ name: string, color: string }>
+  assignees: Array<{ login: string, avatar_url: string }>
+  milestone: { title: string } | null
 }
 
 export interface RepoIssue {
@@ -84,6 +86,69 @@ export interface RepoIssue {
   updatedAt: string
   user: { login: string, avatarUrl: string }
   labels: Array<{ name: string, color: string }>
+  assignees: Array<{ login: string, avatarUrl: string }>
+  milestone: string | null
+}
+// #endregion
+
+// #region Pull Request types
+export interface GitHubPullRequest {
+  id: number
+  number: number
+  title: string
+  state: string
+  draft: boolean
+  html_url: string
+  comments: number
+  created_at: string
+  updated_at: string
+  user: { login: string, avatar_url: string }
+  labels: Array<{ name: string, color: string }>
+  assignees: Array<{ login: string, avatar_url: string }>
+  requested_reviewers: Array<{ login: string, avatar_url: string }>
+  milestone: { title: string } | null
+  head: { ref: string }
+}
+
+export interface RepoPullRequest {
+  id: number
+  number: number
+  title: string
+  state: string
+  draft: boolean
+  htmlUrl: string
+  comments: number
+  createdAt: string
+  updatedAt: string
+  user: { login: string, avatarUrl: string }
+  labels: Array<{ name: string, color: string }>
+  assignees: Array<{ login: string, avatarUrl: string }>
+  requestedReviewers: Array<{ login: string, avatarUrl: string }>
+  milestone: string | null
+  headRef: string
+}
+// #endregion
+
+// #region Notification types
+export interface GitHubNotification {
+  id: string
+  reason: string
+  updated_at: string
+  repository: { full_name: string }
+  subject: {
+    title: string
+    type: string
+    url: string | null
+  }
+}
+
+export interface RepoNotification {
+  id: string
+  reason: string
+  updatedAt: string
+  title: string
+  type: string
+  subjectUrl: string | null
 }
 // #endregion
 

@@ -36,6 +36,14 @@ export async function getSessionToken(event: H3Event): Promise<{ token: string, 
   return { token, userId: session.user!.id as number, login: session.user!.login }
 }
 
+export function getRepoParams(event: H3Event): { owner: string, repo: string } {
+  const { owner, repo } = getRouterParams(event)
+  if (!owner || !repo) {
+    throw createError({ statusCode: 400, message: 'Missing owner or repo parameter' })
+  }
+  return { owner, repo }
+}
+
 // --- Token-based core functions (usable inside defineCachedFunction) ---
 
 export async function githubFetchWithToken<T>(
@@ -212,6 +220,39 @@ export async function githubCachedFetchAll<T>(
 ): Promise<GitHubResponse<T[]>> {
   const { token, userId } = await getSessionToken(event)
   return githubCachedFetchAllWithToken<T>(token, userId, endpoint, options)
+}
+
+// --- Search helper ---
+
+/**
+ * Counts search results grouped by repository.
+ * Used for issue/PR counts across all user repos.
+ */
+export async function githubSearchCounts(
+  token: string,
+  query: string,
+): Promise<Record<string, number>> {
+  const counts: Record<string, number> = {}
+  let page = 1
+
+  while (true) {
+    const { data } = await githubFetchWithToken<SearchResponse>(
+      token,
+      '/search/issues',
+      { params: { q: query, per_page: 100, page } },
+    )
+
+    for (const item of data.items) {
+      const fullName = item.repository_url.replace('https://api.github.com/repos/', '')
+      counts[fullName] = (counts[fullName] || 0) + 1
+    }
+
+    if (data.items.length < 100) break
+    page++
+    if (page > 10) break
+  }
+
+  return counts
 }
 
 // --- Internal helpers ---

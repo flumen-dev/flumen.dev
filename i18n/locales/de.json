@@ -56,6 +56,28 @@
     "openIssues": "{count} offenes Issue | {count} offene Issues",
     "openPrs": "{count} offener Pull Request | {count} offene Pull Requests",
     "unreadNotifications": "{count} ungelesene Benachrichtigung | {count} ungelesene Benachrichtigungen",
+    "badge": {
+      "archived": "archiviert",
+      "fork": "Fork",
+      "private": "privat",
+      "draft": "Entwurf"
+    },
+    "reason": {
+      "mention": "erwähnt",
+      "author": "Autor",
+      "comment": "Kommentar",
+      "subscribed": "abonniert",
+      "review_requested": "Review angefragt",
+      "assign": "zugewiesen",
+      "state_change": "Status geändert",
+      "ci_activity": "CI"
+    },
+    "activity": {
+      "recent": "Diese Woche aktiv",
+      "moderate": "Diesen Monat aktiv",
+      "inactive": "Inaktiv",
+      "archived": "Archiviert"
+    },
     "filter": {
       "all": "Alle",
       "public": "Öffentlich",

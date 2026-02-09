@@ -1,4 +1,4 @@
-import type { GitHubIssue, GitHubRepo, RepoIssue, Repository } from '../types/repository'
+import type { GitHubIssue, GitHubNotification, GitHubPullRequest, GitHubRepo, RepoIssue, RepoNotification, RepoPullRequest, Repository } from '../types/repository'
 
 /**
  * Helper function to map a GitHub response to camelCase format
@@ -42,5 +42,38 @@ export function toRepoIssue(i: GitHubIssue): RepoIssue {
     updatedAt: i.updated_at,
     user: { login: i.user.login, avatarUrl: i.user.avatar_url },
     labels: i.labels,
+    assignees: i.assignees.map(a => ({ login: a.login, avatarUrl: a.avatar_url })),
+    milestone: i.milestone?.title ?? null,
+  }
+}
+
+export function toRepoPullRequest(pr: GitHubPullRequest): RepoPullRequest {
+  return {
+    id: pr.id,
+    number: pr.number,
+    title: pr.title,
+    state: pr.state,
+    draft: pr.draft,
+    htmlUrl: pr.html_url,
+    comments: pr.comments,
+    createdAt: pr.created_at,
+    updatedAt: pr.updated_at,
+    user: { login: pr.user.login, avatarUrl: pr.user.avatar_url },
+    labels: pr.labels,
+    assignees: pr.assignees.map(a => ({ login: a.login, avatarUrl: a.avatar_url })),
+    requestedReviewers: pr.requested_reviewers.map(r => ({ login: r.login, avatarUrl: r.avatar_url })),
+    milestone: pr.milestone?.title ?? null,
+    headRef: pr.head.ref,
+  }
+}
+
+export function toRepoNotification(n: GitHubNotification): RepoNotification {
+  return {
+    id: n.id,
+    reason: n.reason,
+    updatedAt: n.updated_at,
+    title: n.subject.title,
+    type: n.subject.type,
+    subjectUrl: n.subject.url,
   }
 }
