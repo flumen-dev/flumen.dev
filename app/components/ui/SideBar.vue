@@ -2,6 +2,7 @@
 import type { NavigationMenuItem } from '@nuxt/ui'
 
 const { t } = useI18n()
+const localePath = useLocalePath()
 const { loggedIn, user, clear } = useUserSession()
 const colorMode = useColorMode()
 
@@ -17,29 +18,33 @@ const mainItems = computed<NavigationMenuItem[]>(() => [
   {
     label: t('nav.dashboard'),
     icon: 'i-lucide-layout-dashboard',
-    to: '/',
+    to: localePath('/'),
   },
   {
     label: t('nav.issues'),
     icon: 'i-lucide-circle-dot',
-    to: '/issues',
+    to: localePath('/issues'),
+    disabled: !loggedIn.value,
   },
   {
     label: t('nav.pullRequests'),
     icon: 'i-lucide-git-pull-request',
-    to: '/pulls',
+    to: localePath('/pulls'),
+    disabled: !loggedIn.value,
   },
   {
     label: t('nav.notifications'),
     icon: 'i-lucide-bell',
-    to: '/notifications',
+    to: localePath('/notifications'),
     badge: notificationCount.value > 0 ? String(notificationCount.value) : undefined,
     slot: 'notifications',
+    disabled: !loggedIn.value,
   },
   {
     label: t('nav.settings'),
     icon: 'i-lucide-settings',
-    to: '/settings',
+    to: localePath('/settings'),
+    disabled: !loggedIn.value,
   },
 ])
 </script>
