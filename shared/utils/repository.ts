@@ -1,4 +1,4 @@
-import type { GitHubRepo, Repository } from '../types/repository'
+import type { GitHubIssue, GitHubRepo, RepoIssue, Repository } from '../types/repository'
 
 /**
  * Helper function to map a GitHub response to camelCase format
@@ -27,5 +27,20 @@ export function toRepository(r: GitHubRepo): Repository {
     createdAt: r.created_at,
     updatedAt: r.updated_at,
     pushedAt: r.pushed_at,
+  }
+}
+
+export function toRepoIssue(i: GitHubIssue): RepoIssue {
+  return {
+    id: i.id,
+    number: i.number,
+    title: i.title,
+    state: i.state,
+    htmlUrl: i.html_url,
+    comments: i.comments,
+    createdAt: i.created_at,
+    updatedAt: i.updated_at,
+    user: { login: i.user.login, avatarUrl: i.user.avatar_url },
+    labels: i.labels,
   }
 }

@@ -35,6 +35,37 @@
     "dark": "Dunkel",
     "system": "System"
   },
+  "time": {
+    "justNow": "gerade eben",
+    "minutesAgo": "vor {count} Min.",
+    "hoursAgo": "vor {count} Std.",
+    "daysAgo": "vor {count} T.",
+    "monthsAgo": "vor {count} Monat | vor {count} Monaten",
+    "yearsAgo": "vor {count} Jahr | vor {count} Jahren"
+  },
+  "repos": {
+    "search": "Repositories durchsuchen...",
+    "count": "Keine Repositories | {count} Repository | {count} Repositories",
+    "noResults": "Keine Repositories gefunden.",
+    "sort": {
+      "pushed": "Zuletzt gepusht",
+      "stars": "Sterne",
+      "name": "Name",
+      "issues": "Offene Issues"
+    },
+    "openIssues": "{count} offenes Issue | {count} offene Issues",
+    "openPrs": "{count} offener Pull Request | {count} offene Pull Requests",
+    "unreadNotifications": "{count} ungelesene Benachrichtigung | {count} ungelesene Benachrichtigungen",
+    "filter": {
+      "all": "Alle",
+      "public": "Öffentlich",
+      "private": "Privat",
+      "forks": "Forks",
+      "templates": "Templates",
+      "archived": "Archiviert",
+      "language": "Sprache"
+    }
+  },
   "settings": {
     "appearance": {
       "title": "Erscheinungsbild",

@@ -52,3 +52,42 @@ export interface Repository {
   updatedAt: string
   pushedAt: string
 }
+
+/** Weekly commit counts per repo, keyed by repo fullName */
+export interface RepoActivity {
+  /** 12 weeks of commit counts (oldest → newest) */
+  weeks: number[]
+}
+
+// #region Issue types
+export interface GitHubIssue {
+  id: number
+  number: number
+  title: string
+  state: string
+  html_url: string
+  comments: number
+  created_at: string
+  updated_at: string
+  user: { login: string, avatar_url: string }
+  labels: Array<{ name: string, color: string }>
+}
+
+export interface RepoIssue {
+  id: number
+  number: number
+  title: string
+  state: string
+  htmlUrl: string
+  comments: number
+  createdAt: string
+  updatedAt: string
+  user: { login: string, avatarUrl: string }
+  labels: Array<{ name: string, color: string }>
+}
+// #endregion
+
+export interface SearchResponse {
+  total_count: number
+  items: Array<{ repository_url: string }>
+}

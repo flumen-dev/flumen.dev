@@ -25,73 +25,47 @@ export class GitHubError extends Error {
   }
 }
 
-/**
- * Authenticated GitHub API fetch. Pulls the token from the user session.
- */
-export async function githubFetch<T>(
-  event: H3Event,
+// --- Token extraction helper ---
+
+export async function getSessionToken(event: H3Event): Promise<{ token: string, userId: number, login: string }> {
+  const session = await requireUserSession(event)
+  const token = session.secure?.accessToken
+  if (!token) {
+    throw new GitHubError(401, '', 'No GitHub access token in session')
+  }
+  return { token, userId: session.user!.id as number, login: session.user!.login }
+}
+
+// --- Token-based core functions (usable inside defineCachedFunction) ---
+
+export async function githubFetchWithToken<T>(
+  token: string,
   endpoint: string,
   options: GitHubRequestOptions = {},
 ): Promise<GitHubResponse<T>> {
-  const session = await requireUserSession(event)
-  const token = session.secure?.accessToken
-
-  if (!token) {
-    throw new GitHubError(401, endpoint, 'No GitHub access token in session')
-  }
-
-  const url = new URL(endpoint, GITHUB_API)
-
-  if (options.params) {
-    for (const [key, value] of Object.entries(options.params)) {
-      url.searchParams.set(key, String(value))
-    }
-  }
+  const url = buildUrl(endpoint, options.params)
 
   const response = await fetch(url, {
     method: options.method || 'GET',
-    headers: {
-      'Authorization': `token ${token}`,
-      'Accept': 'application/vnd.github+json',
-      'X-GitHub-Api-Version': '2022-11-28',
-    },
+    headers: buildHeaders(token),
     body: options.body ? JSON.stringify(options.body) : undefined,
   })
 
   if (!response.ok) {
-    throw new GitHubError(
-      response.status,
-      endpoint,
-      `GitHub API ${response.status}: ${response.statusText}`,
-    )
+    throw new GitHubError(response.status, endpoint, `GitHub API ${response.status}: ${response.statusText}`)
   }
 
   const data = await response.json() as T
-
   return { data, status: response.status, headers: response.headers }
 }
 
-/**
- * Fetches all pages of a paginated GitHub API endpoint.
- * Page 1 first, then remaining pages in parallel via rel="last".
- */
-export async function githubFetchAll<T>(
-  event: H3Event,
+export async function githubFetchAllWithToken<T>(
+  token: string,
   endpoint: string,
   options: GitHubRequestOptions = {},
 ): Promise<GitHubResponse<T[]>> {
-  const session = await requireUserSession(event)
-  const token = session.secure?.accessToken
-
-  if (!token) {
-    throw new GitHubError(401, endpoint, 'No GitHub access token in session')
-  }
-
   const params = { per_page: 100, ...options.params }
-  const firstUrl = new URL(endpoint, GITHUB_API)
-  for (const [key, value] of Object.entries(params)) {
-    firstUrl.searchParams.set(key, String(value))
-  }
+  const firstUrl = buildUrl(endpoint, params)
 
   const headers = buildHeaders(token)
   const firstResponse = await fetchGitHub(firstUrl, headers, endpoint)
@@ -111,39 +85,19 @@ export async function githubFetchAll<T>(
   return { data: items, status: 200, headers: firstResponse.headers }
 }
 
-/**
- * Like githubFetch, but with ETag caching via KV storage.
- * Returns cached data on 304 (0 rate limit cost).
- */
-export async function githubCachedFetch<T>(
-  event: H3Event,
+export async function githubCachedFetchWithToken<T>(
+  token: string,
+  userId: number,
   endpoint: string,
   options: GitHubRequestOptions = {},
 ): Promise<GitHubResponse<T>> {
-  const session = await requireUserSession(event)
-  const token = session.secure?.accessToken
-  const userId = session.user?.id
-
-  if (!token) {
-    throw new GitHubError(401, endpoint, 'No GitHub access token in session')
-  }
-
-  const url = new URL(endpoint, GITHUB_API)
-  if (options.params) {
-    for (const [key, value] of Object.entries(options.params)) {
-      url.searchParams.set(key, String(value))
-    }
-  }
+  const url = buildUrl(endpoint, options.params)
 
   const storage = useStorage('data')
-  const cacheKey = buildCacheKey(userId!, endpoint, options.params)
+  const cacheKey = buildCacheKey(userId, endpoint, options.params)
   const cached = await storage.getItem<CacheEntry<T>>(cacheKey)
 
-  const headers: Record<string, string> = {
-    'Authorization': `token ${token}`,
-    'Accept': 'application/vnd.github+json',
-    'X-GitHub-Api-Version': '2022-11-28',
-  }
+  const headers: Record<string, string> = buildHeaders(token)
   if (cached?.etag) {
     headers['If-None-Match'] = cached.etag
   }
@@ -172,44 +126,24 @@ export async function githubCachedFetch<T>(
   return { data, status: response.status, headers: response.headers }
 }
 
-/**
- * Like githubFetchAll, but with ETag caching.
- * Sends conditional request for page 1 — if 304, returns full cached set.
- * If 200, re-fetches all pages and updates cache.
- */
-export async function githubCachedFetchAll<T>(
-  event: H3Event,
+export async function githubCachedFetchAllWithToken<T>(
+  token: string,
+  userId: number,
   endpoint: string,
   options: GitHubRequestOptions = {},
 ): Promise<GitHubResponse<T[]>> {
-  const session = await requireUserSession(event)
-  const token = session.secure?.accessToken
-  const userId = session.user?.id
-
-  if (!token) {
-    throw new GitHubError(401, endpoint, 'No GitHub access token in session')
-  }
-
   const params = { per_page: 100, ...options.params }
-  const firstUrl = new URL(endpoint, GITHUB_API)
-  for (const [key, value] of Object.entries(params)) {
-    firstUrl.searchParams.set(key, String(value))
-  }
+  const firstUrl = buildUrl(endpoint, params)
 
   const storage = useStorage('data')
-  const cacheKey = buildCacheKey(userId!, endpoint, params)
+  const cacheKey = buildCacheKey(userId, endpoint, params)
   const cached = await storage.getItem<CacheEntry<T[]>>(cacheKey)
 
-  const headers: Record<string, string> = {
-    'Authorization': `token ${token}`,
-    'Accept': 'application/vnd.github+json',
-    'X-GitHub-Api-Version': '2022-11-28',
-  }
+  const headers: Record<string, string> = buildHeaders(token)
   if (cached?.etag) {
     headers['If-None-Match'] = cached.etag
   }
 
-  // Conditional request on first page
   const firstResponse = await fetch(firstUrl, { method: 'GET', headers })
 
   if (firstResponse.status === 304 && cached) {
@@ -220,7 +154,6 @@ export async function githubCachedFetchAll<T>(
     throw new GitHubError(firstResponse.status, endpoint, `GitHub API ${firstResponse.status}: ${firstResponse.statusText}`)
   }
 
-  // First page changed — fetch remaining pages in parallel
   const items = await firstResponse.json() as T[]
   const etag = firstResponse.headers.get('etag')
 
@@ -243,11 +176,59 @@ export async function githubCachedFetchAll<T>(
   return { data: items, status: 200, headers: firstResponse.headers }
 }
 
+// --- Event-based wrappers (convenience for simple endpoints) ---
+
+export async function githubFetch<T>(
+  event: H3Event,
+  endpoint: string,
+  options: GitHubRequestOptions = {},
+): Promise<GitHubResponse<T>> {
+  const { token } = await getSessionToken(event)
+  return githubFetchWithToken<T>(token, endpoint, options)
+}
+
+export async function githubFetchAll<T>(
+  event: H3Event,
+  endpoint: string,
+  options: GitHubRequestOptions = {},
+): Promise<GitHubResponse<T[]>> {
+  const { token } = await getSessionToken(event)
+  return githubFetchAllWithToken<T>(token, endpoint, options)
+}
+
+export async function githubCachedFetch<T>(
+  event: H3Event,
+  endpoint: string,
+  options: GitHubRequestOptions = {},
+): Promise<GitHubResponse<T>> {
+  const { token, userId } = await getSessionToken(event)
+  return githubCachedFetchWithToken<T>(token, userId, endpoint, options)
+}
+
+export async function githubCachedFetchAll<T>(
+  event: H3Event,
+  endpoint: string,
+  options: GitHubRequestOptions = {},
+): Promise<GitHubResponse<T[]>> {
+  const { token, userId } = await getSessionToken(event)
+  return githubCachedFetchAllWithToken<T>(token, userId, endpoint, options)
+}
+
 // --- Internal helpers ---
 
 interface CacheEntry<T> {
   etag: string
   data: T
+}
+
+function buildUrl(endpoint: string, params?: Record<string, string | number>): URL {
+  const url = new URL(endpoint, GITHUB_API)
+  if (params) {
+    for (const [key, value] of Object.entries(params)) {
+      url.searchParams.set(key, String(value))
+    }
+  }
+  return url
 }
 
 function buildCacheKey(
@@ -277,10 +258,6 @@ async function fetchGitHub(url: URL | string, headers: Record<string, string>, e
   return response
 }
 
-/**
- * Parses Link header to get URLs for pages 2..last.
- * Returns empty array if single page.
- */
 function parseRemainingPages(header: string | null): string[] {
   if (!header) return []
   const lastMatch = header.match(/<([^>]+)>;\s*rel="last"/)
