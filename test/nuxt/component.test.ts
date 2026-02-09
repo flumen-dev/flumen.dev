@@ -9,9 +9,9 @@ describe('component test example', () => {
         return () => h('div', 'Hello Nuxt!')
       },
     })
-    
+
     const component = await mountSuspended(TestComponent)
-    
+
     expect(component.text()).toBe('Hello Nuxt!')
   })
 })

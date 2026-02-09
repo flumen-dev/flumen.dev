@@ -1,17 +1,7 @@
 {
   "common": {
     "title": "Flumen",
-    "description": "Open source, streamlined.",
-    "yes": "Yes",
-    "no": "No",
-    "cancel": "Cancel",
-    "save": "Save changes",
-    "delete": "Delete",
-    "edit": "Edit",
-    "create": "Create",
-    "close": "Close",
-    "confirm": "Confirm",
-    "loading": "Loading..."
+    "description": "Open source, streamlined."
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -25,7 +15,6 @@
   "auth": {
     "loginWithGithub": "Login with GitHub",
     "login": "Login",
-    "logout": "Logout",
     "forbidden": "You need to log in to access this page."
   },
   "welcome": {
@@ -33,8 +22,7 @@
   },
   "theme": {
     "light": "Light",
-    "dark": "Dark",
-    "system": "System"
+    "dark": "Dark"
   },
   "time": {
     "justNow": "just now",
