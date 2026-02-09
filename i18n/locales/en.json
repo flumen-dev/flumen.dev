@@ -1,7 +1,7 @@
 {
   "common": {
     "title": "Flumen",
-    "description": "a fast, modern browser for maintainers and contributors",
+    "description": "Open source, streamlined.",
     "yes": "Yes",
     "no": "No",
     "cancel": "Cancel",
@@ -26,6 +26,9 @@
     "login": "Login",
     "logout": "Logout",
     "forbidden": "You need to log in to access this page."
+  },
+  "welcome": {
+    "greeting": "Welcome to"
   },
   "theme": {
     "light": "Light",

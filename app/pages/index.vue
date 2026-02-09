@@ -1,13 +1,21 @@
 <script setup lang="ts">
-const { t } = useI18n()
+const { loggedIn } = useUserSession()
 
 definePageMeta({
+  layout: false,
   titleKey: 'nav.dashboard',
 })
 </script>
 
 <template>
-  <div class="p-6">
-    <h1>{{ t('nav.dashboard') }}</h1>
-  </div>
+  <UiWelcomeScreen v-if="!loggedIn" />
+
+  <NuxtLayout
+    v-else
+    name="default"
+  >
+    <div class="p-6">
+      <h1>{{ $t('nav.dashboard') }}</h1>
+    </div>
+  </NuxtLayout>
 </template>
