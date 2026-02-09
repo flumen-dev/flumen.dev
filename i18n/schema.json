@@ -1,0 +1,114 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Flumen i18n locale file",
+  "description": "Schema for Flumen i18n translation files. Generated from en.json — do not edit manually.",
+  "type": "object",
+  "properties": {
+    "common": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "nav": {
+      "type": "object",
+      "properties": {
+        "dashboard": {
+          "type": "string"
+        },
+        "issues": {
+          "type": "string"
+        },
+        "pullRequests": {
+          "type": "string"
+        },
+        "notifications": {
+          "type": "string"
+        },
+        "settings": {
+          "type": "string"
+        },
+        "search": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "auth": {
+      "type": "object",
+      "properties": {
+        "loginWithGithub": {
+          "type": "string"
+        },
+        "login": {
+          "type": "string"
+        },
+        "forbidden": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "welcome": {
+      "type": "object",
+      "properties": {
+        "greeting": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "theme": {
+      "type": "object",
+      "properties": {
+        "light": {
+          "type": "string"
+        },
+        "dark": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "settings": {
+      "type": "object",
+      "properties": {
+        "appearance": {
+          "type": "object",
+          "properties": {
+            "title": {
+              "type": "string"
+            },
+            "description": {
+              "type": "string"
+            },
+            "theme": {
+              "type": "string"
+            },
+            "accentColor": {
+              "type": "string"
+            },
+            "resetColor": {
+              "type": "string"
+            },
+            "language": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "$schema": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": false
+}

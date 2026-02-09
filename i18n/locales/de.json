@@ -1,17 +1,7 @@
 {
   "common": {
     "title": "Flumen",
-    "description": "Open source, streamlined.",
-    "yes": "Ja",
-    "no": "Nein",
-    "cancel": "Abbrechen",
-    "save": "Änderungen speichern",
-    "delete": "Löschen",
-    "edit": "Bearbeiten",
-    "create": "Erstellen",
-    "close": "Schließen",
-    "confirm": "Bestätigen",
-    "loading": "Laden..."
+    "description": "Open source, streamlined."
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -24,7 +14,6 @@
   "auth": {
     "loginWithGithub": "Mit GitHub anmelden",
     "login": "Anmelden",
-    "logout": "Abmelden",
     "forbidden": "Du musst dich anmelden, um auf diese Seite zuzugreifen."
   },
   "welcome": {
@@ -32,8 +21,7 @@
   },
   "theme": {
     "light": "Hell",
-    "dark": "Dunkel",
-    "system": "System"
+    "dark": "Dunkel"
   },
   "settings": {
     "appearance": {
