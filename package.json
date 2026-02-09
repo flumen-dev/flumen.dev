@@ -17,9 +17,9 @@
     "lint": "eslint .",
     "knip": "knip",
     "knip:fix": "knip --fix",
-    "i18n:report": "node scripts/find-invalid-translations.ts",
-    "i18n:report:fix": "node scripts/remove-unused-translations.ts",
-    "i18n:schema": "node scripts/generate-i18n-schema.ts"
+    "i18n:report": "node --experimental-strip-types scripts/find-invalid-translations.ts",
+    "i18n:report:fix": "node --experimental-strip-types scripts/remove-unused-translations.ts",
+    "i18n:schema": "node --experimental-strip-types scripts/generate-i18n-schema.ts"
   },
   "dependencies": {
     "@nuxt/a11y": "1.0.0-alpha.1",
@@ -46,6 +46,9 @@
     "vitest": "^4.0.18",
     "vitest-environment-nuxt": "1.0.1",
     "vue-i18n-extract": "2.0.7"
+  },
+  "engines": {
+    "node": ">=24"
   },
   "packageManager": "pnpm@10.29.2"
 }
