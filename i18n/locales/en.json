@@ -1,7 +1,8 @@
 {
   "common": {
     "title": "Flumen",
-    "description": "Open source, streamlined."
+    "description": "Open source, streamlined.",
+    "loading": "Loading..."
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -70,13 +71,11 @@
       "ci_activity": "CI"
     },
     "filter": {
-      "all": "All",
       "public": "Public",
       "private": "Private",
       "forks": "Forks",
       "templates": "Templates",
       "archived": "Archived",
-      "language": "Language",
       "hasIssues": "Issues",
       "hasPrs": "PRs",
       "hasNotifications": "Notifications"

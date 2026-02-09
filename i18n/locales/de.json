@@ -1,7 +1,8 @@
 {
   "common": {
     "title": "Flumen",
-    "description": "Open source, streamlined."
+    "description": "Open source, streamlined.",
+    "loading": "Laden..."
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -70,13 +71,11 @@
       "archived": "Archiviert"
     },
     "filter": {
-      "all": "Alle",
       "public": "Öffentlich",
       "private": "Privat",
       "forks": "Forks",
       "templates": "Templates",
       "archived": "Archiviert",
-      "language": "Sprache",
       "hasIssues": "Issues",
       "hasPrs": "PRs",
       "hasNotifications": "Benachrichtigungen"
