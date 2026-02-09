@@ -30,8 +30,12 @@
     "@playwright/test": "^1.58.2",
     "@vitest/coverage-v8": "^4.0.18",
     "@vue/test-utils": "^2.4.6",
+    "eslint": "^10.0.0",
+    "flat": "link:@nuxt/eslint-config/flat",
     "happy-dom": "^20.5.0",
     "playwright-core": "^1.58.2",
+    "tailwindcss": "^4.1.18",
+    "typescript": "^5.9.3",
     "vitest": "^4.0.18"
   }
 }
