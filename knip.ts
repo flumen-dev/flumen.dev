@@ -15,7 +15,7 @@ const config: KnipConfig = {
         'shared/**/*.ts!',
       ],
       project: ['**/*.{ts,vue,cjs,mjs}', '!test/fixtures/**'],
-      ignoreDependencies: ['flat', 'unstorage'],
+      ignoreDependencies: ['flat', 'unstorage', 'vue', 'nuxt'],
     },
   },
 }
