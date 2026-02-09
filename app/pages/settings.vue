@@ -1,6 +1,7 @@
 <script setup lang="ts">
 definePageMeta({
   titleKey: 'nav.settings',
+  middleware: 'auth',
 })
 </script>
 

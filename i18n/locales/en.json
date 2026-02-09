@@ -24,7 +24,8 @@
   "auth": {
     "loginWithGithub": "Login with GitHub",
     "login": "Login",
-    "logout": "Logout"
+    "logout": "Logout",
+    "forbidden": "You need to log in to access this page."
   },
   "theme": {
     "light": "Light",

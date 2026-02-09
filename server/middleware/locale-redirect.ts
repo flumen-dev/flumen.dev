@@ -1,5 +1,7 @@
 const LOCALES = ['en', 'de']
 
+// Middleware to redirect users to their preferred locale based on settings
+// Best SEO-friendly way
 export default defineEventHandler(async (event) => {
   const path = getRequestURL(event).pathname
 

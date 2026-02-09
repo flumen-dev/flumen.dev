@@ -24,7 +24,8 @@
   "auth": {
     "loginWithGithub": "Mit GitHub anmelden",
     "login": "Anmelden",
-    "logout": "Abmelden"
+    "logout": "Abmelden",
+    "forbidden": "Du musst dich anmelden, um auf diese Seite zuzugreifen."
   },
   "theme": {
     "light": "Hell",
