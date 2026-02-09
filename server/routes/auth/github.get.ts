@@ -15,7 +15,11 @@ export default defineOAuthGitHubEventHandler({
         accessToken: tokens.access_token,
       },
     })
-    return sendRedirect(event, '/')
+
+    // Set default locale based on user settings
+    const settings = await useStorage('data').getItem<{ locale?: string }>(`users:${user.id}:settings`)
+    const locale = settings?.locale || 'en'
+    return sendRedirect(event, `/${locale}/`)
   },
   onError(event, error) {
     console.error('[OAuth] GitHub OAuth error:', error)

@@ -30,5 +30,15 @@
     "light": "Hell",
     "dark": "Dunkel",
     "system": "System"
+  },
+  "settings": {
+    "appearance": {
+      "title": "Erscheinungsbild",
+      "description": "Passe an, wie Flumen aussieht.",
+      "theme": "Farbschema",
+      "accentColor": "Akzentfarbe",
+      "resetColor": "Auf Standard zurücksetzen",
+      "language": "Sprache"
+    }
   }
 }

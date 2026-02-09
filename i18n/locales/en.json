@@ -30,5 +30,15 @@
     "light": "Light",
     "dark": "Dark",
     "system": "System"
+  },
+  "settings": {
+    "appearance": {
+      "title": "Appearance",
+      "description": "Customize how Flumen looks and feels.",
+      "theme": "Theme",
+      "accentColor": "Accent Color",
+      "resetColor": "Reset to default",
+      "language": "Language"
+    }
   }
 }

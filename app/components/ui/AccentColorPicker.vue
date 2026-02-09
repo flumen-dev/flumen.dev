@@ -1,21 +1,10 @@
 <script setup lang="ts">
-import { defaultUserSettings } from '~~/shared/types/settings'
+import { accentColors, defaultUserSettings } from '~~/shared/types/settings'
 
 const appConfig = useAppConfig()
 const { update } = useUserSettings()
 
 const defaultColor = defaultUserSettings.primaryColor
-
-const colors = [
-  { name: 'red', class: 'bg-red-500' },
-  { name: 'orange', class: 'bg-orange-500' },
-  { name: 'amber', class: 'bg-amber-500' },
-  { name: 'emerald', class: 'bg-emerald-500' },
-  { name: 'cyan', class: 'bg-cyan-500' },
-  { name: 'blue', class: 'bg-blue-500' },
-  { name: 'violet', class: 'bg-violet-500' },
-  { name: 'rose', class: 'bg-rose-500' },
-] as const
 
 const currentColor = computed(() => appConfig.ui.colors.primary)
 const isDefault = computed(() => currentColor.value === defaultColor)
@@ -46,14 +35,14 @@ function resetColor() {
       <div class="grid grid-cols-5 gap-2 p-3">
         <button
           class="size-8 rounded-full border-2 transition-transform hover:scale-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary flex items-center justify-center"
-          :class="isDefault ? 'border-primary bg-muted' : 'border-default bg-muted'"
+          :class="isDefault ? 'border-neutral-400 bg-muted' : 'border-default bg-muted'"
           aria-label="Default"
           @click="resetColor"
         >
           <UIcon
             v-if="isDefault"
-            name="i-lucide-circle"
-            class="size-3 text-primary"
+            name="i-lucide-check"
+            class="size-3.5 text-neutral-500"
           />
           <UIcon
             v-else
@@ -63,7 +52,7 @@ function resetColor() {
         </button>
 
         <button
-          v-for="color in colors"
+          v-for="color in accentColors"
           :key="color.name"
           :class="color.class"
           class="size-8 rounded-full transition-transform hover:scale-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary flex items-center justify-center"
