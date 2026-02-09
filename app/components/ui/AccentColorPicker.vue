@@ -54,7 +54,7 @@ function resetColor() {
         <button
           v-for="color in accentColors"
           :key="color.name"
-          :class="color.class"
+          :style="{ backgroundColor: color.hex }"
           class="size-8 rounded-full transition-transform hover:scale-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary flex items-center justify-center"
           :aria-label="color.name"
           @click="selectColor(color.name)"

@@ -11,12 +11,12 @@ export const defaultUserSettings: UserSettings = {
 }
 
 export const accentColors = [
-  { name: 'red', class: 'bg-red-500' },
-  { name: 'orange', class: 'bg-orange-500' },
-  { name: 'amber', class: 'bg-amber-500' },
-  { name: 'emerald', class: 'bg-emerald-500' },
-  { name: 'cyan', class: 'bg-cyan-500' },
-  { name: 'blue', class: 'bg-blue-500' },
-  { name: 'violet', class: 'bg-violet-500' },
-  { name: 'rose', class: 'bg-rose-500' },
+  { name: 'red', hex: '#ef4444' },
+  { name: 'orange', hex: '#f97316' },
+  { name: 'amber', hex: '#f59e0b' },
+  { name: 'emerald', hex: '#10b981' },
+  { name: 'cyan', hex: '#06b6d4' },
+  { name: 'blue', hex: '#3b82f6' },
+  { name: 'violet', hex: '#8b5cf6' },
+  { name: 'rose', hex: '#f43f5e' },
 ] as const

@@ -105,7 +105,7 @@ function selectLocale(code: 'en' | 'de') {
             role="radio"
             :aria-checked="currentColor === color.name"
             :aria-label="color.name"
-            :class="color.class"
+            :style="{ backgroundColor: color.hex }"
             class="size-8 rounded-full transition-transform hover:scale-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary flex items-center justify-center cursor-pointer"
             @click="selectColor(color.name)"
           >
