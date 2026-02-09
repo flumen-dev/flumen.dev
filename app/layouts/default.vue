@@ -1,6 +1,13 @@
 <script setup lang="ts">
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const route = useRoute()
+
+useHead({
+  htmlAttrs: { lang: locale },
+})
+const { load: loadSettings } = useUserSettings()
+
+await loadSettings()
 
 const pageTitle = computed(() => {
   const key = route.meta.titleKey as string | undefined
@@ -21,11 +28,15 @@ useHead({
 
     <UDashboardPanel>
       <template #header>
-        <UDashboardNavbar :title="pageTitle" />
+        <header role="banner">
+          <UDashboardNavbar :title="pageTitle" />
+        </header>
       </template>
 
       <template #body>
-        <slot />
+        <main>
+          <slot />
+        </main>
       </template>
     </UDashboardPanel>
   </UDashboardGroup>

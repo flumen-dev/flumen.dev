@@ -36,9 +36,6 @@ const mainItems = computed<NavigationMenuItem[]>(() => [
     badge: notificationCount.value > 0 ? String(notificationCount.value) : undefined,
     slot: 'notifications',
   },
-])
-
-const bottomItems = computed<NavigationMenuItem[]>(() => [
   {
     label: t('nav.settings'),
     icon: 'i-lucide-settings',
@@ -62,11 +59,16 @@ const bottomItems = computed<NavigationMenuItem[]>(() => [
           v-if="!collapsed"
           class="flex items-center gap-2"
         >
-          <UiTheLogo
-            height="1.25rem"
-            class="shrink-0"
-          />
-          <span class="font-semibold text-sm whitespace-nowrap">{{ t('common.title') }}</span>
+          <UiAccentColorPicker>
+            <UiTheLogo
+              height="1.25rem"
+              class="shrink-0 cursor-pointer"
+            />
+          </UiAccentColorPicker>
+          <span
+            class="font-semibold text-sm whitespace-nowrap"
+            aria-hidden="true"
+          >{{ t('common.title') }}</span>
         </div>
         <UDashboardSidebarCollapse />
       </div>
@@ -76,6 +78,7 @@ const bottomItems = computed<NavigationMenuItem[]>(() => [
     <template #default="{ collapsed }">
       <UButton
         :label="collapsed ? undefined : t('nav.search')"
+        :aria-label="t('nav.search')"
         icon="i-lucide-search"
         color="neutral"
         variant="outline"
@@ -118,13 +121,6 @@ const bottomItems = computed<NavigationMenuItem[]>(() => [
           </UChip>
         </template>
       </UNavigationMenu>
-
-      <UNavigationMenu
-        :collapsed="collapsed"
-        :items="bottomItems"
-        orientation="vertical"
-        class="mt-auto"
-      />
     </template>
 
     <template #footer="{ collapsed }">
@@ -157,6 +153,7 @@ const bottomItems = computed<NavigationMenuItem[]>(() => [
         <ClientOnly>
           <UButton
             :icon="isDark ? 'i-lucide-moon' : 'i-lucide-sun'"
+            :aria-label="isDark ? t('theme.light') : t('theme.dark')"
             color="neutral"
             variant="ghost"
             square
