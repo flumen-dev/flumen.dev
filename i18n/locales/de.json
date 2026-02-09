@@ -1,0 +1,34 @@
+{
+  "common": {
+    "title": "Flumen",
+    "description": "ein schneller, moderner Browser für Maintainer und Teammitglieder",
+    "yes": "Ja",
+    "no": "Nein",
+    "cancel": "Abbrechen",
+    "save": "Änderungen speichern",
+    "delete": "Löschen",
+    "edit": "Bearbeiten",
+    "create": "Erstellen",
+    "close": "Schließen",
+    "confirm": "Bestätigen",
+    "loading": "Laden..."
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "issues": "Issues",
+    "pullRequests": "Pull Requests",
+    "notifications": "Benachrichtigungen",
+    "settings": "Einstellungen",
+    "search": "Suchen..."
+  },
+  "auth": {
+    "loginWithGithub": "Mit GitHub anmelden",
+    "login": "Anmelden",
+    "logout": "Abmelden"
+  },
+  "theme": {
+    "light": "Hell",
+    "dark": "Dunkel",
+    "system": "System"
+  }
+}
