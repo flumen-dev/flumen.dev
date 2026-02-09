@@ -84,7 +84,7 @@ jobs:
         run: pnpm install
 
       - name: 🧪 Unit tests
-        run: pnpm test:unit run
+        run: pnpm test:unit
 
   test:
     name: 🧪 Component tests
@@ -106,7 +106,7 @@ jobs:
         run: pnpm install
 
       - name: 🧪 Component tests
-        run: pnpm test:nuxt run
+        run: pnpm test:nuxt
   knip:
     name: 🧹 Unused code check
     runs-on: ubuntu-24.04-arm
