@@ -1,75 +1,9 @@
-# Nuxt Minimal Starter
+# flumen.dev
 
-Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
+![Flumen logo](public/img/flumen-logo.svg)
 
-## Setup
+Flumen is a Nuxt-powered GitHub activity dashboard. It pulls your repositories, issues, pull requests, and notifications into a single workspace so you can keep tabs on what matters.
 
-Make sure to install dependencies:
+## Contributing
 
-```bash
-# npm
-npm install
-
-# pnpm
-pnpm install
-
-# yarn
-yarn install
-
-# bun
-bun install
-```
-
-## Development Server
-
-Start the development server on `http://localhost:3000`:
-
-```bash
-# npm
-npm run dev
-
-# pnpm
-pnpm dev
-
-# yarn
-yarn dev
-
-# bun
-bun run dev
-```
-
-## Production
-
-Build the application for production:
-
-```bash
-# npm
-npm run build
-
-# pnpm
-pnpm build
-
-# yarn
-yarn build
-
-# bun
-bun run build
-```
-
-Locally preview production build:
-
-```bash
-# npm
-npm run preview
-
-# pnpm
-pnpm preview
-
-# yarn
-yarn preview
-
-# bun
-bun run preview
-```
-
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for local setup, scripts, and workflow details.
