@@ -12,6 +12,9 @@
         },
         "description": {
           "type": "string"
+        },
+        "loading": {
+          "type": "string"
         }
       },
       "additionalProperties": false
@@ -29,6 +32,9 @@
           "type": "string"
         },
         "notifications": {
+          "type": "string"
+        },
+        "repos": {
           "type": "string"
         },
         "settings": {
@@ -72,6 +78,174 @@
         },
         "dark": {
           "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "time": {
+      "type": "object",
+      "properties": {
+        "justNow": {
+          "type": "string"
+        },
+        "minutesAgo": {
+          "type": "string"
+        },
+        "hoursAgo": {
+          "type": "string"
+        },
+        "daysAgo": {
+          "type": "string"
+        },
+        "monthsAgo": {
+          "type": "string"
+        },
+        "yearsAgo": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "repos": {
+      "type": "object",
+      "properties": {
+        "search": {
+          "type": "string"
+        },
+        "count": {
+          "type": "string"
+        },
+        "noResults": {
+          "type": "string"
+        },
+        "sort": {
+          "type": "object",
+          "properties": {
+            "pushed": {
+              "type": "string"
+            },
+            "stars": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            },
+            "issues": {
+              "type": "string"
+            },
+            "prs": {
+              "type": "string"
+            },
+            "notifications": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "activity": {
+          "type": "object",
+          "properties": {
+            "recent": {
+              "type": "string"
+            },
+            "moderate": {
+              "type": "string"
+            },
+            "inactive": {
+              "type": "string"
+            },
+            "archived": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "openIssues": {
+          "type": "string"
+        },
+        "openPrs": {
+          "type": "string"
+        },
+        "unreadNotifications": {
+          "type": "string"
+        },
+        "badge": {
+          "type": "object",
+          "properties": {
+            "archived": {
+              "type": "string"
+            },
+            "fork": {
+              "type": "string"
+            },
+            "private": {
+              "type": "string"
+            },
+            "draft": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "reason": {
+          "type": "object",
+          "properties": {
+            "mention": {
+              "type": "string"
+            },
+            "author": {
+              "type": "string"
+            },
+            "comment": {
+              "type": "string"
+            },
+            "subscribed": {
+              "type": "string"
+            },
+            "review_requested": {
+              "type": "string"
+            },
+            "assign": {
+              "type": "string"
+            },
+            "state_change": {
+              "type": "string"
+            },
+            "ci_activity": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "filter": {
+          "type": "object",
+          "properties": {
+            "public": {
+              "type": "string"
+            },
+            "private": {
+              "type": "string"
+            },
+            "forks": {
+              "type": "string"
+            },
+            "templates": {
+              "type": "string"
+            },
+            "archived": {
+              "type": "string"
+            },
+            "hasIssues": {
+              "type": "string"
+            },
+            "hasPrs": {
+              "type": "string"
+            },
+            "hasNotifications": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
         }
       },
       "additionalProperties": false
