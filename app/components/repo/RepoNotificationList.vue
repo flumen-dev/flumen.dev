@@ -44,8 +44,22 @@ function reasonLabel(reason: string): string {
       return t('repos.reason.state_change')
     case 'ci_activity':
       return t('repos.reason.ci_activity')
+    case 'approval_requested':
+      return t('repos.reason.approval_requested')
+    case 'invitation':
+      return t('repos.reason.invitation')
+    case 'manual':
+      return t('repos.reason.manual')
+    case 'member_feature_requested':
+      return t('repos.reason.member_feature_requested')
+    case 'security_advisory_credit':
+      return t('repos.reason.security_advisory_credit')
+    case 'security_alert':
+      return t('repos.reason.security_alert')
+    case 'team_mention':
+      return t('repos.reason.team_mention')
     default:
-      return reason
+      return t('repos.reason.unknown')
   }
 }
 </script>

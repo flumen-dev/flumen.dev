@@ -213,6 +213,30 @@
             },
             "ci_activity": {
               "type": "string"
+            },
+            "approval_requested": {
+              "type": "string"
+            },
+            "invitation": {
+              "type": "string"
+            },
+            "manual": {
+              "type": "string"
+            },
+            "member_feature_requested": {
+              "type": "string"
+            },
+            "security_advisory_credit": {
+              "type": "string"
+            },
+            "security_alert": {
+              "type": "string"
+            },
+            "team_mention": {
+              "type": "string"
+            },
+            "unknown": {
+              "type": "string"
             }
           },
           "additionalProperties": false

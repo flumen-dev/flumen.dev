@@ -68,7 +68,15 @@
       "review_requested": "review requested",
       "assign": "assigned",
       "state_change": "state changed",
-      "ci_activity": "CI"
+      "ci_activity": "CI",
+      "approval_requested": "approval requested",
+      "invitation": "invitation",
+      "manual": "manual",
+      "member_feature_requested": "member feature requested",
+      "security_advisory_credit": "security advisory credit",
+      "security_alert": "security alert",
+      "team_mention": "team mention",
+      "unknown": "unknown"
     },
     "filter": {
       "public": "Public",

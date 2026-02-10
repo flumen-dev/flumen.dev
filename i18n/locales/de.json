@@ -62,7 +62,15 @@
       "review_requested": "Review angefragt",
       "assign": "zugewiesen",
       "state_change": "Status geändert",
-      "ci_activity": "CI"
+      "ci_activity": "CI",
+      "approval_requested": "Freigabe angefordert",
+      "invitation": "Einladung",
+      "manual": "Manuell",
+      "member_feature_requested": "Mitgliedsfunktion angefordert",
+      "security_advisory_credit": "Sicherheitsmeldung gutgeschrieben",
+      "security_alert": "Sicherheitswarnung",
+      "team_mention": "Team-Erwähnung",
+      "unknown": "Unbekannt"
     },
     "activity": {
       "recent": "Diese Woche aktiv",
