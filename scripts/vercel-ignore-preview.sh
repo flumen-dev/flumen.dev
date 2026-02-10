@@ -2,8 +2,6 @@
 # Skip Preview builds unless PR has label "preview"
 if [ "$VERCEL_ENV" = "preview" ]; then
   # No GitHub context (e.g., manual deploy)
-if [ "$VERCEL_ENV" = "preview" ]; then
-  # No GitHub context (e.g., manual deploy)
   if [ -z "$VERCEL_GIT_PULL_REQUEST_ID" ]; then
     exit 0
   fi
