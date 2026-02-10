@@ -9,6 +9,7 @@ export default defineNuxtConfig({
     '@nuxt/ui',
     '@nuxtjs/i18n',
     'nuxt-auth-utils',
+    'nuxt-echarts',
   ],
   devtools: { enabled: true },
 
@@ -36,6 +37,11 @@ export default defineNuxtConfig({
         token: process.env.STORAGE_TOKEN,
       },
     },
+  },
+  echarts: {
+    renderer: 'svg',
+    charts: ['LineChart', 'BarChart'],
+    components: ['GridComponent', 'TooltipComponent'],
   },
 
   eslint: {

@@ -1,13 +1,15 @@
 {
   "common": {
     "title": "Flumen",
-    "description": "Open source, streamlined."
+    "description": "Open source, streamlined.",
+    "loading": "Laden..."
   },
   "nav": {
     "dashboard": "Dashboard",
     "issues": "Issues",
     "pullRequests": "Pull Requests",
     "notifications": "Benachrichtigungen",
+    "repos": "Repositories",
     "settings": "Einstellungen",
     "search": "Suchen..."
   },
@@ -22,6 +24,62 @@
   "theme": {
     "light": "Hell",
     "dark": "Dunkel"
+  },
+  "time": {
+    "justNow": "gerade eben",
+    "minutesAgo": "vor {count} Min.",
+    "hoursAgo": "vor {count} Std.",
+    "daysAgo": "vor {count} T.",
+    "monthsAgo": "vor {count} Monat | vor {count} Monaten",
+    "yearsAgo": "vor {count} Jahr | vor {count} Jahren"
+  },
+  "repos": {
+    "search": "Repositories durchsuchen...",
+    "count": "Keine Repositories | {count} Repository | {count} Repositories",
+    "noResults": "Keine Repositories gefunden.",
+    "sort": {
+      "pushed": "Zuletzt gepusht",
+      "stars": "Sterne",
+      "name": "Name",
+      "issues": "Offene Issues",
+      "prs": "Offene PRs",
+      "notifications": "Benachrichtigungen"
+    },
+    "openIssues": "{count} offenes Issue | {count} offene Issues",
+    "openPrs": "{count} offener Pull Request | {count} offene Pull Requests",
+    "unreadNotifications": "{count} ungelesene Benachrichtigung | {count} ungelesene Benachrichtigungen",
+    "badge": {
+      "archived": "archiviert",
+      "fork": "Fork",
+      "private": "privat",
+      "draft": "Entwurf"
+    },
+    "reason": {
+      "mention": "erwähnt",
+      "author": "Autor",
+      "comment": "Kommentar",
+      "subscribed": "abonniert",
+      "review_requested": "Review angefragt",
+      "assign": "zugewiesen",
+      "state_change": "Status geändert",
+      "ci_activity": "CI"
+    },
+    "activity": {
+      "recent": "Diese Woche aktiv",
+      "moderate": "Diesen Monat aktiv",
+      "inactive": "Inaktiv",
+      "archived": "Archiviert"
+    },
+    "filter": {
+      "public": "Öffentlich",
+      "private": "Privat",
+      "forks": "Forks",
+      "templates": "Templates",
+      "archived": "Archiviert",
+      "hasIssues": "Issues",
+      "hasPrs": "PRs",
+      "hasNotifications": "Benachrichtigungen"
+    }
   },
   "settings": {
     "appearance": {

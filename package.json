@@ -37,10 +37,13 @@
   "devDependencies": {
     "@vitest/coverage-v8": "^4.0.18",
     "@vue/test-utils": "^2.4.6",
+    "echarts": "^6.0.0",
     "eslint": "^10.0.0",
     "flat": "link:@nuxt/eslint-config/flat",
     "happy-dom": "^20.5.0",
     "knip": "5.83.1",
+    "nuxt-echarts": "^1.0.1",
+    "playwright-core": "^1.58.2",
     "tailwindcss": "^4.1.18",
     "typescript": "^5.9.3",
     "vitest": "^4.0.18",

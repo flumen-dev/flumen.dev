@@ -1,13 +1,15 @@
 {
   "common": {
     "title": "Flumen",
-    "description": "Open source, streamlined."
+    "description": "Open source, streamlined.",
+    "loading": "Loading..."
   },
   "nav": {
     "dashboard": "Dashboard",
     "issues": "Issues",
     "pullRequests": "Pull Requests",
     "notifications": "Notifications",
+    "repos": "Repositories",
     "settings": "Settings",
     "search": "Search..."
   },
@@ -22,6 +24,62 @@
   "theme": {
     "light": "Light",
     "dark": "Dark"
+  },
+  "time": {
+    "justNow": "just now",
+    "minutesAgo": "{count} min ago",
+    "hoursAgo": "{count}h ago",
+    "daysAgo": "{count}d ago",
+    "monthsAgo": "{count} month ago | {count} months ago",
+    "yearsAgo": "{count} year ago | {count} years ago"
+  },
+  "repos": {
+    "search": "Search repositories...",
+    "count": "No repositories | {count} repository | {count} repositories",
+    "noResults": "No repositories match your filters.",
+    "sort": {
+      "pushed": "Last pushed",
+      "stars": "Stars",
+      "name": "Name",
+      "issues": "Open issues",
+      "prs": "Open PRs",
+      "notifications": "Notifications"
+    },
+    "activity": {
+      "recent": "Active this week",
+      "moderate": "Active this month",
+      "inactive": "Inactive",
+      "archived": "Archived"
+    },
+    "openIssues": "{count} open issue | {count} open issues",
+    "openPrs": "{count} open pull request | {count} open pull requests",
+    "unreadNotifications": "{count} unread notification | {count} unread notifications",
+    "badge": {
+      "archived": "archived",
+      "fork": "fork",
+      "private": "private",
+      "draft": "draft"
+    },
+    "reason": {
+      "mention": "mentioned",
+      "author": "author",
+      "comment": "comment",
+      "subscribed": "watching",
+      "review_requested": "review requested",
+      "assign": "assigned",
+      "state_change": "state changed",
+      "ci_activity": "CI"
+    },
+    "filter": {
+      "public": "Public",
+      "private": "Private",
+      "forks": "Forks",
+      "templates": "Templates",
+      "archived": "Archived",
+      "hasIssues": "Issues",
+      "hasPrs": "PRs",
+      "hasNotifications": "Notifications"
+    }
   },
   "settings": {
     "appearance": {
