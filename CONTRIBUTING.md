@@ -18,6 +18,12 @@ pnpm install
 2. Create a local environment file:
 
 ```bash
+# macOS / Linux
+cp .env.example .env
+```
+
+```powershell
+# Windows (PowerShell)
 copy .env.example .env
 ```
 
