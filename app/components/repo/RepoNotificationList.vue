@@ -27,9 +27,26 @@ const typeColor: Record<string, string> = {
 const { t } = useI18n()
 
 function reasonLabel(reason: string): string {
-  const key = `repos.reason.${reason}`
-  const translated = t(key)
-  return translated === key ? reason : translated
+  switch (reason) {
+    case 'mention':
+      return t('repos.reason.mention')
+    case 'author':
+      return t('repos.reason.author')
+    case 'comment':
+      return t('repos.reason.comment')
+    case 'subscribed':
+      return t('repos.reason.subscribed')
+    case 'review_requested':
+      return t('repos.reason.review_requested')
+    case 'assign':
+      return t('repos.reason.assign')
+    case 'state_change':
+      return t('repos.reason.state_change')
+    case 'ci_activity':
+      return t('repos.reason.ci_activity')
+    default:
+      return reason
+  }
 }
 </script>
 
