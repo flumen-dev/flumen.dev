@@ -35,6 +35,7 @@ const { data: issues, status } = useLazyFetch<RepoIssue[]>(
         :key="issue.id"
         :href="issue.htmlUrl"
         target="_blank"
+        rel="noopener noreferrer"
         class="flex items-start gap-2.5 px-3 py-2.5 hover:bg-accented hover:border-l-2 hover:border-l-rose-500 hover:pl-2.5 transition-all border-b border-default last:border-b-0"
       >
         <!-- Issue icon -->

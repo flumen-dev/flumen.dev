@@ -148,7 +148,7 @@ export async function githubCachedFetchAllWithToken<T>(
   const cached = await storage.getItem<CacheEntry<T[]>>(cacheKey)
 
   const headers: Record<string, string> = buildHeaders(token)
-  if (cached?.etag) {
+  if (cached?.etag && cached.pageCount === 1) {
     headers['If-None-Match'] = cached.etag
   }
 
@@ -166,6 +166,8 @@ export async function githubCachedFetchAllWithToken<T>(
   const etag = firstResponse.headers.get('etag')
 
   const remainingPages = parseRemainingPages(firstResponse.headers.get('link'))
+  const pageCount = 1 + remainingPages.length
+
   if (remainingPages.length) {
     const fetchHeaders = buildHeaders(token)
     const pages = await Promise.all(
@@ -178,7 +180,7 @@ export async function githubCachedFetchAllWithToken<T>(
   }
 
   if (etag) {
-    await storage.setItem(cacheKey, { etag, data: items } satisfies CacheEntry<T[]>)
+    await storage.setItem(cacheKey, { etag, data: items, pageCount } satisfies CacheEntry<T[]>)
   }
 
   return { data: items, status: 200, headers: firstResponse.headers }
@@ -260,6 +262,7 @@ export async function githubSearchCounts(
 interface CacheEntry<T> {
   etag: string
   data: T
+  pageCount?: number
 }
 
 function buildUrl(endpoint: string, params?: Record<string, string | number>): URL {

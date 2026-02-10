@@ -1,5 +1,6 @@
-export function getActivityColor(pushedAt: string, archived: boolean): string {
+export function getActivityColor(pushedAt: string | null, archived: boolean): string {
   if (archived) return 'text-error'
+  if (!pushedAt) return 'text-dimmed'
 
   const days = (Date.now() - new Date(pushedAt).getTime()) / (1000 * 60 * 60 * 24)
 

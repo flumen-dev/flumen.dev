@@ -8,11 +8,12 @@ const props = defineProps<{
 }>()
 
 const activityColor = computed(() => getActivityColor(props.repo.pushedAt, props.repo.archived))
-const timeAgo = useTimeAgo(computed(() => props.repo.pushedAt))
+const timeAgo = useTimeAgo(computed(() => props.repo.pushedAt ?? props.repo.createdAt))
 
 const { t } = useI18n()
 const activityTooltip = computed(() => {
   if (props.repo.archived) return t('repos.activity.archived')
+  if (!props.repo.pushedAt) return t('repos.activity.inactive')
   const days = (Date.now() - new Date(props.repo.pushedAt).getTime()) / (1000 * 60 * 60 * 24)
   if (days < 7) return t('repos.activity.recent')
   if (days < 30) return t('repos.activity.moderate')

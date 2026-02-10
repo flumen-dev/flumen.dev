@@ -13,10 +13,10 @@ function formatTimeAgo(timestamp: string, t: (key: string, params?: unknown) => 
   if (days < 30) return t('time.daysAgo', { count: days })
 
   const months = Math.floor(days / 30)
-  if (months < 12) return t('time.monthsAgo', months)
+  if (months < 12) return t('time.monthsAgo', { count: months })
 
   const years = Math.floor(months / 12)
-  return t('time.yearsAgo', years)
+  return t('time.yearsAgo', { count: years })
 }
 
 /** Reactive composable — for values that change over time (e.g. repo.pushedAt) */

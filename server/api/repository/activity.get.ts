@@ -26,7 +26,7 @@ const fetchActivity = defineCachedFunction(
       const ts = new Date(ev.created_at).getTime()
       if (ts < cutoff) continue
 
-      const bucket = WEEKS - 1 - Math.floor((now - ts) / weekMs)
+      const bucket = Math.min(WEEKS - 1, Math.max(0, WEEKS - 1 - Math.floor((now - ts) / weekMs)))
       if (!result[ev.repo.name]) {
         result[ev.repo.name] = { weeks: Array.from({ length: WEEKS }, () => 0) }
       }

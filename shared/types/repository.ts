@@ -19,7 +19,7 @@ export interface GitHubRepo {
   is_template: boolean
   created_at: string
   updated_at: string
-  pushed_at: string
+  pushed_at: string | null
 }
 // #endregion
 
@@ -50,7 +50,7 @@ export interface Repository {
 
   createdAt: string
   updatedAt: string
-  pushedAt: string
+  pushedAt: string | null
 }
 
 /** Weekly commit counts per repo, keyed by repo fullName */
