@@ -7,9 +7,11 @@ if [ "$VERCEL_ENV" = "preview" ]; then
   fi
 
   # Require PR label "preview"
-  LABELS=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
-    "https://api.github.com/repos/$VERCEL_GIT_REPO_OWNER/$VERCEL_GIT_REPO_SLUG/issues/$VERCEL_GIT_PULL_REQUEST_ID/labels" \
-    | grep -o '"name": *"[^"]*"' | cut -d'"' -f4)
+  LABELS_JSON=$(curl -fsS --max-time 5 --retry 2 --retry-delay 1 \
+    -H "Authorization: token $GITHUB_TOKEN" \
+    "https://api.github.com/repos/$VERCEL_GIT_REPO_OWNER/$VERCEL_GIT_REPO_SLUG/issues/$VERCEL_GIT_PULL_REQUEST_ID/labels") \
+    || { echo "Failed to fetch PR labels from GitHub; defaulting to build." >&2; exit 1; }
+  LABELS=$(printf '%s' "$LABELS_JSON" | grep -o '"name": *"[^"]*"' | cut -d'"' -f4)
 
   echo "$LABELS" | grep -q "^preview$"
   exit $?
