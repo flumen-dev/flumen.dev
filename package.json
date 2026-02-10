@@ -33,7 +33,7 @@
     "nuxt": "^4.3.1",
     "nuxt-auth-utils": "0.5.28",
     "unstorage": "^1.17.4",
-    "vue": "^3.5.27",
+    "vue": "^3.5.28",
     "vue-router": "^4.6.4"
   },
   "devDependencies": {
