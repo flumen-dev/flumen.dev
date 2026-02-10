@@ -1,3 +1,4 @@
+#!/bin/sh
 # Skip Preview builds unless PR has label "preview"
 if [ "$VERCEL_ENV" = "preview" ]; then
   # No GitHub context (e.g., manual deploy)
