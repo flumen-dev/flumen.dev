@@ -108,7 +108,6 @@
     }
   },
   "profile": {
-    "title": "Profile",
     "edit": "Edit",
     "save": "Save",
     "cancel": "Cancel",
