@@ -134,22 +134,40 @@
           "type": "object",
           "properties": {
             "fetchError": {
-              "type": "string"
-            },
-            "fetchErrorDescription": {
-              "type": "string"
+              "type": "object",
+              "properties": {
+                "title": {
+                  "type": "string"
+                },
+                "description": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false
             },
             "sessionExpired": {
-              "type": "string"
-            },
-            "sessionExpiredDescription": {
-              "type": "string"
+              "type": "object",
+              "properties": {
+                "title": {
+                  "type": "string"
+                },
+                "description": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false
             },
             "rateLimited": {
-              "type": "string"
-            },
-            "rateLimitedDescription": {
-              "type": "string"
+              "type": "object",
+              "properties": {
+                "title": {
+                  "type": "string"
+                },
+                "description": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false
             }
           },
           "additionalProperties": false
@@ -353,12 +371,6 @@
           "type": "string"
         },
         "hireableOff": {
-          "type": "string"
-        },
-        "emailSection": {
-          "type": "string"
-        },
-        "emailPrimary": {
           "type": "string"
         },
         "emailPublic": {

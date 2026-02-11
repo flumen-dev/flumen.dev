@@ -42,12 +42,18 @@
     "count": "No repositories | {count} repository | {count} repositories",
     "noResults": "No repositories match your filters.",
     "error": {
-      "fetchError": "Failed to load repositories",
-      "fetchErrorDescription": "Something went wrong while fetching your repositories. Please try again.",
-      "sessionExpired": "Session expired",
-      "sessionExpiredDescription": "Your session has expired. Please log in again.",
-      "rateLimited": "Too many requests",
-      "rateLimitedDescription": "GitHub rate limit reached. Please wait a moment and try again."
+      "fetchError": {
+        "title": "Failed to load repositories",
+        "description": "Something went wrong while fetching your repositories. Please try again."
+      },
+      "sessionExpired": {
+        "title": "Session expired",
+        "description": "Your session has expired. Please log in again."
+      },
+      "rateLimited": {
+        "title": "Too many requests",
+        "description": "GitHub rate limit reached. Please wait a moment and try again."
+      }
     },
     "sort": {
       "pushed": "Last pushed",
@@ -116,8 +122,6 @@
     "hireable": "Available for hire",
     "hireableOn": "Open to opportunities",
     "hireableOff": "Not looking right now",
-    "emailSection": "Email",
-    "emailPrimary": "Primary email",
     "emailPublic": "Public",
     "emailPrivate": "Private",
     "emailVisibility": "Anyone can see your email on your profile",

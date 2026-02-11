@@ -103,8 +103,8 @@ const filteredRepos = computed(() => {
     class="p-4 space-y-3"
   >
     <UAlert
-      :title="$t(`repos.error.${store.errorKey}`)"
-      :description="$t(`repos.error.${store.errorKey}Description`)"
+      :title="$t(`repos.error.${store.errorKey}.title`)"
+      :description="$t(`repos.error.${store.errorKey}.description`)"
       :color="store.errorKey === 'rateLimited' ? 'warning' : 'error'"
       :icon="store.errorKey === 'sessionExpired' ? 'i-lucide-log-out' : store.errorKey === 'rateLimited' ? 'i-lucide-clock' : 'i-lucide-alert-triangle'"
     />

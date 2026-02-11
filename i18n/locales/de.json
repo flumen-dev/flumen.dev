@@ -42,12 +42,18 @@
     "count": "Keine Repositories | {count} Repository | {count} Repositories",
     "noResults": "Keine Repositories gefunden.",
     "error": {
-      "fetchError": "Repositories konnten nicht geladen werden",
-      "fetchErrorDescription": "Beim Laden der Repositories ist ein Fehler aufgetreten. Bitte versuche es erneut.",
-      "sessionExpired": "Sitzung abgelaufen",
-      "sessionExpiredDescription": "Deine Sitzung ist abgelaufen. Bitte melde dich erneut an.",
-      "rateLimited": "Zu viele Anfragen",
-      "rateLimitedDescription": "GitHub-Rate-Limit erreicht. Bitte warte einen Moment und versuche es erneut."
+      "fetchError": {
+        "title": "Repositories konnten nicht geladen werden",
+        "description": "Beim Laden der Repositories ist ein Fehler aufgetreten. Bitte versuche es erneut."
+      },
+      "sessionExpired": {
+        "title": "Sitzung abgelaufen",
+        "description": "Deine Sitzung ist abgelaufen. Bitte melde dich erneut an."
+      },
+      "rateLimited": {
+        "title": "Zu viele Anfragen",
+        "description": "GitHub-Rate-Limit erreicht. Bitte warte einen Moment und versuche es erneut."
+      }
     },
     "sort": {
       "pushed": "Zuletzt gepusht",
@@ -116,8 +122,6 @@
     "hireable": "Verfügbar für Aufträge",
     "hireableOn": "Offen für Möglichkeiten",
     "hireableOff": "Gerade nicht auf der Suche",
-    "emailSection": "E-Mail",
-    "emailPrimary": "Primäre E-Mail",
     "emailPublic": "Öffentlich",
     "emailPrivate": "Privat",
     "emailVisibility": "Deine E-Mail ist auf deinem Profil sichtbar",
