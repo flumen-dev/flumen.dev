@@ -1,12 +1,8 @@
 import { join } from 'node:path'
-import { fileURLToPath } from 'node:url'
-import { createI18NReport, type I18NItem } from 'vue-i18n-extract'
+import type { I18NItem } from 'vue-i18n-extract'
 import { colors } from './utils/colors.ts'
 import { readdir, readFile, writeFile } from 'node:fs/promises'
-
-const LOCALES_DIRECTORY = fileURLToPath(new URL('../i18n/locales', import.meta.url))
-const REFERENCE_FILE_NAME = 'en.json'
-const VUE_FILES_GLOB = './app/**/*.?(vue|ts|js)'
+import { createI18nReport, LOCALES_DIRECTORY } from './utils/i18n.ts'
 
 type NestedObject = Record<string, unknown>
 
@@ -58,13 +54,7 @@ function removeKeysFromObject(obj: NestedObject, keys: string[]): { updated: Nes
 async function run(): Promise<void> {
   console.log(colors.bold('\n🔍 Removing unused i18n translations...\n'))
 
-  const referenceFilePath = join(LOCALES_DIRECTORY, REFERENCE_FILE_NAME)
-
-  const { unusedKeys } = await createI18NReport({
-    vueFiles: VUE_FILES_GLOB,
-    languageFiles: referenceFilePath,
-    exclude: ['$schema'],
-  })
+  const { actualUnusedKeys: unusedKeys } = await createI18nReport()
 
   if (unusedKeys.length === 0) {
     console.log(colors.green('✅ No unused translations found. Nothing to remove.\n'))
@@ -73,19 +63,11 @@ async function run(): Promise<void> {
 
   const uniquePaths = [...new Set(unusedKeys.map((item: I18NItem) => item.path))]
 
-  // Remove from reference file
-  const referenceContent = JSON.parse(await readFile(referenceFilePath, 'utf-8')) as NestedObject
-  const { updated: nextReferenceContent, removed: refRemoved }
-    = removeKeysFromObject(referenceContent, uniquePaths)
-  await writeFile(referenceFilePath, JSON.stringify(nextReferenceContent, null, 2) + '\n', 'utf-8')
+  // Remove from all locale files
+  const localeFiles = (await readdir(LOCALES_DIRECTORY)).filter(f => f.endsWith('.json'))
 
-  // Remove from all other locale files
-  const localeFiles = (await readdir(LOCALES_DIRECTORY)).filter(
-    f => f.endsWith('.json') && f !== REFERENCE_FILE_NAME,
-  )
-
-  const otherLocalesSummary: { file: string, removed: number }[] = []
-  let totalOtherRemoved = 0
+  const localesSummary: { file: string, removed: number }[] = []
+  let totalRemoved = 0
 
   for (const localeFile of localeFiles) {
     const filePath = join(LOCALES_DIRECTORY, localeFile)
@@ -93,20 +75,19 @@ async function run(): Promise<void> {
     const { updated: nextContent, removed } = removeKeysFromObject(content, uniquePaths)
     if (removed > 0) {
       await writeFile(filePath, JSON.stringify(nextContent, null, 2) + '\n', 'utf-8')
-      otherLocalesSummary.push({ file: localeFile, removed })
-      totalOtherRemoved += removed
+      localesSummary.push({ file: localeFile, removed })
+      totalRemoved += removed
     }
   }
 
   // Summary
-  console.log(colors.green(`✅ Removed ${refRemoved} keys from ${REFERENCE_FILE_NAME}`))
-  if (otherLocalesSummary.length > 0) {
+  if (localesSummary.length > 0) {
     console.log(
       colors.green(
-        `✅ Removed ${totalOtherRemoved} keys from ${otherLocalesSummary.length} other locale(s)`,
+        `✅ Removed ${totalRemoved} keys from locale(s).`,
       ),
     )
-    for (const { file, removed } of otherLocalesSummary) {
+    for (const { file, removed } of localesSummary) {
       console.log(colors.dim(`   ${file}: ${removed} keys`))
     }
   }

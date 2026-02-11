@@ -24,43 +24,10 @@ const typeColor: Record<string, string> = {
   CheckSuite: 'text-amber-500',
 }
 
-const { t } = useI18n()
+const { t, te } = useI18n()
 
 function reasonLabel(reason: string): string {
-  switch (reason) {
-    case 'mention':
-      return t('repos.reason.mention')
-    case 'author':
-      return t('repos.reason.author')
-    case 'comment':
-      return t('repos.reason.comment')
-    case 'subscribed':
-      return t('repos.reason.subscribed')
-    case 'review_requested':
-      return t('repos.reason.review_requested')
-    case 'assign':
-      return t('repos.reason.assign')
-    case 'state_change':
-      return t('repos.reason.state_change')
-    case 'ci_activity':
-      return t('repos.reason.ci_activity')
-    case 'approval_requested':
-      return t('repos.reason.approval_requested')
-    case 'invitation':
-      return t('repos.reason.invitation')
-    case 'manual':
-      return t('repos.reason.manual')
-    case 'member_feature_requested':
-      return t('repos.reason.member_feature_requested')
-    case 'security_advisory_credit':
-      return t('repos.reason.security_advisory_credit')
-    case 'security_alert':
-      return t('repos.reason.security_alert')
-    case 'team_mention':
-      return t('repos.reason.team_mention')
-    default:
-      return t('repos.reason.unknown')
-  }
+  return te(`repos.reason.${reason}`) ? t(`repos.reason.${reason}`) : t('repos.reason.unknown')
 }
 </script>
 
