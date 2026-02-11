@@ -23,7 +23,8 @@
   },
   "theme": {
     "light": "Hell",
-    "dark": "Dunkel"
+    "dark": "Dunkel",
+    "system": "System"
   },
   "time": {
     "justNow": "gerade eben",

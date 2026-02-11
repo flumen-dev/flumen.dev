@@ -23,7 +23,8 @@
   },
   "theme": {
     "light": "Light",
-    "dark": "Dark"
+    "dark": "Dark",
+    "system": "System"
   },
   "time": {
     "justNow": "just now",

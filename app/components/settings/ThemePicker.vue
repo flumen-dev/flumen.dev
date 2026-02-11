@@ -9,10 +9,18 @@ const emit = defineEmits<{
 
 const { t } = useI18n()
 
+type ThemeValue = 'light' | 'dark' | 'system'
+
+const themeLabels = computed<Record<ThemeValue, string>>(() => ({
+  light: t('theme.light'),
+  dark: t('theme.dark'),
+  system: t('theme.system'),
+}))
+
 const themes = [
-  { value: 'light', icon: 'i-lucide-sun', labelKey: 'theme.light' },
-  { value: 'dark', icon: 'i-lucide-moon', labelKey: 'theme.dark' },
-  { value: 'system', icon: 'i-lucide-monitor', labelKey: 'theme.system' },
+  { value: 'light', icon: 'i-lucide-sun' },
+  { value: 'dark', icon: 'i-lucide-moon' },
+  { value: 'system', icon: 'i-lucide-monitor' },
 ] as const
 </script>
 
@@ -27,7 +35,7 @@ const themes = [
       :key="theme.value"
       role="radio"
       :aria-checked="modelValue === theme.value"
-      :aria-label="t(theme.labelKey)"
+      :aria-label="themeLabels[theme.value]"
       class="rounded-xl border-2 p-2 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary cursor-pointer"
       :class="modelValue === theme.value
         ? 'border-primary bg-primary/5'
@@ -72,7 +80,7 @@ const themes = [
           :name="theme.icon"
           class="size-4"
         />
-        <span class="text-sm font-medium">{{ t(theme.labelKey) }}</span>
+        <span class="text-sm font-medium">{{ themeLabels[theme.value] }}</span>
       </div>
     </button>
   </div>

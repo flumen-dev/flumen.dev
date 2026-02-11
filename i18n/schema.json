@@ -78,6 +78,9 @@
         },
         "dark": {
           "type": "string"
+        },
+        "system": {
+          "type": "string"
         }
       },
       "additionalProperties": false
