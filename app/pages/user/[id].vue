@@ -63,6 +63,18 @@ async function addSocial() {
   const success = await store.addSocialAccount(addingUrl.value)
   if (success) cancelAddSocial()
 }
+
+const allowedSchemes = new Set(['http:', 'https:', 'mailto:'])
+
+function sanitizeUrl(raw: string): string | null {
+  try {
+    const url = new URL(raw.trim())
+    return allowedSchemes.has(url.protocol) ? url.href : null
+  }
+  catch {
+    return null
+  }
+}
 </script>
 
 <template>
@@ -276,13 +288,20 @@ async function addSocial() {
               {{ social.name }}
             </p>
             <a
-              :href="social.url"
+              v-if="sanitizeUrl(social.url)"
+              :href="sanitizeUrl(social.url)!"
               target="_blank"
               rel="noopener noreferrer"
               class="text-xs text-muted hover:text-highlighted truncate block"
             >
               {{ social.url }}
             </a>
+            <span
+              v-else
+              class="text-xs text-muted truncate block"
+            >
+              {{ social.url }}
+            </span>
           </div>
           <UButton
             v-if="editing"

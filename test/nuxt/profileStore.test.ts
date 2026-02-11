@@ -22,7 +22,7 @@ const mockEmails: GitHubEmail[] = [
 
 const mockSocials = [
   { provider: 'github', url: 'https://github.com/testuser' },
-  { provider: 'twitter', url: 'https://x.com/testuser' },
+  { provider: 'x', url: 'https://x.com/testuser' },
 ]
 
 registerEndpoint('/api/user/profile', { method: 'GET', handler: () => mockProfile })

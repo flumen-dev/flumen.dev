@@ -38,8 +38,14 @@ const urlPatterns: [string, string][] = [
 ]
 
 export function detectProvider(url: string): SocialProvider {
-  const match = urlPatterns.find(([domain]) => url.includes(domain))
   const fallback = socialProviders.find(p => p.id === 'website')!
-  if (!match) return fallback
-  return socialProviders.find(p => p.id === match[1]) ?? fallback
+  try {
+    const { hostname } = new URL(url.trim())
+    const match = urlPatterns.find(([domain]) => hostname === domain || hostname.endsWith(`.${domain}`))
+    if (!match) return fallback
+    return socialProviders.find(p => p.id === match[1]) ?? fallback
+  }
+  catch {
+    return fallback
+  }
 }
