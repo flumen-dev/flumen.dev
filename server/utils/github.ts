@@ -280,10 +280,11 @@ function buildCacheKey(
   endpoint: string,
   params?: Record<string, string | number>,
 ): string {
+  const endpointKey = endpoint.replaceAll('/', '~')
   const paramStr = params
     ? ':' + Object.entries(params).sort(([a], [b]) => a.localeCompare(b)).map(([k, v]) => `${k}=${v}`).join('&')
     : ''
-  return `github-cache:${userId}:${endpoint}${paramStr}`
+  return `github-cache:${userId}:${endpointKey}${paramStr}`
 }
 
 function buildHeaders(token: string): Record<string, string> {
