@@ -2,7 +2,8 @@
   "common": {
     "title": "Flumen",
     "description": "Open source, streamlined.",
-    "loading": "Loading..."
+    "loading": "Loading...",
+    "retry": "Try again"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -38,6 +39,8 @@
     "search": "Search repositories...",
     "count": "No repositories | {count} repository | {count} repositories",
     "noResults": "No repositories match your filters.",
+    "fetchError": "Failed to load repositories",
+    "fetchErrorDescription": "Something went wrong while fetching your repositories. Please try again.",
     "sort": {
       "pushed": "Last pushed",
       "stars": "Stars",
