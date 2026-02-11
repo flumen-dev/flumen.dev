@@ -2,7 +2,7 @@
 import type { SocialProvider } from '~~/shared/socialProviders'
 
 definePageMeta({
-  titleKey: 'profile.title',
+  titleKey: 'nav.profile',
   middleware: 'auth',
 })
 
