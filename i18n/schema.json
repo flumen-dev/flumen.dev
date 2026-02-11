@@ -130,11 +130,29 @@
         "noResults": {
           "type": "string"
         },
-        "fetchError": {
-          "type": "string"
-        },
-        "fetchErrorDescription": {
-          "type": "string"
+        "error": {
+          "type": "object",
+          "properties": {
+            "fetchError": {
+              "type": "string"
+            },
+            "fetchErrorDescription": {
+              "type": "string"
+            },
+            "sessionExpired": {
+              "type": "string"
+            },
+            "sessionExpiredDescription": {
+              "type": "string"
+            },
+            "rateLimited": {
+              "type": "string"
+            },
+            "rateLimitedDescription": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
         },
         "sort": {
           "type": "object",
