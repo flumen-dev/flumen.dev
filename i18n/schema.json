@@ -15,6 +15,9 @@
         },
         "loading": {
           "type": "string"
+        },
+        "retry": {
+          "type": "string"
         }
       },
       "additionalProperties": false
@@ -119,6 +122,12 @@
           "type": "string"
         },
         "noResults": {
+          "type": "string"
+        },
+        "fetchError": {
+          "type": "string"
+        },
+        "fetchErrorDescription": {
           "type": "string"
         },
         "sort": {
