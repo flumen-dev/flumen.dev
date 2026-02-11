@@ -331,9 +331,6 @@
     "profile": {
       "type": "object",
       "properties": {
-        "title": {
-          "type": "string"
-        },
         "edit": {
           "type": "string"
         },
