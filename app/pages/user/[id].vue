@@ -272,7 +272,9 @@ async function addSocial() {
             :style="social.hex ? { color: social.hex } : undefined"
           />
           <div class="flex-1 min-w-0">
-            <p class="text-sm font-medium">{{ social.name }}</p>
+            <p class="text-sm font-medium">
+              {{ social.name }}
+            </p>
             <a
               :href="social.url"
               target="_blank"
@@ -303,7 +305,10 @@ async function addSocial() {
         </p>
 
         <!-- Add new -->
-        <div v-if="addingProvider" class="rounded-lg bg-muted/50 px-4 py-3 space-y-3">
+        <div
+          v-if="addingProvider"
+          class="rounded-lg bg-muted/50 px-4 py-3 space-y-3"
+        >
           <div class="flex items-center gap-3">
             <UIcon
               :name="addingProvider.icon"
