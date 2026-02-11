@@ -41,8 +41,14 @@
     "search": "Repositories durchsuchen...",
     "count": "Keine Repositories | {count} Repository | {count} Repositories",
     "noResults": "Keine Repositories gefunden.",
-    "fetchError": "Repositories konnten nicht geladen werden",
-    "fetchErrorDescription": "Beim Laden der Repositories ist ein Fehler aufgetreten. Bitte versuche es erneut.",
+    "error": {
+      "fetchError": "Repositories konnten nicht geladen werden",
+      "fetchErrorDescription": "Beim Laden der Repositories ist ein Fehler aufgetreten. Bitte versuche es erneut.",
+      "sessionExpired": "Sitzung abgelaufen",
+      "sessionExpiredDescription": "Deine Sitzung ist abgelaufen. Bitte melde dich erneut an.",
+      "rateLimited": "Zu viele Anfragen",
+      "rateLimitedDescription": "GitHub-Rate-Limit erreicht. Bitte warte einen Moment und versuche es erneut."
+    },
     "sort": {
       "pushed": "Zuletzt gepusht",
       "stars": "Sterne",
