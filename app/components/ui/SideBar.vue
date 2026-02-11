@@ -4,7 +4,11 @@ import type { NavigationMenuItem } from '@nuxt/ui'
 const { t } = useI18n()
 const localePath = useLocalePath()
 const { loggedIn, user, clear } = useUserSession()
+const profileStore = useProfileStore()
 const colorMode = useColorMode()
+
+const displayName = computed(() => profileStore.profile?.name || user.value?.name || user.value?.login)
+const displayAvatar = computed(() => profileStore.profile?.avatarUrl || user.value?.avatarUrl)
 
 const userMenuItems = computed(() => [
   [{
@@ -170,8 +174,8 @@ const mainItems = computed<NavigationMenuItem[]>(() => [
           :content="{ align: 'start', side: 'top' }"
         >
           <UButton
-            :avatar="{ src: user?.avatarUrl, alt: user?.login }"
-            :label="collapsed ? undefined : (user?.name || user?.login)"
+            :avatar="{ src: displayAvatar, alt: user?.login }"
+            :label="collapsed ? undefined : displayName"
             color="neutral"
             variant="ghost"
             :square="collapsed"
