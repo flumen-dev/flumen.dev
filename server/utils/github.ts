@@ -290,6 +290,7 @@ function buildHeaders(token: string): Record<string, string> {
   return {
     'Authorization': `token ${token}`,
     'Accept': 'application/vnd.github+json',
+    'Content-Type': 'application/json',
     'X-GitHub-Api-Version': '2022-11-28',
   }
 }
