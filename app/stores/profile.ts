@@ -52,11 +52,11 @@ export const useProfileStore = defineStore('profile', () => {
       toast.add({ title: t('profile.error.rateLimited'), color: 'warning', icon: 'i-lucide-clock' })
       return
     }
-    toast.add({ title: t(key), color: 'error', icon: 'i-lucide-circle-alert' })
+    toast.add({ title: t(`profile.error.${key}`), color: 'error', icon: 'i-lucide-circle-alert' })
   }
 
   function showSuccess(key: string) {
-    toast.add({ title: t(key), color: 'success', icon: 'i-lucide-check' })
+    toast.add({ title: t(`profile.success.${key}`), color: 'success', icon: 'i-lucide-check' })
   }
 
   // --- Actions ---
@@ -75,7 +75,7 @@ export const useProfileStore = defineStore('profile', () => {
       loaded.value = true
     }
     catch (err) {
-      handleError('profile.error.loadFailed', err)
+      handleError('loadFailed', err)
     }
     finally {
       loading.value = false
@@ -87,11 +87,11 @@ export const useProfileStore = defineStore('profile', () => {
     try {
       const updated = await apiFetch('/api/user/profile', { method: 'PATCH', body: form })
       profile.value = updated as GitHubProfile
-      showSuccess('profile.success.saved')
+      showSuccess('saved')
       return true
     }
     catch (err) {
-      handleError('profile.error.saveFailed', err)
+      handleError('saveFailed', err)
       return false
     }
     finally {
@@ -107,10 +107,10 @@ export const useProfileStore = defineStore('profile', () => {
         body: { hireable: !profile.value?.hireable },
       })
       profile.value = updated as GitHubProfile
-      showSuccess('profile.success.hireableToggled')
+      showSuccess('hireableToggled')
     }
     catch (err) {
-      handleError('profile.error.hireableFailed', err)
+      handleError('hireableFailed', err)
     }
     finally {
       togglingHireable.value = false
@@ -128,10 +128,10 @@ export const useProfileStore = defineStore('profile', () => {
       // Update locally instead of re-fetching
       const email = emails.value.find(e => e.primary)
       if (email) email.visibility = newVisibility
-      showSuccess('profile.success.emailToggled')
+      showSuccess('emailToggled')
     }
     catch (err) {
-      handleError('profile.error.emailToggleFailed', err)
+      handleError('emailToggleFailed', err)
     }
     finally {
       togglingEmail.value = false
@@ -144,11 +144,11 @@ export const useProfileStore = defineStore('profile', () => {
       const added = await apiFetch<SocialAccount[]>('/api/user/social-accounts', { method: 'POST', body: { url } })
       // API returns the newly added accounts — append to local state
       socials.value.push(...added)
-      showSuccess('profile.success.socialAdded')
+      showSuccess('socialAdded')
       return true
     }
     catch (err) {
-      handleError('profile.error.addSocialFailed', err)
+      handleError('addSocialFailed', err)
       return false
     }
     finally {
@@ -160,10 +160,10 @@ export const useProfileStore = defineStore('profile', () => {
     try {
       await apiFetch('/api/user/social-accounts', { method: 'DELETE', body: { url } })
       socials.value = socials.value.filter(s => s.url !== url)
-      showSuccess('profile.success.socialRemoved')
+      showSuccess('socialRemoved')
     }
     catch (err) {
-      handleError('profile.error.removeSocialFailed', err)
+      handleError('removeSocialFailed', err)
     }
   }
 
