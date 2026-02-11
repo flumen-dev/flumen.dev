@@ -8,14 +8,18 @@ export default defineConfig({
       {
         test: {
           name: 'unit',
-          include: ['test/unit/*.{test,spec}.ts'],
+          include: ['test/unit/**/*.{test,spec}.ts'],
           environment: 'node',
         },
       },
       await defineVitestProject({
+        // Workaround: https://github.com/nuxt/test-utils/issues/1490
+        resolve: {
+          alias: { 'bun:test': fileURLToPath(new URL('./vitest.config.ts', import.meta.url)) },
+        },
         test: {
           name: 'nuxt',
-          include: ['test/nuxt/*.{test,spec}.ts'],
+          include: ['test/nuxt/**/*.{test,spec}.ts'],
           environment: 'nuxt',
           environmentOptions: {
             nuxt: {
@@ -25,10 +29,28 @@ export default defineConfig({
           },
         },
       }),
+      await defineVitestProject({
+        // Workaround: https://github.com/nuxt/test-utils/issues/1490
+        resolve: {
+          alias: { 'bun:test': fileURLToPath(new URL('./vitest.config.ts', import.meta.url)) },
+        },
+        test: {
+          name: 'integration',
+          include: ['test/integration/**/*.{test,spec}.ts'],
+          testTimeout: 60000,
+          environmentOptions: {
+            nuxt: {
+              rootDir: fileURLToPath(new URL('.', import.meta.url)),
+            },
+          },
+        },
+      }),
     ],
     coverage: {
-      enabled: true,
       provider: 'v8',
+      include: ['server/utils/**/*.ts', 'app/composables/**/*.ts', 'app/stores/**/*.ts', 'shared/**/*.ts'],
+      exclude: ['**/*.d.ts'],
+      reporter: ['text', 'html'],
     },
   },
 })

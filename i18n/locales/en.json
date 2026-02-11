@@ -12,7 +12,9 @@
     "notifications": "Notifications",
     "repos": "Repositories",
     "settings": "Settings",
-    "search": "Search..."
+    "search": "Search...",
+    "profile": "Profile",
+    "logout": "Log out"
   },
   "auth": {
     "loginWithGithub": "Login with GitHub",
@@ -91,6 +93,50 @@
       "hasIssues": "Issues",
       "hasPrs": "PRs",
       "hasNotifications": "Notifications"
+    }
+  },
+  "profile": {
+    "title": "Profile",
+    "edit": "Edit",
+    "save": "Save",
+    "cancel": "Cancel",
+    "changeAvatar": "Change on GitHub",
+    "name": "Name",
+    "bio": "Bio",
+    "company": "Company",
+    "location": "Location",
+    "website": "Website",
+    "twitter": "Twitter username",
+    "hireable": "Available for hire",
+    "hireableOn": "Open to opportunities",
+    "hireableOff": "Not looking right now",
+    "emailSection": "Email",
+    "emailPrimary": "Primary email",
+    "emailPublic": "Public",
+    "emailPrivate": "Private",
+    "emailVisibility": "Anyone can see your email on your profile",
+    "emailHidden": "Your email is hidden from your profile",
+    "contactAvailability": "Contact & Availability",
+    "socialAccounts": "Social Accounts",
+    "addSocial": "Add account",
+    "noSocials": "No social accounts yet",
+    "socialLimit": "GitHub allows a maximum of 4 social accounts.",
+    "success": {
+      "saved": "Profile saved.",
+      "emailToggled": "Email visibility updated.",
+      "hireableToggled": "Availability updated.",
+      "socialAdded": "Social account added.",
+      "socialRemoved": "Social account removed."
+    },
+    "error": {
+      "saveFailed": "Could not save profile. Please try again.",
+      "emailToggleFailed": "Could not change email visibility.",
+      "hireableFailed": "Could not update availability status.",
+      "addSocialFailed": "Could not add social account.",
+      "removeSocialFailed": "Could not remove social account.",
+      "sessionExpired": "Your session has expired. Please log in again.",
+      "rateLimited": "Too many requests. Please wait a moment.",
+      "loadFailed": "Could not load profile data."
     }
   },
   "settings": {

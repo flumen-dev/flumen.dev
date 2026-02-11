@@ -8,6 +8,7 @@ export default defineNuxtConfig({
     '@nuxt/test-utils',
     '@nuxt/ui',
     '@nuxtjs/i18n',
+    '@pinia/nuxt',
     'nuxt-auth-utils',
     'nuxt-echarts',
   ],

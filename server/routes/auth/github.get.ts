@@ -1,6 +1,6 @@
 export default defineOAuthGitHubEventHandler({
   config: {
-    scope: ['repo', 'notifications', 'read:discussion', 'read:org'],
+    scope: ['repo', 'notifications', 'read:discussion', 'read:org', 'user'],
   },
   async onSuccess(event, { user, tokens }) {
     await setUserSession(event, {

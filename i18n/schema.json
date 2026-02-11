@@ -45,6 +45,12 @@
         },
         "search": {
           "type": "string"
+        },
+        "profile": {
+          "type": "string"
+        },
+        "logout": {
+          "type": "string"
         }
       },
       "additionalProperties": false
@@ -278,6 +284,138 @@
               "type": "string"
             },
             "hasNotifications": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "profile": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "edit": {
+          "type": "string"
+        },
+        "save": {
+          "type": "string"
+        },
+        "cancel": {
+          "type": "string"
+        },
+        "changeAvatar": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "bio": {
+          "type": "string"
+        },
+        "company": {
+          "type": "string"
+        },
+        "location": {
+          "type": "string"
+        },
+        "website": {
+          "type": "string"
+        },
+        "twitter": {
+          "type": "string"
+        },
+        "hireable": {
+          "type": "string"
+        },
+        "hireableOn": {
+          "type": "string"
+        },
+        "hireableOff": {
+          "type": "string"
+        },
+        "emailSection": {
+          "type": "string"
+        },
+        "emailPrimary": {
+          "type": "string"
+        },
+        "emailPublic": {
+          "type": "string"
+        },
+        "emailPrivate": {
+          "type": "string"
+        },
+        "emailVisibility": {
+          "type": "string"
+        },
+        "emailHidden": {
+          "type": "string"
+        },
+        "contactAvailability": {
+          "type": "string"
+        },
+        "socialAccounts": {
+          "type": "string"
+        },
+        "addSocial": {
+          "type": "string"
+        },
+        "noSocials": {
+          "type": "string"
+        },
+        "socialLimit": {
+          "type": "string"
+        },
+        "success": {
+          "type": "object",
+          "properties": {
+            "saved": {
+              "type": "string"
+            },
+            "emailToggled": {
+              "type": "string"
+            },
+            "hireableToggled": {
+              "type": "string"
+            },
+            "socialAdded": {
+              "type": "string"
+            },
+            "socialRemoved": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "error": {
+          "type": "object",
+          "properties": {
+            "saveFailed": {
+              "type": "string"
+            },
+            "emailToggleFailed": {
+              "type": "string"
+            },
+            "hireableFailed": {
+              "type": "string"
+            },
+            "addSocialFailed": {
+              "type": "string"
+            },
+            "removeSocialFailed": {
+              "type": "string"
+            },
+            "sessionExpired": {
+              "type": "string"
+            },
+            "rateLimited": {
+              "type": "string"
+            },
+            "loadFailed": {
               "type": "string"
             }
           },
