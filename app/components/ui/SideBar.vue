@@ -6,6 +6,19 @@ const localePath = useLocalePath()
 const { loggedIn, user, clear } = useUserSession()
 const colorMode = useColorMode()
 
+const userMenuItems = computed(() => [
+  [{
+    label: t('nav.profile'),
+    icon: 'i-lucide-user',
+    to: localePath(`/user/${user.value?.login}`),
+  }],
+  [{
+    label: t('nav.logout'),
+    icon: 'i-lucide-log-out',
+    onSelect: () => clear(),
+  }],
+])
+
 const isDark = computed({
   get: () => colorMode.value === 'dark',
   set: (v) => { colorMode.preference = v ? 'dark' : 'light' },
@@ -117,6 +130,7 @@ const mainItems = computed<NavigationMenuItem[]>(() => [
         :collapsed="collapsed"
         :items="mainItems"
         orientation="vertical"
+        :ui="{ root: 'flex-1', list: 'flex flex-col flex-1 *:last:mt-auto' }"
       >
         <template #notifications-leading="{ item }: { item: NavigationMenuItem }">
           <UChip
@@ -150,16 +164,20 @@ const mainItems = computed<NavigationMenuItem[]>(() => [
           to="/auth/github"
           external
         />
-        <UButton
+        <UDropdownMenu
           v-else
-          :avatar="{ src: user?.avatarUrl, alt: user?.login }"
-          :label="collapsed ? undefined : (user?.name || user?.login)"
-          color="neutral"
-          variant="ghost"
-          :square="collapsed"
-          class="shrink-0"
-          @click="clear"
-        />
+          :items="userMenuItems"
+          :content="{ align: 'start', side: 'top' }"
+        >
+          <UButton
+            :avatar="{ src: user?.avatarUrl, alt: user?.login }"
+            :label="collapsed ? undefined : (user?.name || user?.login)"
+            color="neutral"
+            variant="ghost"
+            :square="collapsed"
+            class="shrink-0"
+          />
+        </UDropdownMenu>
 
         <ClientOnly>
           <UButton

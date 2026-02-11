@@ -11,7 +11,9 @@
     "notifications": "Benachrichtigungen",
     "repos": "Repositories",
     "settings": "Einstellungen",
-    "search": "Suchen..."
+    "search": "Suchen...",
+    "profile": "Profil",
+    "logout": "Abmelden"
   },
   "auth": {
     "loginWithGithub": "Mit GitHub anmelden",
@@ -88,6 +90,50 @@
       "hasIssues": "Issues",
       "hasPrs": "PRs",
       "hasNotifications": "Benachrichtigungen"
+    }
+  },
+  "profile": {
+    "title": "Profil",
+    "edit": "Bearbeiten",
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "changeAvatar": "Auf GitHub ändern",
+    "name": "Name",
+    "bio": "Biografie",
+    "company": "Unternehmen",
+    "location": "Standort",
+    "website": "Webseite",
+    "twitter": "Twitter-Benutzername",
+    "hireable": "Verfügbar für Aufträge",
+    "hireableOn": "Offen für Möglichkeiten",
+    "hireableOff": "Gerade nicht auf der Suche",
+    "emailSection": "E-Mail",
+    "emailPrimary": "Primäre E-Mail",
+    "emailPublic": "Öffentlich",
+    "emailPrivate": "Privat",
+    "emailVisibility": "Deine E-Mail ist auf deinem Profil sichtbar",
+    "emailHidden": "Deine E-Mail ist auf deinem Profil verborgen",
+    "contactAvailability": "Kontakt & Verfügbarkeit",
+    "socialAccounts": "Soziale Netzwerke",
+    "addSocial": "Konto hinzufügen",
+    "noSocials": "Noch keine sozialen Konten",
+    "socialLimit": "GitHub erlaubt maximal 4 soziale Konten.",
+    "success": {
+      "saved": "Profil gespeichert.",
+      "emailToggled": "E-Mail-Sichtbarkeit aktualisiert.",
+      "hireableToggled": "Verfügbarkeit aktualisiert.",
+      "socialAdded": "Soziales Konto hinzugefügt.",
+      "socialRemoved": "Soziales Konto entfernt."
+    },
+    "error": {
+      "saveFailed": "Profil konnte nicht gespeichert werden. Bitte versuche es erneut.",
+      "emailToggleFailed": "E-Mail-Sichtbarkeit konnte nicht geändert werden.",
+      "hireableFailed": "Verfügbarkeitsstatus konnte nicht aktualisiert werden.",
+      "addSocialFailed": "Soziales Konto konnte nicht hinzugefügt werden.",
+      "removeSocialFailed": "Soziales Konto konnte nicht entfernt werden.",
+      "sessionExpired": "Deine Sitzung ist abgelaufen. Bitte melde dich erneut an.",
+      "rateLimited": "Zu viele Anfragen. Bitte warte einen Moment.",
+      "loadFailed": "Profildaten konnten nicht geladen werden."
     }
   },
   "settings": {
