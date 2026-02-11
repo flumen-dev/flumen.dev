@@ -4,7 +4,7 @@ definePageMeta({
   titleKey: 'nav.repos',
 })
 
-const { data: repos, status } = await useFetch('/api/repository')
+const { data: repos, status, error, refresh } = await useFetch('/api/repository')
 
 // Lazy-loaded — don't block repo list
 const { data: activity } = useLazyFetch('/api/repository/activity')
@@ -101,6 +101,24 @@ const filteredRepos = computed(() => {
     class="p-4"
   >
     {{ $t('common.loading') }}
+  </div>
+
+  <div
+    v-else-if="error"
+    class="p-4 space-y-3"
+  >
+    <UAlert
+      :title="$t('repos.fetchError')"
+      :description="$t('repos.fetchErrorDescription')"
+      color="error"
+      icon="i-lucide-alert-triangle"
+    />
+    <UButton
+      :label="$t('common.retry')"
+      icon="i-lucide-refresh-cw"
+      variant="outline"
+      @click="refresh()"
+    />
   </div>
 
   <div

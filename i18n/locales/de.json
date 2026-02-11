@@ -2,7 +2,8 @@
   "common": {
     "title": "Flumen",
     "description": "Open source, streamlined.",
-    "loading": "Laden..."
+    "loading": "Laden...",
+    "retry": "Erneut versuchen"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -38,6 +39,8 @@
     "search": "Repositories durchsuchen...",
     "count": "Keine Repositories | {count} Repository | {count} Repositories",
     "noResults": "Keine Repositories gefunden.",
+    "fetchError": "Repositories konnten nicht geladen werden",
+    "fetchErrorDescription": "Beim Laden der Repositories ist ein Fehler aufgetreten. Bitte versuche es erneut.",
     "sort": {
       "pushed": "Zuletzt gepusht",
       "stars": "Sterne",
