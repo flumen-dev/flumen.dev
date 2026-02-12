@@ -27,6 +27,7 @@ export interface Issue {
   milestone: string | null
   commentCount: number
   linkedPrCount: number
+  maintainerCommented: boolean
 
   repository: {
     nameWithOwner: string
@@ -50,7 +51,7 @@ export interface GraphQLIssueNode {
   labels: { nodes: Array<{ name: string, color: string }> }
   assignees: { nodes: Array<{ login: string, avatarUrl: string }> }
   milestone: { title: string } | null
-  comments: { totalCount: number }
+  comments: { totalCount: number, nodes: Array<{ author: { login: string } | null }> }
   timelineItems: { totalCount: number }
   repository: { nameWithOwner: string, name: string, owner: { login: string } }
 }

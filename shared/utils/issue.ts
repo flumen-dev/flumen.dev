@@ -1,6 +1,6 @@
 import type { GraphQLIssueNode, Issue } from '../types/issue'
 
-export function toIssue(node: GraphQLIssueNode): Issue {
+export function toIssue(node: GraphQLIssueNode, maintainerLogin: string): Issue {
   return {
     id: node.id,
     number: node.number,
@@ -17,6 +17,7 @@ export function toIssue(node: GraphQLIssueNode): Issue {
     milestone: node.milestone?.title ?? null,
     commentCount: node.comments.totalCount,
     linkedPrCount: node.timelineItems.totalCount,
+    maintainerCommented: node.comments.nodes.some(c => c.author?.login === maintainerLogin),
     repository: {
       nameWithOwner: node.repository.nameWithOwner,
       name: node.repository.name,

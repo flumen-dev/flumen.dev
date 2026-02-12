@@ -86,13 +86,16 @@ async function setFilter(state: 'open' | 'closed') {
           </button>
         </div>
 
+        <!-- Toolbar -->
+        <IssueToolbar />
+
         <!-- Issue list -->
         <div
-          v-if="store.issues.length"
+          v-if="store.filteredIssues.length"
           class="rounded-lg border border-default divide-y divide-default overflow-hidden"
         >
           <IssueRow
-            v-for="issue in store.issues"
+            v-for="issue in store.filteredIssues"
             :key="issue.id"
             :issue="issue"
           />

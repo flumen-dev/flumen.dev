@@ -55,6 +55,17 @@ const stateColor = computed(() => {
 
       <!-- Row 2: Meta -->
       <div class="flex items-center gap-3 mt-1 text-xs text-muted">
+        <UTooltip
+          v-if="!issue.maintainerCommented && issue.commentCount > 0"
+          :text="t('issues.needsResponse')"
+        >
+          <span class="inline-flex items-center gap-0.5 text-amber-500">
+            <UIcon
+              name="i-lucide-message-circle-warning"
+              class="size-3.5"
+            />
+          </span>
+        </UTooltip>
         <span>#{{ issue.number }}</span>
         <span>{{ updatedAgo }}</span>
 

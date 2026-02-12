@@ -24,7 +24,7 @@ query($query: String!, $first: Int!, $after: String) {
         labels(first: 10) { nodes { name color } }
         assignees(first: 5) { nodes { login avatarUrl } }
         milestone { title }
-        comments { totalCount }
+        comments(first: 100) { totalCount nodes { author { login } } }
         timelineItems(itemTypes: [CROSS_REFERENCED_EVENT], first: 0) { totalCount }
         repository { nameWithOwner name owner { login } }
       }
@@ -34,7 +34,7 @@ query($query: String!, $first: Int!, $after: String) {
 `
 
 const fetchIssues = defineCachedFunction(
-  async (_login: string, token: string, state: string, repo: string): Promise<Issue[]> => {
+  async (login: string, token: string, state: string, repo: string): Promise<Issue[]> => {
     const stateQ = state === 'closed' ? 'is:closed' : 'is:open'
     const query = `is:issue ${stateQ} repo:${repo} sort:updated-desc`
     const issues: Issue[] = []
@@ -49,7 +49,7 @@ const fetchIssues = defineCachedFunction(
       })
 
       const nodes = data.search.nodes.filter((n: GraphQLIssueNode | null): n is GraphQLIssueNode => n !== null && 'id' in n)
-      issues.push(...nodes.map(toIssue))
+      issues.push(...nodes.map(n => toIssue(n, login)))
 
       if (!data.search.pageInfo.hasNextPage) break
       after = data.search.pageInfo.endCursor

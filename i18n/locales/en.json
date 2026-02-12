@@ -159,6 +159,23 @@
     "linkedPrs": "{count} linked PR | {count} linked PRs",
     "closedAs": "Closed",
     "closedAsNotPlanned": "Not planned",
+    "needsResponse": "Waiting for your response",
+    "search": "Search issues...",
+    "count": "No issues | {count} issue | {count} issues",
+    "filter": {
+      "unassigned": "Unassigned",
+      "hasLinkedPr": "Has PR",
+      "noLinkedPr": "No PR",
+      "hasMilestone": "Milestone"
+    },
+    "sort": {
+      "critical": "Needs attention",
+      "newest": "Newest",
+      "oldest": "Oldest",
+      "mostCommented": "Most commented",
+      "leastCommented": "Least commented",
+      "recentlyUpdated": "Recently updated"
+    },
     "error": {
       "fetchError": {
         "title": "Failed to load issues",

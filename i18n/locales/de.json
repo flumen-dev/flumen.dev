@@ -159,6 +159,23 @@
     "linkedPrs": "{count} verknüpfter PR | {count} verknüpfte PRs",
     "closedAs": "Geschlossen",
     "closedAsNotPlanned": "Nicht geplant",
+    "needsResponse": "Wartet auf deine Antwort",
+    "search": "Issues durchsuchen...",
+    "count": "Keine Issues | {count} Issue | {count} Issues",
+    "filter": {
+      "unassigned": "Nicht zugewiesen",
+      "hasLinkedPr": "Hat PR",
+      "noLinkedPr": "Kein PR",
+      "hasMilestone": "Meilenstein"
+    },
+    "sort": {
+      "critical": "Braucht Aufmerksamkeit",
+      "newest": "Neueste",
+      "oldest": "Älteste",
+      "mostCommented": "Meiste Kommentare",
+      "leastCommented": "Wenigste Kommentare",
+      "recentlyUpdated": "Kürzlich aktualisiert"
+    },
     "error": {
       "fetchError": {
         "title": "Issues konnten nicht geladen werden",
