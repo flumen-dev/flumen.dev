@@ -31,4 +31,8 @@ describe('API auth middleware', async () => {
   it('rejects unauthenticated requests to /api/user/emails', async () => {
     expect(await fetchStatus('/api/user/emails')).toBe(401)
   })
+
+  it('rejects unauthenticated requests to /api/user/readme', async () => {
+    expect(await fetchStatus('/api/user/readme')).toBe(401)
+  })
 })

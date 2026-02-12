@@ -28,6 +28,8 @@ const mockSocials = [
 registerEndpoint('/api/user/profile', { method: 'GET', handler: () => mockProfile })
 registerEndpoint('/api/user/emails', { method: 'GET', handler: () => mockEmails })
 registerEndpoint('/api/user/social-accounts', { method: 'GET', handler: () => mockSocials })
+registerEndpoint('/api/user/readme', { method: 'GET', handler: () => ({ content: '# Hello World', sha: 'abc123' }) })
+registerEndpoint('/api/user/readme', { method: 'PUT', handler: () => ({ sha: 'def456' }) })
 registerEndpoint('/api/user/profile', { method: 'PATCH', handler: () => ({ ...mockProfile, name: 'Updated' }) })
 registerEndpoint('/api/user/emails/visibility', { method: 'PATCH', handler: () => ({}) })
 registerEndpoint('/api/user/social-accounts', { method: 'DELETE', handler: () => ({}) })
@@ -41,6 +43,8 @@ async function withStore<T>(fn: (store: ReturnType<typeof useProfileStore>) => T
       store.profile = null
       store.emails = []
       store.socials = []
+      store.readme = null
+      store.readmeSha = null
       store.loaded = false
       result = await fn(store)
       return () => h('div')
@@ -107,6 +111,32 @@ describe('profileStore', () => {
       const result = await store.saveProfile({ name: 'Updated' })
       expect(result).toBe(true)
       expect(store.profile?.name).toBe('Updated')
+    })
+  })
+
+  it('fetchAll loads readme content and sha', async () => {
+    await withStore(async (store) => {
+      await store.fetchAll()
+      expect(store.readme).toBe('# Hello World')
+      expect(store.readmeSha).toBe('abc123')
+    })
+  })
+
+  it('saveReadme updates content and sha from response', async () => {
+    await withStore(async (store) => {
+      await store.fetchAll()
+      await store.saveReadme('# Updated')
+      expect(store.readme).toBe('# Updated')
+      expect(store.readmeSha).toBe('def456')
+    })
+  })
+
+  it('saveReadme does nothing without sha', async () => {
+    await withStore(async (store) => {
+      store.readme = '# Test'
+      store.readmeSha = null
+      await store.saveReadme('# Changed')
+      expect(store.readme).toBe('# Test')
     })
   })
 })
