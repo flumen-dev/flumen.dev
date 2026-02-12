@@ -149,14 +149,11 @@
     }
   },
   "issues": {
-    "title": "Issues",
     "open": "Offen",
     "closed": "Geschlossen",
     "selectRepo": "Repository auswählen...",
     "openCount": "{count} offen",
     "noResults": "Keine Issues gefunden.",
-    "comments": "{count} Kommentar | {count} Kommentare",
-    "linkedPrs": "{count} verknüpfter PR | {count} verknüpfte PRs",
     "closedAs": "Geschlossen",
     "closedAsNotPlanned": "Nicht geplant",
     "needsResponse": "Wartet auf deine Antwort",
