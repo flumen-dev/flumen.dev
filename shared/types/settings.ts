@@ -2,12 +2,14 @@ export interface UserSettings {
   theme: 'light' | 'dark' | 'system'
   primaryColor: string
   locale: string
+  selectedRepo: string | null
 }
 
 export const defaultUserSettings: UserSettings = {
   theme: 'system',
   primaryColor: 'indigo',
   locale: 'en',
+  selectedRepo: null,
 }
 
 export const accentColors = [

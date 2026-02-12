@@ -148,6 +148,32 @@
       "loadFailed": "Profildaten konnten nicht geladen werden."
     }
   },
+  "issues": {
+    "title": "Issues",
+    "open": "Offen",
+    "closed": "Geschlossen",
+    "selectRepo": "Repository auswählen...",
+    "openCount": "{count} offen",
+    "noResults": "Keine Issues gefunden.",
+    "comments": "{count} Kommentar | {count} Kommentare",
+    "linkedPrs": "{count} verknüpfter PR | {count} verknüpfte PRs",
+    "closedAs": "Geschlossen",
+    "closedAsNotPlanned": "Nicht geplant",
+    "error": {
+      "fetchError": {
+        "title": "Issues konnten nicht geladen werden",
+        "description": "Beim Laden der Issues ist ein Fehler aufgetreten. Bitte versuche es erneut."
+      },
+      "sessionExpired": {
+        "title": "Sitzung abgelaufen",
+        "description": "Deine Sitzung ist abgelaufen. Bitte melde dich erneut an."
+      },
+      "rateLimited": {
+        "title": "Zu viele Anfragen",
+        "description": "GitHub-Rate-Limit erreicht. Bitte warte einen Moment und versuche es erneut."
+      }
+    }
+  },
   "settings": {
     "appearance": {
       "title": "Erscheinungsbild",

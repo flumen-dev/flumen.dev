@@ -148,6 +148,32 @@
       "loadFailed": "Could not load profile data."
     }
   },
+  "issues": {
+    "title": "Issues",
+    "open": "Open",
+    "closed": "Closed",
+    "selectRepo": "Select a repository...",
+    "openCount": "{count} open",
+    "noResults": "No issues found.",
+    "comments": "{count} comment | {count} comments",
+    "linkedPrs": "{count} linked PR | {count} linked PRs",
+    "closedAs": "Closed",
+    "closedAsNotPlanned": "Not planned",
+    "error": {
+      "fetchError": {
+        "title": "Failed to load issues",
+        "description": "Something went wrong while fetching your issues. Please try again."
+      },
+      "sessionExpired": {
+        "title": "Session expired",
+        "description": "Your session has expired. Please log in again."
+      },
+      "rateLimited": {
+        "title": "Too many requests",
+        "description": "GitHub rate limit reached. Please wait a moment and try again."
+      }
+    }
+  },
   "settings": {
     "appearance": {
       "title": "Appearance",
