@@ -454,9 +454,6 @@
     "issues": {
       "type": "object",
       "properties": {
-        "title": {
-          "type": "string"
-        },
         "open": {
           "type": "string"
         },
@@ -470,12 +467,6 @@
           "type": "string"
         },
         "noResults": {
-          "type": "string"
-        },
-        "comments": {
-          "type": "string"
-        },
-        "linkedPrs": {
           "type": "string"
         },
         "closedAs": {
