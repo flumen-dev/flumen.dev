@@ -130,12 +130,20 @@
     "addSocial": "Add account",
     "noSocials": "No social accounts yet",
     "socialLimit": "GitHub allows a maximum of 4 social accounts.",
+    "readme": "Profile README",
+    "readmePlaceholder": "Write something about yourself...",
+    "readmeNoRepo": "No profile README found",
+    "readmeNoRepoDescription": "Create a repository named after your username with a README.md to show it on your profile.",
+    "readmeCreateLink": "Learn how to create a profile README",
+    "readmePreviewLabel": "Preview",
+    "readmeEdit": "Edit",
     "success": {
       "saved": "Profile saved.",
       "emailToggled": "Email visibility updated.",
       "hireableToggled": "Availability updated.",
       "socialAdded": "Social account added.",
-      "socialRemoved": "Social account removed."
+      "socialRemoved": "Social account removed.",
+      "readmeSaved": "Profile README saved."
     },
     "error": {
       "saveFailed": "Could not save profile. Please try again.",
@@ -145,7 +153,8 @@
       "removeSocialFailed": "Could not remove social account.",
       "sessionExpired": "Your session has expired. Please log in again.",
       "rateLimited": "Too many requests. Please wait a moment.",
-      "loadFailed": "Could not load profile data."
+      "loadFailed": "Could not load profile data.",
+      "readmeSaveFailed": "Could not save profile README."
     }
   },
   "settings": {

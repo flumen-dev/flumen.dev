@@ -21,6 +21,10 @@ export const useProfileStore = defineStore('profile', () => {
   const togglingEmail = ref(false)
   const togglingHireable = ref(false)
   const addingSocial = ref(false)
+  const readme = ref<string | null>(null)
+  const readmeSha = ref<string | null>(null)
+  const readmeLoading = ref(false)
+  const savingReadme = ref(false)
 
   // --- Computed ---
   const primaryEmail = computed(() => emails.value.find(e => e.primary))
@@ -60,6 +64,21 @@ export const useProfileStore = defineStore('profile', () => {
   }
 
   // --- Actions ---
+  async function fetchReadme() {
+    readmeLoading.value = true
+    try {
+      const data = await apiFetch<{ content: string | null, sha: string | null }>('/api/user/readme')
+      readme.value = data.content
+      readmeSha.value = data.sha
+    }
+    catch (err) {
+      handleError('loadFailed', err)
+    }
+    finally {
+      readmeLoading.value = false
+    }
+  }
+
   async function fetchAll() {
     if (loaded.value) return
     loading.value = true
@@ -68,6 +87,7 @@ export const useProfileStore = defineStore('profile', () => {
         apiFetch('/api/user/profile'),
         apiFetch<GitHubEmail[]>('/api/user/emails'),
         apiFetch<SocialAccount[]>('/api/user/social-accounts'),
+        fetchReadme(),
       ])
       profile.value = p as GitHubProfile
       emails.value = e
@@ -167,6 +187,26 @@ export const useProfileStore = defineStore('profile', () => {
     }
   }
 
+  async function saveReadme(content: string) {
+    if (!readmeSha.value) return
+    savingReadme.value = true
+    try {
+      const { sha } = await apiFetch<{ sha: string }>('/api/user/readme', {
+        method: 'PUT',
+        body: { content, sha: readmeSha.value },
+      })
+      readme.value = content
+      readmeSha.value = sha
+      showSuccess('readmeSaved')
+    }
+    catch (err) {
+      handleError('readmeSaveFailed', err)
+    }
+    finally {
+      savingReadme.value = false
+    }
+  }
+
   return {
     // State
     profile,
@@ -178,6 +218,10 @@ export const useProfileStore = defineStore('profile', () => {
     togglingEmail,
     togglingHireable,
     addingSocial,
+    readme,
+    readmeSha,
+    readmeLoading,
+    savingReadme,
     // Computed
     primaryEmail,
     emailIsPublic,
@@ -191,5 +235,6 @@ export const useProfileStore = defineStore('profile', () => {
     toggleEmailVisibility,
     addSocialAccount,
     removeSocialAccount,
+    saveReadme,
   }
 })

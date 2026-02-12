@@ -130,12 +130,20 @@
     "addSocial": "Konto hinzufügen",
     "noSocials": "Noch keine sozialen Konten",
     "socialLimit": "GitHub erlaubt maximal 4 soziale Konten.",
+    "readme": "Profil-README",
+    "readmePlaceholder": "Schreibe etwas über dich...",
+    "readmeNoRepo": "Kein Profil-README gefunden",
+    "readmeNoRepoDescription": "Erstelle ein Repository mit deinem Benutzernamen und einer README.md, um es auf deinem Profil anzuzeigen.",
+    "readmeCreateLink": "Erfahre, wie du ein Profil-README erstellst",
+    "readmePreviewLabel": "Vorschau",
+    "readmeEdit": "Bearbeiten",
     "success": {
       "saved": "Profil gespeichert.",
       "emailToggled": "E-Mail-Sichtbarkeit aktualisiert.",
       "hireableToggled": "Verfügbarkeit aktualisiert.",
       "socialAdded": "Soziales Konto hinzugefügt.",
-      "socialRemoved": "Soziales Konto entfernt."
+      "socialRemoved": "Soziales Konto entfernt.",
+      "readmeSaved": "Profil-README gespeichert."
     },
     "error": {
       "saveFailed": "Profil konnte nicht gespeichert werden. Bitte versuche es erneut.",
@@ -145,7 +153,8 @@
       "removeSocialFailed": "Soziales Konto konnte nicht entfernt werden.",
       "sessionExpired": "Deine Sitzung ist abgelaufen. Bitte melde dich erneut an.",
       "rateLimited": "Zu viele Anfragen. Bitte warte einen Moment.",
-      "loadFailed": "Profildaten konnten nicht geladen werden."
+      "loadFailed": "Profildaten konnten nicht geladen werden.",
+      "readmeSaveFailed": "Profil-README konnte nicht gespeichert werden."
     }
   },
   "settings": {
