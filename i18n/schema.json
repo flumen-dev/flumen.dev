@@ -397,6 +397,27 @@
         "socialLimit": {
           "type": "string"
         },
+        "readme": {
+          "type": "string"
+        },
+        "readmePlaceholder": {
+          "type": "string"
+        },
+        "readmeNoRepo": {
+          "type": "string"
+        },
+        "readmeNoRepoDescription": {
+          "type": "string"
+        },
+        "readmeCreateLink": {
+          "type": "string"
+        },
+        "readmePreviewLabel": {
+          "type": "string"
+        },
+        "readmeEdit": {
+          "type": "string"
+        },
         "success": {
           "type": "object",
           "properties": {
@@ -413,6 +434,9 @@
               "type": "string"
             },
             "socialRemoved": {
+              "type": "string"
+            },
+            "readmeSaved": {
               "type": "string"
             }
           },
@@ -443,6 +467,9 @@
               "type": "string"
             },
             "loadFailed": {
+              "type": "string"
+            },
+            "readmeSaveFailed": {
               "type": "string"
             }
           },
