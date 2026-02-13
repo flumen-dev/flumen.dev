@@ -23,10 +23,34 @@ const { data: issue, status, error } = useAsyncData(
     })
   },
 )
+
+const linkedPrs = computed(() => {
+  if (!issue.value) return []
+  return issue.value.timeline
+    .filter(item => item.type === 'CrossReferencedEvent' && item.source.type === 'PullRequest')
+    .map((item) => {
+      if (item.type !== 'CrossReferencedEvent') return null
+      return {
+        number: item.source.number,
+        title: item.source.title,
+        url: item.source.url,
+        state: item.source.state,
+        actor: item.actor,
+      }
+    })
+    .filter(Boolean) as Array<{ number: number, title: string, url: string, state: string, actor: string }>
+})
 </script>
 
 <template>
   <div class="p-4">
+    <IssueHeader
+      v-if="issue"
+      :issue="issue"
+      :repo="repo!"
+      :linked-prs="linkedPrs"
+    />
+
     <div
       v-if="status === 'pending'"
       class="py-8 text-center text-muted"

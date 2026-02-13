@@ -3,7 +3,10 @@
     "title": "Flumen",
     "description": "Open source, streamlined.",
     "loading": "Laden...",
-    "retry": "Erneut versuchen"
+    "retry": "Erneut versuchen",
+    "copied": "Link kopiert",
+    "copyLink": "Link kopieren",
+    "viewOnGithub": "Auf GitHub ansehen"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -181,6 +184,30 @@
       "mostCommented": "Meiste Kommentare",
       "leastCommented": "Wenigste Kommentare",
       "recentlyUpdated": "Kürzlich aktualisiert"
+    },
+    "detail": {
+      "needsOwner": "Braucht Zuständigen",
+      "noBranchYet": "Noch kein Branch",
+      "claim": "Übernehmen",
+      "claimTitle": "Issue übernehmen",
+      "claimDescFork": "Wir forken das Repo, erstellen einen Branch und weisen dir das Issue zu.",
+      "claimDescBranch": "Fork existiert! Wir erstellen einen Branch und weisen dich zu.",
+      "claimDescCollab": "Wir erstellen einen Branch und weisen dir das Issue zu.",
+      "branchName": "Branch-Name",
+      "branchExists": "Branch existiert bereits",
+      "branchExistsHint": "Ändere den Namen oder nutze den vorhandenen.",
+      "letsGo": "Los geht's!",
+      "claiming": "Wird eingerichtet...",
+      "claimSuccess": "Du bist dran!",
+      "claimSuccessForked": "Geforkt, Branch erstellt, zugewiesen.",
+      "claimSuccessBranch": "Branch erstellt, zugewiesen.",
+      "copyCommand": "Befehl kopieren",
+      "commandCopied": "Befehl kopiert!",
+      "useExisting": "Vorhandenen Branch nutzen",
+      "claimError": "Issue konnte nicht übernommen werden.",
+      "forkTimeout": "Fork hat zu lange gedauert. Nochmal versuchen.",
+      "othersWorking": "{count} arbeiten daran",
+      "othersAlreadyWorking": "{count} Person arbeitet bereits an diesem Issue | {count} Personen arbeiten bereits an diesem Issue"
     },
     "error": {
       "fetchError": {
