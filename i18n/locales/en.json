@@ -157,6 +157,46 @@
       "readmeSaveFailed": "Could not save profile README."
     }
   },
+  "issues": {
+    "open": "Open",
+    "closed": "Closed",
+    "selectRepo": "Select a repository...",
+    "openCount": "{count} open",
+    "noResults": "No issues found.",
+    "closedAs": "Closed",
+    "closedAsNotPlanned": "Not planned",
+    "needsResponse": "Waiting for your response",
+    "search": "Search issues...",
+    "count": "No issues | {count} issue | {count} issues",
+    "filter": {
+      "unassigned": "Unassigned",
+      "hasLinkedPr": "Has PR",
+      "noLinkedPr": "No PR",
+      "hasMilestone": "Milestone"
+    },
+    "sort": {
+      "critical": "Needs attention",
+      "newest": "Newest",
+      "oldest": "Oldest",
+      "mostCommented": "Most commented",
+      "leastCommented": "Least commented",
+      "recentlyUpdated": "Recently updated"
+    },
+    "error": {
+      "fetchError": {
+        "title": "Failed to load issues",
+        "description": "Something went wrong while fetching your issues. Please try again."
+      },
+      "sessionExpired": {
+        "title": "Session expired",
+        "description": "Your session has expired. Please log in again."
+      },
+      "rateLimited": {
+        "title": "Too many requests",
+        "description": "GitHub rate limit reached. Please wait a moment and try again."
+      }
+    }
+  },
   "settings": {
     "appearance": {
       "title": "Appearance",

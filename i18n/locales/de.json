@@ -157,6 +157,46 @@
       "readmeSaveFailed": "Profil-README konnte nicht gespeichert werden."
     }
   },
+  "issues": {
+    "open": "Offen",
+    "closed": "Geschlossen",
+    "selectRepo": "Repository auswählen...",
+    "openCount": "{count} offen",
+    "noResults": "Keine Issues gefunden.",
+    "closedAs": "Geschlossen",
+    "closedAsNotPlanned": "Nicht geplant",
+    "needsResponse": "Wartet auf deine Antwort",
+    "search": "Issues durchsuchen...",
+    "count": "Keine Issues | {count} Issue | {count} Issues",
+    "filter": {
+      "unassigned": "Nicht zugewiesen",
+      "hasLinkedPr": "Hat PR",
+      "noLinkedPr": "Kein PR",
+      "hasMilestone": "Meilenstein"
+    },
+    "sort": {
+      "critical": "Braucht Aufmerksamkeit",
+      "newest": "Neueste",
+      "oldest": "Älteste",
+      "mostCommented": "Meiste Kommentare",
+      "leastCommented": "Wenigste Kommentare",
+      "recentlyUpdated": "Kürzlich aktualisiert"
+    },
+    "error": {
+      "fetchError": {
+        "title": "Issues konnten nicht geladen werden",
+        "description": "Beim Laden der Issues ist ein Fehler aufgetreten. Bitte versuche es erneut."
+      },
+      "sessionExpired": {
+        "title": "Sitzung abgelaufen",
+        "description": "Deine Sitzung ist abgelaufen. Bitte melde dich erneut an."
+      },
+      "rateLimited": {
+        "title": "Zu viele Anfragen",
+        "description": "GitHub-Rate-Limit erreicht. Bitte warte einen Moment und versuche es erneut."
+      }
+    }
+  },
   "settings": {
     "appearance": {
       "title": "Erscheinungsbild",

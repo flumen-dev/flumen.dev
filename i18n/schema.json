@@ -478,6 +478,126 @@
       },
       "additionalProperties": false
     },
+    "issues": {
+      "type": "object",
+      "properties": {
+        "open": {
+          "type": "string"
+        },
+        "closed": {
+          "type": "string"
+        },
+        "selectRepo": {
+          "type": "string"
+        },
+        "openCount": {
+          "type": "string"
+        },
+        "noResults": {
+          "type": "string"
+        },
+        "closedAs": {
+          "type": "string"
+        },
+        "closedAsNotPlanned": {
+          "type": "string"
+        },
+        "needsResponse": {
+          "type": "string"
+        },
+        "search": {
+          "type": "string"
+        },
+        "count": {
+          "type": "string"
+        },
+        "filter": {
+          "type": "object",
+          "properties": {
+            "unassigned": {
+              "type": "string"
+            },
+            "hasLinkedPr": {
+              "type": "string"
+            },
+            "noLinkedPr": {
+              "type": "string"
+            },
+            "hasMilestone": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "sort": {
+          "type": "object",
+          "properties": {
+            "critical": {
+              "type": "string"
+            },
+            "newest": {
+              "type": "string"
+            },
+            "oldest": {
+              "type": "string"
+            },
+            "mostCommented": {
+              "type": "string"
+            },
+            "leastCommented": {
+              "type": "string"
+            },
+            "recentlyUpdated": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "error": {
+          "type": "object",
+          "properties": {
+            "fetchError": {
+              "type": "object",
+              "properties": {
+                "title": {
+                  "type": "string"
+                },
+                "description": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false
+            },
+            "sessionExpired": {
+              "type": "object",
+              "properties": {
+                "title": {
+                  "type": "string"
+                },
+                "description": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false
+            },
+            "rateLimited": {
+              "type": "object",
+              "properties": {
+                "title": {
+                  "type": "string"
+                },
+                "description": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
     "settings": {
       "type": "object",
       "properties": {
