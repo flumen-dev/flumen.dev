@@ -99,6 +99,7 @@ export type TimelineItem = TimelineComment
 export interface ReactionGroup {
   content: string
   count: number
+  viewerHasReacted: boolean
 }
 
 // --- Issue detail (full single issue) ---
@@ -167,7 +168,7 @@ export interface GraphQLIssueDetailNode {
   labels: { nodes: Array<{ name: string, color: string }> }
   assignees: { nodes: Array<{ login: string, avatarUrl: string }> }
   milestone: { title: string } | null
-  reactionGroups: Array<{ content: string, reactors: { totalCount: number } }>
+  reactionGroups: Array<{ content: string, viewerHasReacted: boolean, reactors: { totalCount: number } }>
   timelineItems: {
     pageInfo: { hasNextPage: boolean, endCursor: string | null }
     nodes: Array<GraphQLTimelineNode>

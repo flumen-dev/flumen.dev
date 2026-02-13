@@ -197,6 +197,18 @@
       }
     }
   },
+  "user": {
+    "role": {
+      "owner": "Inhaber",
+      "ownerDescription": "Inhaber dieses Repositorys",
+      "member": "Mitglied",
+      "memberDescription": "Mitglied der Organisation",
+      "collaborator": "Mitwirkender",
+      "collaboratorDescription": "Wurde zur Zusammenarbeit eingeladen",
+      "contributor": "Beitragender",
+      "contributorDescription": "Hat bereits zu diesem Repository beigetragen"
+    }
+  },
   "settings": {
     "appearance": {
       "title": "Erscheinungsbild",

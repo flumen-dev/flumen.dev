@@ -28,7 +28,7 @@ query($owner: String!, $repo: String!, $number: Int!, $first: Int!, $after: Stri
       labels(first: 20) { nodes { name color } }
       assignees(first: 10) { nodes { login avatarUrl } }
       milestone { title }
-      reactionGroups { content reactors { totalCount } }
+      reactionGroups { content viewerHasReacted reactors { totalCount } }
       timelineItems(first: $first, after: $after) {
         pageInfo { hasNextPage endCursor }
         nodes {
@@ -41,7 +41,7 @@ query($owner: String!, $repo: String!, $number: Int!, $first: Int!, $after: Stri
             author { login avatarUrl }
             createdAt
             updatedAt
-            reactionGroups { content reactors { totalCount } }
+            reactionGroups { content viewerHasReacted reactors { totalCount } }
           }
           ... on LabeledEvent {
             createdAt
@@ -103,10 +103,10 @@ query($owner: String!, $repo: String!, $number: Int!, $first: Int!, $after: Stri
 }
 `
 
-function toReactionGroups(groups: Array<{ content: string, reactors: { totalCount: number } }>): ReactionGroup[] {
+function toReactionGroups(groups: Array<{ content: string, viewerHasReacted: boolean, reactors: { totalCount: number } }>): ReactionGroup[] {
   return groups
-    .filter(g => g.reactors.totalCount > 0)
-    .map(g => ({ content: g.content, count: g.reactors.totalCount }))
+    .filter(g => g.reactors.totalCount > 0 || g.viewerHasReacted)
+    .map(g => ({ content: g.content, count: g.reactors.totalCount, viewerHasReacted: g.viewerHasReacted }))
 }
 
 function toTimelineItem(node: GraphQLTimelineNode): TimelineItem | null {

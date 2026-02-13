@@ -197,6 +197,18 @@
       }
     }
   },
+  "user": {
+    "role": {
+      "owner": "Owner",
+      "ownerDescription": "Owner of this repository",
+      "member": "Member",
+      "memberDescription": "Member of the organization",
+      "collaborator": "Collaborator",
+      "collaboratorDescription": "Has been invited to collaborate",
+      "contributor": "Contributor",
+      "contributorDescription": "Has previously committed to this repository"
+    }
+  },
   "settings": {
     "appearance": {
       "title": "Appearance",
