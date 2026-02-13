@@ -212,24 +212,29 @@ function copyCommand() {
 </script>
 
 <template>
-  <div class="sticky top-0 z-10 border border-default rounded-2xl bg-default/95 backdrop-blur">
+  <div class="sticky top-0 z-10 border border-default rounded-xl sm:rounded-2xl bg-elevated/95 shadow-sm backdrop-blur">
     <!-- Row 1: State + Title + Actions -->
-    <div class="flex items-center gap-3 px-4 py-3">
+    <div class="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2.5 sm:py-3">
       <UTooltip :text="stateLabel">
-        <UIcon
-          :name="stateIcon"
-          class="size-5 shrink-0"
-          :class="stateColor"
-        />
+        <span
+          class="inline-flex items-center justify-center size-7 rounded-full shrink-0"
+          :class="issue.state === 'OPEN' ? 'bg-emerald-500/10' : issue.stateReason === 'NOT_PLANNED' ? 'bg-neutral-500/10' : 'bg-violet-500/10'"
+        >
+          <UIcon
+            :name="stateIcon"
+            class="size-4"
+            :class="stateColor"
+          />
+        </span>
       </UTooltip>
 
-      <h1 class="flex-1 min-w-0 text-lg font-semibold text-highlighted truncate">
+      <h1 class="flex-1 min-w-0 text-base sm:text-lg font-semibold text-highlighted truncate">
         {{ issue.title }}
       </h1>
 
-      <span class="text-muted text-sm shrink-0">#{{ issue.number }}</span>
+      <span class="font-mono text-muted text-xs sm:text-sm shrink-0">#{{ issue.number }}</span>
 
-      <div class="flex items-center gap-1 shrink-0">
+      <div class="flex items-center gap-0.5 shrink-0">
         <UTooltip :text="t('common.copyLink')">
           <UButton
             icon="i-lucide-link"
@@ -253,108 +258,108 @@ function copyCommand() {
     </div>
 
     <!-- Row 2: Assignment Zone -->
-    <div class="flex items-center gap-3 px-4 py-2 border-t border-default">
-      <!-- No assignees -->
-      <div
-        v-if="issue.assignees.length === 0"
-        class="flex items-center gap-2"
-      >
+    <div class="flex flex-wrap items-center gap-x-2 gap-y-1.5 sm:gap-x-3 px-3 sm:px-4 py-2 border-t border-accented">
+      <!-- Left: Assignees + PRs -->
+      <div class="flex flex-wrap items-center gap-2 flex-1 min-w-0">
+        <!-- No assignees -->
         <UBadge
+          v-if="issue.assignees.length === 0"
           :label="t('issues.detail.needsOwner')"
           color="warning"
           variant="subtle"
           icon="i-lucide-user-x"
         />
-      </div>
 
-      <!-- Assignees with PR status -->
-      <div
-        v-for="assignee in assigneesWithPr"
-        :key="assignee.login"
-        class="flex items-center gap-2"
-      >
-        <UAvatar
-          :src="assignee.avatarUrl"
-          :alt="assignee.login"
-          size="2xs"
-        />
-        <span class="text-sm font-medium text-highlighted">{{ assignee.login }}</span>
-
-        <a
-          v-if="assignee.pr"
-          :href="assignee.pr.url"
-          target="_blank"
-          class="inline-flex items-center gap-1 rounded-full border border-default bg-elevated/50 px-2 py-0.5 text-xs hover:border-primary/50 transition-colors"
-        >
-          <UIcon
-            :name="prStateIcon(assignee.pr.state)"
-            class="size-3.5"
-            :class="prStateColor(assignee.pr.state)"
-          />
-          <span class="text-muted">#{{ assignee.pr.number }}</span>
-        </a>
-
-        <span
-          v-else
-          class="text-xs text-muted"
-        >
-          {{ t('issues.detail.noBranchYet') }}
-        </span>
-      </div>
-
-      <!-- Unlinked PRs -->
-      <UTooltip
-        v-for="pr in unlinkedPrs"
-        :key="pr.number"
-        :text="`#${pr.number} ${pr.title} (${pr.actor})`"
-      >
-        <a
-          :href="pr.url"
-          target="_blank"
-          class="inline-flex items-center gap-1 rounded-full border border-default bg-elevated/50 px-2 py-0.5 text-xs hover:border-primary/50 transition-colors"
-        >
-          <UIcon
-            :name="prStateIcon(pr.state)"
-            class="size-3.5"
-            :class="prStateColor(pr.state)"
-          />
-          <span class="text-muted">#{{ pr.number }}</span>
-        </a>
-      </UTooltip>
-
-      <!-- Spacer -->
-      <div class="flex-1" />
-
-      <!-- Others working on this -->
-      <div
-        v-if="initialCheckDone && otherClaims.length > 0"
-        class="flex items-center gap-1"
-      >
-        <UTooltip
-          v-for="worker in otherClaims"
-          :key="worker.login"
-          :text="`${worker.login} · ${worker.branchName}`"
+        <!-- Assignees with PR status -->
+        <div
+          v-for="assignee in assigneesWithPr"
+          :key="assignee.login"
+          class="flex items-center gap-1.5"
         >
           <UAvatar
-            :src="`https://github.com/${worker.login}.png?size=32`"
-            :alt="worker.login"
+            :src="assignee.avatarUrl"
+            :alt="assignee.login"
             size="2xs"
           />
+          <span class="text-sm font-medium text-highlighted hidden sm:inline">{{ assignee.login }}</span>
+
+          <a
+            v-if="assignee.pr"
+            :href="assignee.pr.url"
+            target="_blank"
+            class="inline-flex items-center gap-1 rounded-full border border-default bg-elevated/50 px-2 py-0.5 text-xs hover:border-primary/50 transition-colors"
+          >
+            <UIcon
+              :name="prStateIcon(assignee.pr.state)"
+              class="size-3.5"
+              :class="prStateColor(assignee.pr.state)"
+            />
+            <span class="text-muted">#{{ assignee.pr.number }}</span>
+          </a>
+
+          <span
+            v-else
+            class="text-xs text-muted hidden sm:inline"
+          >
+            {{ t('issues.detail.noBranchYet') }}
+          </span>
+        </div>
+
+        <!-- Unlinked PRs -->
+        <UTooltip
+          v-for="pr in unlinkedPrs"
+          :key="pr.number"
+          :text="`#${pr.number} ${pr.title} (${pr.actor})`"
+        >
+          <a
+            :href="pr.url"
+            target="_blank"
+            class="inline-flex items-center gap-1 rounded-full border border-default bg-elevated/50 px-2 py-0.5 text-xs hover:border-primary/50 transition-colors"
+          >
+            <UIcon
+              :name="prStateIcon(pr.state)"
+              class="size-3.5"
+              :class="prStateColor(pr.state)"
+            />
+            <span class="text-muted">#{{ pr.number }}</span>
+          </a>
         </UTooltip>
-        <span class="text-xs text-muted">{{ t('issues.detail.othersWorking', { count: otherClaims.length }) }}</span>
       </div>
 
-      <!-- My branch (claimed by me) -->
-      <div
-        v-if="initialCheckDone && myClaim && branchStatus?.branchExists"
-        class="flex items-center gap-2"
-      >
-        <UIcon
-          name="i-lucide-git-branch"
-          class="size-3.5 text-emerald-500"
-        />
-        <span class="font-mono text-xs text-muted">{{ myClaim.branchName }}</span>
-        <UTooltip :text="t('issues.detail.copyCommand')">
+      <!-- Right: Claims + Branch + Button -->
+      <div class="flex items-center gap-2 shrink-0">
+        <!-- Others working on this (avatar stack) -->
+        <div
+          v-if="initialCheckDone && otherClaims.length > 0"
+          class="flex items-center gap-1.5"
+        >
+          <div class="flex -space-x-1.5">
+            <UTooltip
+              v-for="worker in otherClaims"
+              :key="worker.login"
+              :text="`${worker.login} · ${worker.branchName}`"
+            >
+              <UAvatar
+                :src="`https://github.com/${worker.login}.png?size=32`"
+                :alt="worker.login"
+                size="2xs"
+                class="ring-2 ring-default"
+              />
+            </UTooltip>
+          </div>
+          <span class="text-xs text-muted hidden sm:inline">{{ t('issues.detail.othersWorking', { count: otherClaims.length }) }}</span>
+        </div>
+
+        <!-- My branch chip -->
+        <div
+          v-if="initialCheckDone && myClaim && branchStatus?.branchExists"
+          class="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/5 pl-2.5 pr-1 py-0.5"
+        >
+          <UIcon
+            name="i-lucide-git-branch"
+            class="size-3.5 text-emerald-500"
+          />
+          <span class="font-mono text-xs text-muted max-w-32 sm:max-w-48 truncate">{{ myClaim.branchName }}</span>
           <UButton
             icon="i-lucide-copy"
             variant="ghost"
@@ -362,22 +367,22 @@ function copyCommand() {
             size="xs"
             @click="copyCommand"
           />
-        </UTooltip>
-      </div>
+        </div>
 
-      <!-- Claim button (always visible for open issues if user hasn't claimed) -->
-      <UButton
-        v-if="issue.state === 'OPEN' && initialCheckDone && !myClaim"
-        :label="t('issues.detail.claim')"
-        icon="i-lucide-hand"
-        size="xs"
-        variant="soft"
-        @click="openClaimDialog"
-      />
+        <!-- Claim button -->
+        <UButton
+          v-if="issue.state === 'OPEN' && initialCheckDone && !myClaim"
+          :label="t('issues.detail.claim')"
+          icon="i-lucide-hand"
+          size="xs"
+          variant="soft"
+          @click="openClaimDialog"
+        />
+      </div>
     </div>
 
     <!-- Row 3: Labels, Milestone, Timestamps -->
-    <div class="flex items-center gap-3 px-4 py-2 border-t border-default text-xs flex-wrap">
+    <div class="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-1.5 sm:py-2 border-t border-accented text-xs flex-wrap">
       <!-- Labels -->
       <UBadge
         v-for="label in issue.labels"
@@ -406,8 +411,8 @@ function copyCommand() {
 
       <!-- Timestamps + comment count -->
       <span class="text-muted">{{ createdAgo }}</span>
-      <span class="text-muted/60">&middot;</span>
-      <span class="text-muted">{{ updatedAgo }}</span>
+      <span class="text-muted/60 hidden sm:inline">&middot;</span>
+      <span class="text-muted hidden sm:inline">{{ updatedAgo }}</span>
       <span
         v-if="commentCount > 0"
         class="inline-flex items-center gap-1 text-muted"

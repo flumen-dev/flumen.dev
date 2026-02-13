@@ -67,7 +67,7 @@ const linkedPrs = computed(() => {
 
     <div
       v-else-if="issue"
-      class="flex flex-col gap-4"
+      class="flex flex-col gap-4 mt-4"
     >
       <IssueBody
         :id="issue.id"
