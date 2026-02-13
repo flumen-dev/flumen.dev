@@ -6,6 +6,7 @@ const props = defineProps<{
 }>()
 
 const { t } = useI18n()
+const createdAgo = useTimeAgo(computed(() => props.issue.createdAt))
 const updatedAgo = useTimeAgo(computed(() => props.issue.updatedAt))
 
 const stateIcon = computed(() => {
@@ -66,7 +67,16 @@ const stateColor = computed(() => {
             />
           </span>
         </UTooltip>
+        <span class="inline-flex items-center gap-1">
+          <UAvatar
+            :src="issue.author.avatarUrl"
+            :alt="issue.author.login"
+            size="3xs"
+          />
+          {{ issue.author.login }}
+        </span>
         <span>#{{ issue.number }}</span>
+        <span>{{ createdAgo }}</span>
         <span>{{ updatedAgo }}</span>
 
         <span
