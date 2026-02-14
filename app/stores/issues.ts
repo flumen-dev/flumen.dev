@@ -64,6 +64,7 @@ export const useIssueStore = defineStore('issues', () => {
   const searchResults = ref<Issue[]>([])
   const searching = ref(false)
   let searchDebounceTimer: ReturnType<typeof setTimeout> | null = null
+  let searchRequestId = 0
 
   // --- Derived ---
   const availableLabels = computed(() => {
@@ -168,7 +169,7 @@ export const useIssueStore = defineStore('issues', () => {
   }
 
   async function loadNextPage() {
-    if (!selectedRepo.value || !hasMore.value || !endCursor.value) return
+    if (!selectedRepo.value || !hasMore.value || !endCursor.value || loading.value) return
     loading.value = true
     paging.value = 'next'
     errorKey.value = null
@@ -197,7 +198,7 @@ export const useIssueStore = defineStore('issues', () => {
   }
 
   async function loadPreviousPage() {
-    if (!selectedRepo.value || !cursorHistory.value.length) return
+    if (!selectedRepo.value || !cursorHistory.value.length || loading.value) return
     loading.value = true
     paging.value = 'prev'
     errorKey.value = null
@@ -234,21 +235,27 @@ export const useIssueStore = defineStore('issues', () => {
       searching.value = false
       return
     }
+    const requestId = ++searchRequestId
     searching.value = true
     try {
-      searchResults.value = await apiFetch<Issue[]>('/api/issues/search', {
+      const results = await apiFetch<Issue[]>('/api/issues/search', {
         params: {
           repo: selectedRepo.value,
           state: stateFilter.value,
           q: q.trim(),
         },
       })
+      if (requestId !== searchRequestId) return // stale response
+      searchResults.value = results
     }
     catch {
+      if (requestId !== searchRequestId) return
       searchResults.value = []
     }
     finally {
-      searching.value = false
+      if (requestId === searchRequestId) {
+        searching.value = false
+      }
     }
   }
 

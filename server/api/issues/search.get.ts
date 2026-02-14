@@ -29,8 +29,8 @@ export default defineEventHandler(async (event): Promise<Issue[]> => {
     q?: string
   }>(event)
 
-  if (!repo || !q) {
-    throw createError({ statusCode: 400, message: 'Missing repo or q query parameter' })
+  if (!repo || !q || !/^[\w.-]+\/[\w.-]+$/.test(repo)) {
+    throw createError({ statusCode: 400, message: 'Missing or invalid repo/q query parameter' })
   }
 
   const stateQ = state === 'closed' ? 'is:closed' : 'is:open'

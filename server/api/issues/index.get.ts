@@ -37,8 +37,8 @@ export default defineEventHandler(async (event): Promise<PaginatedIssues> => {
     after?: string
   }>(event)
 
-  if (!repo) {
-    throw createError({ statusCode: 400, message: 'Missing repo query parameter' })
+  if (!repo || !/^[\w.-]+\/[\w.-]+$/.test(repo)) {
+    throw createError({ statusCode: 400, message: 'Missing or invalid repo query parameter' })
   }
 
   const pageSize = Math.min(Math.max(Number(first) || 30, 1), 100)

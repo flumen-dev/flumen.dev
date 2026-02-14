@@ -30,15 +30,15 @@ query($ids: [ID!]!) {
 }
 `
 
-interface CachedIssue {
+interface CachedIssueNode {
   updatedAt: string
-  issue: Issue
+  node: GraphQLIssueNode
 }
 
 /**
  * Given minimal issue nodes (id + updatedAt), resolves full Issue objects
- * using Nitro storage as cache. Only fetches from GitHub for cache misses
- * or stale entries.
+ * using Nitro storage as cache. Stores raw GraphQL nodes so that
+ * user-specific fields (maintainerCommented) are computed per-request.
  */
 export async function getOrFetchIssues(
   token: string,
@@ -48,20 +48,20 @@ export async function getOrFetchIssues(
   if (!minimalNodes.length) return []
 
   const storage = useStorage('data')
-  const issues: Issue[] = []
+  const resolvedNodes: GraphQLIssueNode[] = []
   const missingIds: string[] = []
 
   // Check cache for each issue
   const cacheChecks = await Promise.all(
     minimalNodes.map(async (node) => {
-      const cached = await storage.getItem<CachedIssue>(`issues:${node.id}`)
+      const cached = await storage.getItem<CachedIssueNode>(`issues:${node.id}`)
       return { node, cached }
     }),
   )
 
   for (const { node, cached } of cacheChecks) {
     if (cached && cached.updatedAt === node.updatedAt) {
-      issues.push(cached.issue)
+      resolvedNodes.push(cached.node)
     }
     else {
       missingIds.push(node.id)
@@ -76,22 +76,25 @@ export async function getOrFetchIssues(
       { ids: missingIds },
     )
 
-    const freshIssues = data.nodes
-      .filter((n): n is GraphQLIssueNode => n !== null && 'id' in n)
-      .map(n => toIssue(n, login))
+    const freshNodes = data.nodes.filter(
+      (n): n is GraphQLIssueNode => n !== null && 'id' in n,
+    )
 
-    // Store in cache and collect
+    // Store raw nodes in cache
     await Promise.all(
-      freshIssues.map(async (issue) => {
-        await storage.setItem<CachedIssue>(`issues:${issue.id}`, {
-          updatedAt: issue.updatedAt,
-          issue,
+      freshNodes.map(async (node) => {
+        await storage.setItem<CachedIssueNode>(`issues:${node.id}`, {
+          updatedAt: node.updatedAt,
+          node,
         })
       }),
     )
 
-    issues.push(...freshIssues)
+    resolvedNodes.push(...freshNodes)
   }
+
+  // Convert to Issue with per-user maintainerCommented
+  const issues = resolvedNodes.map(n => toIssue(n, login))
 
   // Return in the same order as the input
   const orderMap = new Map(minimalNodes.map((n, i) => [n.id, i]))
