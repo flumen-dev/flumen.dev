@@ -412,13 +412,13 @@
         "readmePlaceholder": {
           "type": "string"
         },
-        "readmeNoRepo": {
+        "readmeEmpty": {
           "type": "string"
         },
-        "readmeNoRepoDescription": {
+        "readmeEmptyDescription": {
           "type": "string"
         },
-        "readmeCreateLink": {
+        "readmeCreate": {
           "type": "string"
         },
         "readmePreviewLabel": {

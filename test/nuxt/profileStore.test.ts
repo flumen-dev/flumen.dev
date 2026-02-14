@@ -131,12 +131,13 @@ describe('profileStore', () => {
     })
   })
 
-  it('saveReadme does nothing without sha', async () => {
+  it('saveReadme creates README when no sha exists', async () => {
     await withStore(async (store) => {
-      store.readme = '# Test'
+      store.readme = null
       store.readmeSha = null
-      await store.saveReadme('# Changed')
-      expect(store.readme).toBe('# Test')
+      await store.saveReadme('# New README')
+      expect(store.readme).toBe('# New README')
+      expect(store.readmeSha).toBe('def456')
     })
   })
 })

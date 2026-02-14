@@ -188,12 +188,11 @@ export const useProfileStore = defineStore('profile', () => {
   }
 
   async function saveReadme(content: string) {
-    if (!readmeSha.value) return
     savingReadme.value = true
     try {
       const { sha } = await apiFetch<{ sha: string }>('/api/user/readme', {
         method: 'PUT',
-        body: { content, sha: readmeSha.value },
+        body: { content, ...(readmeSha.value ? { sha: readmeSha.value } : {}) },
       })
       readme.value = content
       readmeSha.value = sha
