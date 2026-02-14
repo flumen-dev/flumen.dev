@@ -499,7 +499,13 @@
         "selectRepo": {
           "type": "string"
         },
-        "customRepoPlaceholder": {
+        "searchRepos": {
+          "type": "string"
+        },
+        "searchReposHint": {
+          "type": "string"
+        },
+        "yourRepos": {
           "type": "string"
         },
         "openCount": {

@@ -34,7 +34,7 @@ export default defineEventHandler(async (event): Promise<Issue[]> => {
   }
 
   const stateQ = state === 'closed' ? 'is:closed' : 'is:open'
-  const query = `is:issue ${stateQ} repo:${repo} ${q} in:title sort:updated-desc`
+  const query = `is:issue ${stateQ} repo:${repo} ${q} in:title,body sort:updated-desc`
 
   const data = await githubGraphQL<MinimalSearchResult>(token, MINIMAL_SEARCH_QUERY, {
     query,
