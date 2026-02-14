@@ -786,6 +786,9 @@
         },
         "pinned": {
           "type": "string"
+        },
+        "search": {
+          "type": "string"
         }
       },
       "additionalProperties": false
