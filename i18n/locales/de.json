@@ -215,34 +215,14 @@
       "othersAlreadyWorking": "{count} Person arbeitet bereits an diesem Issue | {count} Personen arbeiten bereits an diesem Issue"
     },
     "event": {
-      "labeled": "hat hinzugefügt",
-      "unlabeled": "hat entfernt",
-      "assigned": "hat zugewiesen",
       "assignedSelf": "hat sich selbst zugewiesen",
-      "unassigned": "hat Zuweisung entfernt von",
-      "closed": "hat als erledigt geschlossen",
-      "closedNotPlanned": "hat als nicht geplant geschlossen",
       "reopened": "hat wiedereröffnet",
-      "crossReferencedPr": "hat referenziert in Pull Request",
-      "crossReferencedIssue": "hat referenziert in Issue",
-      "milestoned": "hat hinzugefügt zu Meilenstein",
-      "renamed": "hat den Titel geändert",
-      "referencedCommit": "hat referenziert in Commit"
+      "renamed": "hat den Titel geändert"
     },
     "sidebar": {
-      "assignees": "Zugewiesen",
-      "noAssignees": "Niemand zugewiesen",
-      "labels": "Labels",
-      "noLabels": "Keine Labels",
-      "milestone": "Meilenstein",
-      "linkedPrs": "Verknüpfte Pull Requests",
-      "created": "Erstellt",
-      "updated": "Aktualisiert",
-      "comments": "{count} Kommentar | {count} Kommentare",
       "participants": "Beteiligte",
       "ownerActive": "Inhaber beteiligt sich",
       "mentions": "Erwähnungen",
-      "mentionCount": "{count} Erwähnung | {count} Erwähnungen",
       "reproductions": "Reproduktionen",
       "links": "Links",
       "showLess": "Weniger"

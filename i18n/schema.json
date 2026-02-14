@@ -18,6 +18,15 @@
         },
         "retry": {
           "type": "string"
+        },
+        "copied": {
+          "type": "string"
+        },
+        "copyLink": {
+          "type": "string"
+        },
+        "viewOnGithub": {
+          "type": "string"
         }
       },
       "additionalProperties": false
@@ -490,6 +499,9 @@
         "selectRepo": {
           "type": "string"
         },
+        "customRepoPlaceholder": {
+          "type": "string"
+        },
         "openCount": {
           "type": "string"
         },
@@ -509,6 +521,18 @@
           "type": "string"
         },
         "count": {
+          "type": "string"
+        },
+        "page": {
+          "type": "string"
+        },
+        "previousPage": {
+          "type": "string"
+        },
+        "nextPage": {
+          "type": "string"
+        },
+        "serverSearch": {
           "type": "string"
         },
         "filter": {
@@ -553,6 +577,117 @@
           },
           "additionalProperties": false
         },
+        "detail": {
+          "type": "object",
+          "properties": {
+            "needsOwner": {
+              "type": "string"
+            },
+            "noBranchYet": {
+              "type": "string"
+            },
+            "claim": {
+              "type": "string"
+            },
+            "claimTitle": {
+              "type": "string"
+            },
+            "claimDescFork": {
+              "type": "string"
+            },
+            "claimDescBranch": {
+              "type": "string"
+            },
+            "claimDescCollab": {
+              "type": "string"
+            },
+            "branchName": {
+              "type": "string"
+            },
+            "branchExists": {
+              "type": "string"
+            },
+            "branchExistsHint": {
+              "type": "string"
+            },
+            "letsGo": {
+              "type": "string"
+            },
+            "claiming": {
+              "type": "string"
+            },
+            "claimSuccess": {
+              "type": "string"
+            },
+            "claimSuccessForked": {
+              "type": "string"
+            },
+            "claimSuccessBranch": {
+              "type": "string"
+            },
+            "copyCommand": {
+              "type": "string"
+            },
+            "commandCopied": {
+              "type": "string"
+            },
+            "useExisting": {
+              "type": "string"
+            },
+            "claimError": {
+              "type": "string"
+            },
+            "forkTimeout": {
+              "type": "string"
+            },
+            "othersWorking": {
+              "type": "string"
+            },
+            "othersAlreadyWorking": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "event": {
+          "type": "object",
+          "properties": {
+            "assignedSelf": {
+              "type": "string"
+            },
+            "reopened": {
+              "type": "string"
+            },
+            "renamed": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "sidebar": {
+          "type": "object",
+          "properties": {
+            "participants": {
+              "type": "string"
+            },
+            "ownerActive": {
+              "type": "string"
+            },
+            "mentions": {
+              "type": "string"
+            },
+            "reproductions": {
+              "type": "string"
+            },
+            "links": {
+              "type": "string"
+            },
+            "showLess": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
         "error": {
           "type": "object",
           "properties": {
@@ -591,6 +726,42 @@
                 }
               },
               "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "user": {
+      "type": "object",
+      "properties": {
+        "role": {
+          "type": "object",
+          "properties": {
+            "owner": {
+              "type": "string"
+            },
+            "ownerDescription": {
+              "type": "string"
+            },
+            "member": {
+              "type": "string"
+            },
+            "memberDescription": {
+              "type": "string"
+            },
+            "collaborator": {
+              "type": "string"
+            },
+            "collaboratorDescription": {
+              "type": "string"
+            },
+            "contributor": {
+              "type": "string"
+            },
+            "contributorDescription": {
+              "type": "string"
             }
           },
           "additionalProperties": false
