@@ -11,6 +11,7 @@ export default defineNuxtConfig({
     '@pinia/nuxt',
     'nuxt-auth-utils',
     'nuxt-echarts',
+    'nuxt-freeform',
   ],
   devtools: { enabled: true },
 

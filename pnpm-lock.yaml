@@ -50,6 +50,9 @@ importers:
       nuxt-auth-utils:
         specifier: 0.5.28
         version: 0.5.28(magicast@0.5.2)
+      nuxt-freeform:
+        specifier: 0.1.0-alpha.6
+        version: 0.1.0-alpha.6(magicast@0.5.2)
       pinia:
         specifier: ^3.0.4
         version: 3.0.4(typescript@5.9.3)(vue@3.5.28(typescript@5.9.3))
@@ -4930,6 +4933,9 @@ packages:
     peerDependencies:
       echarts: ^6.0.0
       vue-echarts: ^8.0.0
+
+  nuxt-freeform@0.1.0-alpha.6:
+    resolution: {integrity: sha512-ILWy1pp7qcZHqleOqwEIw3GpJ2HNBo/P5OLpIZoNuVJybOUBeOPNhi/W4Jc5LzM6wopFivajI1d5OYK67RYITw==}
 
   nuxt@4.3.1:
     resolution: {integrity: sha512-bl+0rFcT5Ax16aiWFBFPyWcsTob19NTZaDL5P6t0MQdK63AtgS6fN6fwvwdbXtnTk6/YdCzlmuLzXhSM22h0OA==}
@@ -11334,6 +11340,12 @@ snapshots:
       '@nuxt/kit': 4.3.1(magicast@0.5.2)
       echarts: 6.0.0
       vue-echarts: 8.0.1(echarts@6.0.0)(vue@3.5.28(typescript@5.9.3))
+    transitivePeerDependencies:
+      - magicast
+
+  nuxt-freeform@0.1.0-alpha.6(magicast@0.5.2):
+    dependencies:
+      '@nuxt/kit': 4.3.1(magicast@0.5.2)
     transitivePeerDependencies:
       - magicast
 

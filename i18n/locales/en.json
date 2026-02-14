@@ -259,7 +259,8 @@
   "pinnedRepos": {
     "pin": "Pin repository",
     "unpin": "Unpin repository",
-    "pinned": "Pinned"
+    "pinned": "Pinned",
+    "search": "Filter pinned..."
   },
   "settings": {
     "appearance": {

@@ -1,5 +1,11 @@
 <script setup lang="ts">
 import type { NavigationMenuItem } from '@nuxt/ui'
+import type { PinnedItemType } from '~~/shared/types/settings'
+
+interface PinnedDragItem {
+  id: string
+  pinType: PinnedItemType
+}
 
 const { t } = useI18n()
 const localePath = useLocalePath()
@@ -31,7 +37,7 @@ const isDark = computed({
 // Later use a store e.g.
 const notificationCount = ref(3)
 
-const { pinnedRepos, unpin } = usePinnedRepos()
+const { pinnedRepos, unpin, reorder } = usePinnedRepos()
 
 const { update: updateSettings } = useUserSettings()
 
@@ -41,6 +47,22 @@ function selectPinnedRepo(repo: string) {
   issueStore.selectRepo(repo)
   updateSettings({ selectedRepo: repo })
 }
+
+// Drag & drop: map PinnedItem[] ↔ FreeformItemData[]
+const pinnedDragItems = computed({
+  get: () => pinnedRepos.value.map(p => ({ id: p.repo, pinType: p.type })),
+  set: (items: PinnedDragItem[]) => {
+    reorder(items.map(i => ({ repo: i.id, type: i.pinType })))
+  },
+})
+
+// Search filter for pinned repos
+const pinnedSearch = ref('')
+const filteredPinnedRepos = computed(() => {
+  if (!pinnedSearch.value) return pinnedDragItems.value
+  const q = pinnedSearch.value.toLowerCase()
+  return pinnedDragItems.value.filter(p => p.id.toLowerCase().includes(q))
+})
 
 const mainItems = computed<NavigationMenuItem[]>(() => [
   {
@@ -173,45 +195,70 @@ const mainItems = computed<NavigationMenuItem[]>(() => [
           <p class="px-2 pb-1 text-xs font-semibold text-muted uppercase tracking-wide">
             {{ $t('pinnedRepos.pinned') }}
           </p>
-          <div class="space-y-0.5 max-h-50 overflow-y-auto">
-            <div
-              v-for="item in pinnedRepos"
-              :key="item.repo"
-              class="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-elevated/50 transition-colors group"
+          <UInput
+            v-if="pinnedRepos.length > 5"
+            v-model="pinnedSearch"
+            :placeholder="$t('pinnedRepos.search')"
+            icon="i-lucide-search"
+            size="xs"
+            class="mb-1 w-full"
+          />
+          <TheFreeform
+            v-model="pinnedDragItems"
+            :disabled="!!pinnedSearch"
+            class="flex flex-col gap-0.5 max-h-50 overflow-y-auto"
+          >
+            <FreeformItem
+              v-for="item in filteredPinnedRepos"
+              :key="item.id"
+              :item="item"
             >
-              <NuxtLink
-                :to="localePath('/issues')"
-                class="flex items-center gap-2 flex-1 min-w-0"
-                @click="selectPinnedRepo(item.repo)"
-              >
-                <UIcon
-                  :name="item.type === 'fork' ? 'i-lucide-git-fork' : 'i-lucide-book-marked'"
-                  class="size-4 shrink-0 text-muted"
-                />
-                <span class="truncate">{{ item.repo.split('/')[1] }}</span>
-                <UBadge
-                  v-if="item.type === 'fork'"
-                  color="info"
-                  variant="subtle"
-                  size="xs"
+              <template #default="{ dragging }">
+                <div
+                  class="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-elevated/50 transition-colors group"
+                  :class="{ 'opacity-50': dragging }"
                 >
-                  {{ $t('repos.badge.fork') }}
-                </UBadge>
-              </NuxtLink>
-              <UTooltip :text="$t('pinnedRepos.unpin')">
-                <UButton
-                  icon="i-lucide-pin-off"
-                  size="xs"
-                  color="neutral"
-                  variant="ghost"
-                  square
-                  :aria-label="$t('pinnedRepos.unpin')"
-                  class="opacity-0 group-hover:opacity-100 shrink-0"
-                  @click="unpin(item.repo)"
-                />
-              </UTooltip>
-            </div>
-          </div>
+                  <UIcon
+                    data-freeform-handle
+                    name="i-lucide-grip-vertical"
+                    class="size-3.5 shrink-0 text-muted/50 cursor-grab opacity-0 group-hover:opacity-100 transition-opacity"
+                  />
+                  <NuxtLink
+                    :to="localePath('/issues')"
+                    class="flex items-center gap-2 flex-1 min-w-0"
+                    @click="selectPinnedRepo(item.id)"
+                  >
+                    <UIcon
+                      :name="item.pinType === 'fork' ? 'i-lucide-git-fork' : 'i-lucide-book-marked'"
+                      class="size-4 shrink-0 text-muted"
+                    />
+                    <span class="truncate">{{ item.id.split('/')[1] }}</span>
+                    <UBadge
+                      v-if="item.pinType === 'fork'"
+                      color="info"
+                      variant="subtle"
+                      size="xs"
+                    >
+                      {{ $t('repos.badge.fork') }}
+                    </UBadge>
+                  </NuxtLink>
+                  <UTooltip :text="$t('pinnedRepos.unpin')">
+                    <UButton
+                      icon="i-lucide-pin-off"
+                      size="xs"
+                      color="neutral"
+                      variant="ghost"
+                      square
+                      :aria-label="$t('pinnedRepos.unpin')"
+                      class="opacity-0 group-hover:opacity-100 shrink-0"
+                      @click="unpin(item.id)"
+                    />
+                  </UTooltip>
+                </div>
+              </template>
+            </FreeformItem>
+            <FreeformPlaceholder />
+          </TheFreeform>
         </nav>
       </ClientOnly>
     </template>
@@ -261,3 +308,10 @@ const mainItems = computed<NavigationMenuItem[]>(() => [
     </template>
   </UDashboardSidebar>
 </template>
+
+<style scoped>
+:deep(.freeform-placeholder) {
+  align-self: stretch !important;
+  width: auto !important;
+}
+</style>

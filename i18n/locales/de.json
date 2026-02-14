@@ -259,7 +259,8 @@
   "pinnedRepos": {
     "pin": "Repository anheften",
     "unpin": "Repository loslösen",
-    "pinned": "Angeheftet"
+    "pinned": "Angeheftet",
+    "search": "Angeheftete filtern..."
   },
   "settings": {
     "appearance": {
