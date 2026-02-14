@@ -9,6 +9,7 @@ interface SearchRepo {
   visibility: string
   openIssues: number
   stars: number
+  fork: boolean
 }
 
 const repoStore = useRepositoryStore()
@@ -272,7 +273,7 @@ onMounted(async () => {
                   square
                   :aria-label="isPinned(repo.fullName) ?$t('pinnedRepos.unpin') :$t('pinnedRepos.pin')"
                   class="shrink-0 self-center cursor-pointer"
-                  @click.stop="togglePin(repo.fullName)"
+                  @click.stop="togglePin(repo.fullName, repo.fork ? 'fork' : 'repo')"
                 />
               </UTooltip>
             </button>
@@ -342,7 +343,7 @@ onMounted(async () => {
                   square
                   :aria-label="isPinned(repo.fullName) ?$t('pinnedRepos.unpin') :$t('pinnedRepos.pin')"
                   class="shrink-0 self-center cursor-pointer"
-                  @click.stop="togglePin(repo.fullName)"
+                  @click.stop="togglePin(repo.fullName, repo.fork ? 'fork' : 'repo')"
                 />
               </UTooltip>
             </button>

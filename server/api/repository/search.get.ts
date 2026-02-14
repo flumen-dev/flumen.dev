@@ -9,6 +9,7 @@ interface GitHubSearchResult {
     visibility: string
     open_issues_count: number
     stargazers_count: number
+    fork: boolean
   }>
 }
 
@@ -37,5 +38,6 @@ export default defineEventHandler(async (event) => {
     visibility: r.visibility,
     openIssues: r.open_issues_count,
     stars: r.stargazers_count,
+    fork: r.fork,
   }))
 })

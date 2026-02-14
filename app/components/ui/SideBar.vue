@@ -35,7 +35,10 @@ const { pinnedRepos, unpin } = usePinnedRepos()
 
 const { update: updateSettings } = useUserSettings()
 
+const issueStore = useIssueStore()
+
 function selectPinnedRepo(repo: string) {
+  issueStore.selectRepo(repo)
   updateSettings({ selectedRepo: repo })
   navigateTo(localePath('/issues'))
 }
@@ -171,22 +174,30 @@ const mainItems = computed<NavigationMenuItem[]>(() => [
           <p class="px-2 pb-1 text-xs font-semibold text-muted uppercase tracking-wide">
             {{ $t('pinnedRepos.pinned') }}
           </p>
-          <div class="space-y-0.5">
+          <div class="space-y-0.5 max-h-50 overflow-y-auto">
             <div
-              v-for="repo in pinnedRepos"
-              :key="repo"
+              v-for="item in pinnedRepos"
+              :key="item.repo"
               class="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-elevated/50 transition-colors group"
             >
               <NuxtLink
                 :to="localePath('/issues')"
                 class="flex items-center gap-2 flex-1 min-w-0"
-                @click="selectPinnedRepo(repo)"
+                @click="selectPinnedRepo(item.repo)"
               >
                 <UIcon
-                  name="i-lucide-book-marked"
+                  :name="item.type === 'fork' ? 'i-lucide-git-fork' : 'i-lucide-book-marked'"
                   class="size-4 shrink-0 text-muted"
                 />
-                <span class="truncate">{{ repo.split('/')[1] }}</span>
+                <span class="truncate">{{ item.repo.split('/')[1] }}</span>
+                <UBadge
+                  v-if="item.type === 'fork'"
+                  color="info"
+                  variant="subtle"
+                  size="xs"
+                >
+                  {{ $t('repos.badge.fork') }}
+                </UBadge>
               </NuxtLink>
               <UTooltip :text="$t('pinnedRepos.unpin')">
                 <UButton
@@ -197,7 +208,7 @@ const mainItems = computed<NavigationMenuItem[]>(() => [
                   square
                   :aria-label="$t('pinnedRepos.unpin')"
                   class="opacity-0 group-hover:opacity-100 shrink-0"
-                  @click="unpin(repo)"
+                  @click="unpin(item.repo)"
                 />
               </UTooltip>
             </div>
