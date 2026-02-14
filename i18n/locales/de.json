@@ -256,6 +256,11 @@
       "contributorDescription": "Hat bereits zu diesem Repository beigetragen"
     }
   },
+  "pinnedRepos": {
+    "pin": "Repository anheften",
+    "unpin": "Repository loslösen",
+    "pinned": "Angeheftet"
+  },
   "settings": {
     "appearance": {
       "title": "Erscheinungsbild",

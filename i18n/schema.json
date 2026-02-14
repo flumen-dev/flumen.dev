@@ -775,6 +775,21 @@
       },
       "additionalProperties": false
     },
+    "pinnedRepos": {
+      "type": "object",
+      "properties": {
+        "pin": {
+          "type": "string"
+        },
+        "unpin": {
+          "type": "string"
+        },
+        "pinned": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
     "settings": {
       "type": "object",
       "properties": {

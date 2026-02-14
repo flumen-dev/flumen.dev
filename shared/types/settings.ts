@@ -1,8 +1,16 @@
+export type PinnedItemType = 'repo' | 'fork'
+
+export interface PinnedItem {
+  repo: string
+  type: PinnedItemType
+}
+
 export interface UserSettings {
   theme: 'light' | 'dark' | 'system'
   primaryColor: string
   locale: string
   selectedRepo: string | null
+  pinnedRepos: PinnedItem[]
 }
 
 export const defaultUserSettings: UserSettings = {
@@ -10,6 +18,7 @@ export const defaultUserSettings: UserSettings = {
   primaryColor: 'indigo',
   locale: 'en',
   selectedRepo: null,
+  pinnedRepos: [],
 }
 
 export const accentColors = [

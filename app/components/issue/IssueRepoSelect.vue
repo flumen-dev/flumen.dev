@@ -9,12 +9,13 @@ interface SearchRepo {
   visibility: string
   openIssues: number
   stars: number
+  fork: boolean
 }
 
-const { t } = useI18n()
 const repoStore = useRepositoryStore()
 const issueStore = useIssueStore()
 const { settings, update } = useUserSettings()
+const { isPinned, toggle: togglePin } = usePinnedRepos()
 const apiFetch = useRequestFetch()
 
 const open = ref(false)
@@ -159,7 +160,7 @@ onMounted(async () => {
       <span
         v-else
         class="text-muted"
-      >{{ t('issues.selectRepo') }}</span>
+      >{{ $t('issues.selectRepo') }}</span>
     </UButton>
 
     <template #content>
@@ -172,7 +173,7 @@ onMounted(async () => {
           />
           <input
             v-model="query"
-            :placeholder="t('issues.searchRepos')"
+            :placeholder="$t('issues.searchRepos')"
             class="flex-1 min-w-0 text-sm bg-transparent outline-none placeholder:text-muted"
           >
           <UIcon
@@ -187,7 +188,7 @@ onMounted(async () => {
           v-if="!query"
           class="px-3 pb-1.5 text-xs text-dimmed"
         >
-          {{ t('issues.searchReposHint') }}
+          {{ $t('issues.searchReposHint') }}
         </p>
 
         <USeparator />
@@ -200,7 +201,7 @@ onMounted(async () => {
               v-if="query"
               class="px-3 pt-2 pb-1 text-xs font-semibold text-dimmed uppercase tracking-wide"
             >
-              {{ t('issues.yourRepos') }}
+              {{ $t('issues.yourRepos') }}
             </p>
             <button
               v-for="repo in filteredOwnRepos"
@@ -223,7 +224,7 @@ onMounted(async () => {
                     variant="subtle"
                     size="xs"
                   >
-                    {{ t('repos.badge.private') }}
+                    {{ $t('repos.badge.private') }}
                   </UBadge>
                 </div>
                 <p
@@ -241,7 +242,7 @@ onMounted(async () => {
                       name="i-lucide-circle-dot"
                       class="size-3.5"
                     />
-                    {{ t('issues.openCount', { count: repo.openIssues }) }}
+                    {{ $t('issues.openCount', { count: repo.openIssues }) }}
                   </span>
                   <span
                     v-if="repo.openPrs"
@@ -261,6 +262,20 @@ onMounted(async () => {
                   </span>
                 </div>
               </div>
+              <UTooltip
+                :text="isPinned(repo.fullName) ?$t('pinnedRepos.unpin') :$t('pinnedRepos.pin')"
+              >
+                <UButton
+                  :icon="isPinned(repo.fullName) ? 'i-lucide-pin-off' : 'i-lucide-pin'"
+                  size="xs"
+                  color="neutral"
+                  variant="ghost"
+                  square
+                  :aria-label="isPinned(repo.fullName) ?$t('pinnedRepos.unpin') :$t('pinnedRepos.pin')"
+                  class="shrink-0 self-center cursor-pointer"
+                  @click.stop="togglePin(repo.fullName, repo.fork ? 'fork' : 'repo')"
+                />
+              </UTooltip>
             </button>
           </div>
 
@@ -317,6 +332,20 @@ onMounted(async () => {
                   </span>
                 </div>
               </div>
+              <UTooltip
+                :text="isPinned(repo.fullName) ?$t('pinnedRepos.unpin') :$t('pinnedRepos.pin')"
+              >
+                <UButton
+                  :icon="isPinned(repo.fullName) ? 'i-lucide-pin-off' : 'i-lucide-pin'"
+                  size="xs"
+                  color="neutral"
+                  variant="ghost"
+                  square
+                  :aria-label="isPinned(repo.fullName) ?$t('pinnedRepos.unpin') :$t('pinnedRepos.pin')"
+                  class="shrink-0 self-center cursor-pointer"
+                  @click.stop="togglePin(repo.fullName, repo.fork ? 'fork' : 'repo')"
+                />
+              </UTooltip>
             </button>
           </div>
 
@@ -325,7 +354,7 @@ onMounted(async () => {
             v-if="!filteredOwnRepos.length && !filteredSearchResults.length && !searching"
             class="px-3 py-4 text-sm text-muted text-center"
           >
-            {{ t('repos.noResults') }}
+            {{ $t('repos.noResults') }}
           </p>
 
           <!-- Searching indicator -->
@@ -333,7 +362,7 @@ onMounted(async () => {
             v-if="searching && !filteredSearchResults.length"
             class="px-3 py-4 text-sm text-muted text-center"
           >
-            {{ t('common.loading') }}
+            {{ $t('common.loading') }}
           </p>
         </div>
       </div>
