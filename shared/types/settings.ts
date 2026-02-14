@@ -3,6 +3,7 @@ export interface UserSettings {
   primaryColor: string
   locale: string
   selectedRepo: string | null
+  pinnedRepos: string[]
 }
 
 export const defaultUserSettings: UserSettings = {
@@ -10,6 +11,7 @@ export const defaultUserSettings: UserSettings = {
   primaryColor: 'indigo',
   locale: 'en',
   selectedRepo: null,
+  pinnedRepos: [],
 }
 
 export const accentColors = [

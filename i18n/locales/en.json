@@ -256,6 +256,11 @@
       "contributorDescription": "Has previously committed to this repository"
     }
   },
+  "pinnedRepos": {
+    "pin": "Pin repository",
+    "unpin": "Unpin repository",
+    "pinned": "Pinned"
+  },
   "settings": {
     "appearance": {
       "title": "Appearance",
