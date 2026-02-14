@@ -22,6 +22,7 @@ const query = ref('')
 const searchResults = ref<SearchRepo[]>([])
 const searching = ref(false)
 let debounceTimer: ReturnType<typeof setTimeout> | null = null
+let searchRequestId = 0
 
 const reposWithCounts = computed(() =>
   repoStore.repos
@@ -60,23 +61,30 @@ const isExternalRepo = computed(() =>
 // Debounced GitHub search
 watch(query, (q) => {
   if (debounceTimer) clearTimeout(debounceTimer)
-  if (!q || q.length < 2) {
+  const trimmed = q?.trim()
+  if (!trimmed || trimmed.length < 2) {
     searchResults.value = []
     searching.value = false
     return
   }
   searching.value = true
+  const requestId = ++searchRequestId
   debounceTimer = setTimeout(async () => {
     try {
-      searchResults.value = await apiFetch<SearchRepo[]>('/api/repository/search', {
-        params: { q },
+      const results = await apiFetch<SearchRepo[]>('/api/repository/search', {
+        params: { q: trimmed },
       })
+      if (requestId !== searchRequestId) return
+      searchResults.value = results
     }
     catch {
+      if (requestId !== searchRequestId) return
       searchResults.value = []
     }
     finally {
-      searching.value = false
+      if (requestId === searchRequestId) {
+        searching.value = false
+      }
     }
   }, 300)
 })
@@ -92,8 +100,10 @@ async function select(fullName: string) {
 // Reset search when popover closes
 watch(open, (isOpen) => {
   if (!isOpen) {
+    if (debounceTimer) clearTimeout(debounceTimer)
     query.value = ''
     searchResults.value = []
+    searching.value = false
   }
 })
 

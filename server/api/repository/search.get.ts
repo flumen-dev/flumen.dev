@@ -14,7 +14,8 @@ interface GitHubSearchResult {
 
 export default defineEventHandler(async (event) => {
   const { token } = await getSessionToken(event)
-  const { q } = getQuery<{ q?: string }>(event)
+  const raw = getQuery<{ q?: string }>(event).q
+  const q = raw?.trim()
 
   if (!q || q.length < 2) {
     return []
