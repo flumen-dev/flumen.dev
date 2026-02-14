@@ -43,7 +43,15 @@ describe('usePinnedRepos', () => {
       expect(pinned.isPinned('org/repo')).toBe(false)
       await pinned.pin('org/repo')
       expect(pinned.isPinned('org/repo')).toBe(true)
-      expect(pinned.pinnedRepos.value).toEqual(['org/repo'])
+      expect(pinned.pinnedRepos.value).toEqual([{ repo: 'org/repo', type: 'repo' }])
+    })
+  })
+
+  it('pins a fork with correct type', async () => {
+    await withPinned(async (pinned) => {
+      await pinned.pin('org/repo', 'fork')
+      expect(pinned.pinnedRepos.value).toEqual([{ repo: 'org/repo', type: 'fork' }])
+      expect(pinned.getItem('org/repo')?.type).toBe('fork')
     })
   })
 
@@ -51,9 +59,9 @@ describe('usePinnedRepos', () => {
     await withPinned(async (pinned) => {
       await pinned.pin('org/repo')
       await pinned.pin('org/other')
-      expect(pinned.pinnedRepos.value).toEqual(['org/repo', 'org/other'])
+      expect(pinned.pinnedRepos.value).toHaveLength(2)
       await pinned.unpin('org/repo')
-      expect(pinned.pinnedRepos.value).toEqual(['org/other'])
+      expect(pinned.pinnedRepos.value).toEqual([{ repo: 'org/other', type: 'repo' }])
       expect(pinned.isPinned('org/repo')).toBe(false)
     })
   })
@@ -71,7 +79,7 @@ describe('usePinnedRepos', () => {
     await withPinned(async (pinned) => {
       await pinned.pin('org/repo')
       await pinned.pin('org/repo')
-      expect(pinned.pinnedRepos.value).toEqual(['org/repo'])
+      expect(pinned.pinnedRepos.value).toEqual([{ repo: 'org/repo', type: 'repo' }])
     })
   })
 })
