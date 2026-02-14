@@ -40,7 +40,6 @@ const issueStore = useIssueStore()
 function selectPinnedRepo(repo: string) {
   issueStore.selectRepo(repo)
   updateSettings({ selectedRepo: repo })
-  navigateTo(localePath('/issues'))
 }
 
 const mainItems = computed<NavigationMenuItem[]>(() => [
