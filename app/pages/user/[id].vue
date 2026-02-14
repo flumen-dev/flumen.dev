@@ -44,7 +44,7 @@ function cancelEdit() {
 }
 
 async function save() {
-  const readmeChanged = store.readme !== null && readmeForm.value !== store.readme
+  const readmeChanged = readmeForm.value !== (store.readme ?? '')
   const [profileSuccess] = await Promise.all([
     store.saveProfile(form),
     readmeChanged ? store.saveReadme(readmeForm.value) : Promise.resolve(),
@@ -408,7 +408,7 @@ function sanitizeUrl(raw: string): string | null {
               {{ t('profile.readme') }}
             </h2>
             <UButton
-              v-if="editing && store.readme !== null"
+              v-if="editing"
               :icon="readmePreview ? 'i-lucide-code' : 'i-lucide-eye'"
               :label="readmePreview ? t('profile.readmeEdit') : t('profile.readmePreviewLabel')"
               variant="ghost"
@@ -420,7 +420,7 @@ function sanitizeUrl(raw: string): string | null {
           <!-- View mode: rendered markdown -->
           <template v-if="!editing">
             <UEditor
-              v-if="store.readme !== null"
+              v-if="store.readme"
               :model-value="store.readme"
               content-type="markdown"
               :editable="false"
@@ -430,18 +430,17 @@ function sanitizeUrl(raw: string): string | null {
               icon="i-lucide-file-text"
               color="neutral"
               variant="subtle"
-              :title="t('profile.readmeNoRepo')"
-              :description="t('profile.readmeNoRepoDescription')"
+              :title="t('profile.readmeEmpty')"
+              :description="t('profile.readmeEmptyDescription')"
             >
               <template #actions>
                 <UButton
-                  :label="t('profile.readmeCreateLink')"
-                  icon="i-lucide-external-link"
+                  :label="t('profile.readmeCreate')"
+                  icon="i-lucide-plus"
                   variant="outline"
-                  color="neutral"
+                  color="primary"
                   size="sm"
-                  to="https://docs.github.com/en/account-and-profile/setting-up-and-managing-your-github-profile/customizing-your-profile/managing-your-profile-readme"
-                  target="_blank"
+                  @click="startEdit"
                 />
               </template>
             </UAlert>
@@ -449,43 +448,21 @@ function sanitizeUrl(raw: string): string | null {
 
           <!-- Edit mode -->
           <template v-else>
-            <template v-if="store.readme !== null">
-              <!-- Preview -->
-              <UEditor
-                v-if="readmePreview"
-                :model-value="readmeForm"
-                content-type="markdown"
-                :editable="false"
-              />
-              <!-- Raw editor -->
-              <UTextarea
-                v-else
-                v-model="readmeForm"
-                class="w-full font-mono text-sm"
-                :rows="49"
-                :placeholder="t('profile.readmePlaceholder')"
-              />
-            </template>
-            <UAlert
+            <!-- Preview -->
+            <UEditor
+              v-if="readmePreview"
+              :model-value="readmeForm"
+              content-type="markdown"
+              :editable="false"
+            />
+            <!-- Raw editor -->
+            <UTextarea
               v-else
-              icon="i-lucide-file-text"
-              color="neutral"
-              variant="subtle"
-              :title="t('profile.readmeNoRepo')"
-              :description="t('profile.readmeNoRepoDescription')"
-            >
-              <template #actions>
-                <UButton
-                  :label="t('profile.readmeCreateLink')"
-                  icon="i-lucide-external-link"
-                  variant="outline"
-                  color="neutral"
-                  size="sm"
-                  to="https://docs.github.com/en/account-and-profile/setting-up-and-managing-your-github-profile/customizing-your-profile/managing-your-profile-readme"
-                  target="_blank"
-                />
-              </template>
-            </UAlert>
+              v-model="readmeForm"
+              class="w-full font-mono text-sm"
+              :rows="49"
+              :placeholder="t('profile.readmePlaceholder')"
+            />
           </template>
         </div>
       </div>

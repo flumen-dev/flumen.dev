@@ -135,9 +135,9 @@
     "socialLimit": "GitHub erlaubt maximal 4 soziale Konten.",
     "readme": "Profil-README",
     "readmePlaceholder": "Schreibe etwas über dich...",
-    "readmeNoRepo": "Kein Profil-README gefunden",
-    "readmeNoRepoDescription": "Erstelle ein Repository mit deinem Benutzernamen und einer README.md, um es auf deinem Profil anzuzeigen.",
-    "readmeCreateLink": "Erfahre, wie du ein Profil-README erstellst",
+    "readmeEmpty": "Noch kein Profil-README",
+    "readmeEmptyDescription": "Erstelle eine README für dein GitHub-Profil.",
+    "readmeCreate": "README erstellen",
     "readmePreviewLabel": "Vorschau",
     "readmeEdit": "Bearbeiten",
     "success": {
