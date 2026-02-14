@@ -1,0 +1,77 @@
+import { describe, expect, it } from 'vitest'
+import { mountSuspended, registerEndpoint } from '@nuxt/test-utils/runtime'
+import { defineComponent, h } from 'vue'
+import { readBody as h3ReadBody } from 'h3'
+import { defaultUserSettings, type UserSettings } from '../../shared/types/settings'
+
+let storedSettings: UserSettings = { ...defaultUserSettings }
+
+registerEndpoint('/api/user/settings', {
+  method: 'GET',
+  handler: () => ({ ...storedSettings }),
+})
+
+registerEndpoint('/api/user/settings', {
+  method: 'PUT',
+  handler: async (event) => {
+    const body = await h3ReadBody(event)
+    storedSettings = { ...storedSettings, ...body }
+    return { ...storedSettings }
+  },
+})
+
+async function withPinned<T>(fn: (pinned: ReturnType<typeof usePinnedRepos>) => T | Promise<T>): Promise<T> {
+  let result: T
+  storedSettings = { ...defaultUserSettings }
+  const Wrapper = defineComponent({
+    async setup() {
+      const { settings, load } = useUserSettings()
+      settings.value = { ...defaultUserSettings }
+      await load()
+      const pinned = usePinnedRepos()
+      result = await fn(pinned)
+      return () => h('div')
+    },
+  })
+  await mountSuspended(Wrapper)
+  return result!
+}
+
+describe('usePinnedRepos', () => {
+  it('pins a repo and persists it', async () => {
+    await withPinned(async (pinned) => {
+      expect(pinned.isPinned('org/repo')).toBe(false)
+      await pinned.pin('org/repo')
+      expect(pinned.isPinned('org/repo')).toBe(true)
+      expect(pinned.pinnedRepos.value).toEqual(['org/repo'])
+    })
+  })
+
+  it('unpins a repo', async () => {
+    await withPinned(async (pinned) => {
+      await pinned.pin('org/repo')
+      await pinned.pin('org/other')
+      expect(pinned.pinnedRepos.value).toEqual(['org/repo', 'org/other'])
+      await pinned.unpin('org/repo')
+      expect(pinned.pinnedRepos.value).toEqual(['org/other'])
+      expect(pinned.isPinned('org/repo')).toBe(false)
+    })
+  })
+
+  it('toggle pins and unpins', async () => {
+    await withPinned(async (pinned) => {
+      await pinned.toggle('org/repo')
+      expect(pinned.isPinned('org/repo')).toBe(true)
+      await pinned.toggle('org/repo')
+      expect(pinned.isPinned('org/repo')).toBe(false)
+    })
+  })
+
+  it('does not duplicate when pinning twice', async () => {
+    await withPinned(async (pinned) => {
+      await pinned.pin('org/repo')
+      await pinned.pin('org/repo')
+      expect(pinned.pinnedRepos.value).toEqual(['org/repo'])
+    })
+  })
+})
