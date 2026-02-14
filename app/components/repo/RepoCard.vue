@@ -20,6 +20,8 @@ const activityTooltip = computed(() => {
   return t('repos.activity.inactive')
 })
 
+const { isPinned, toggle: togglePin } = usePinnedRepos()
+
 const expandedSection = ref<'issues' | 'prs' | 'notifications' | null>(null)
 
 function toggleSection(section: 'issues' | 'prs' | 'notifications') {
@@ -137,6 +139,17 @@ function toggleSection(section: 'issues' | 'prs' | 'notifications') {
             <span class="text-xs text-dimmed">
               {{ timeAgo }}
             </span>
+            <UTooltip :text="isPinned(repo.fullName) ? $t('pinnedRepos.unpin') : $t('pinnedRepos.pin')">
+              <UButton
+                :icon="isPinned(repo.fullName) ? 'i-lucide-pin-off' : 'i-lucide-pin'"
+                size="xs"
+                color="neutral"
+                variant="ghost"
+                square
+                :aria-label="isPinned(repo.fullName) ? $t('pinnedRepos.unpin') : $t('pinnedRepos.pin')"
+                @click.stop="togglePin(repo.fullName, repo.fork ? 'fork' : 'repo')"
+              />
+            </UTooltip>
           </div>
         </div>
 
