@@ -3,7 +3,10 @@
     "title": "Flumen",
     "description": "Open source, streamlined.",
     "loading": "Laden...",
-    "retry": "Erneut versuchen"
+    "retry": "Erneut versuchen",
+    "copied": "Link kopiert",
+    "copyLink": "Link kopieren",
+    "viewOnGithub": "Auf GitHub ansehen"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -161,6 +164,7 @@
     "open": "Offen",
     "closed": "Geschlossen",
     "selectRepo": "Repository auswählen...",
+    "customRepoPlaceholder": "owner/repo (z.B. nuxt/nuxt)",
     "openCount": "{count} offen",
     "noResults": "Keine Issues gefunden.",
     "closedAs": "Geschlossen",
@@ -168,6 +172,10 @@
     "needsResponse": "Wartet auf deine Antwort",
     "search": "Issues durchsuchen...",
     "count": "Keine Issues | {count} Issue | {count} Issues",
+    "page": "Seite {current} von {total}",
+    "previousPage": "Zurück",
+    "nextPage": "Weiter",
+    "serverSearch": "Suche läuft...",
     "filter": {
       "unassigned": "Nicht zugewiesen",
       "hasLinkedPr": "Hat PR",
@@ -182,6 +190,43 @@
       "leastCommented": "Wenigste Kommentare",
       "recentlyUpdated": "Kürzlich aktualisiert"
     },
+    "detail": {
+      "needsOwner": "Braucht Zuständigen",
+      "noBranchYet": "Noch kein Branch",
+      "claim": "Übernehmen",
+      "claimTitle": "Issue übernehmen",
+      "claimDescFork": "Wir forken das Repo, erstellen einen Branch und weisen dir das Issue zu.",
+      "claimDescBranch": "Fork existiert! Wir erstellen einen Branch und weisen dich zu.",
+      "claimDescCollab": "Wir erstellen einen Branch und weisen dir das Issue zu.",
+      "branchName": "Branch-Name",
+      "branchExists": "Branch existiert bereits",
+      "branchExistsHint": "Ändere den Namen oder nutze den vorhandenen.",
+      "letsGo": "Los geht's!",
+      "claiming": "Wird eingerichtet...",
+      "claimSuccess": "Du bist dran!",
+      "claimSuccessForked": "Geforkt, Branch erstellt, zugewiesen.",
+      "claimSuccessBranch": "Branch erstellt, zugewiesen.",
+      "copyCommand": "Befehl kopieren",
+      "commandCopied": "Befehl kopiert!",
+      "useExisting": "Vorhandenen Branch nutzen",
+      "claimError": "Issue konnte nicht übernommen werden.",
+      "forkTimeout": "Fork hat zu lange gedauert. Nochmal versuchen.",
+      "othersWorking": "{count} arbeiten daran",
+      "othersAlreadyWorking": "{count} Person arbeitet bereits an diesem Issue | {count} Personen arbeiten bereits an diesem Issue"
+    },
+    "event": {
+      "assignedSelf": "hat sich selbst zugewiesen",
+      "reopened": "hat wiedereröffnet",
+      "renamed": "hat den Titel geändert"
+    },
+    "sidebar": {
+      "participants": "Beteiligte",
+      "ownerActive": "Inhaber beteiligt sich",
+      "mentions": "Erwähnungen",
+      "reproductions": "Reproduktionen",
+      "links": "Links",
+      "showLess": "Weniger"
+    },
     "error": {
       "fetchError": {
         "title": "Issues konnten nicht geladen werden",
@@ -195,6 +240,18 @@
         "title": "Zu viele Anfragen",
         "description": "GitHub-Rate-Limit erreicht. Bitte warte einen Moment und versuche es erneut."
       }
+    }
+  },
+  "user": {
+    "role": {
+      "owner": "Inhaber",
+      "ownerDescription": "Inhaber dieses Repositorys",
+      "member": "Mitglied",
+      "memberDescription": "Mitglied der Organisation",
+      "collaborator": "Mitwirkender",
+      "collaboratorDescription": "Wurde zur Zusammenarbeit eingeladen",
+      "contributor": "Beitragender",
+      "contributorDescription": "Hat bereits zu diesem Repository beigetragen"
     }
   },
   "settings": {

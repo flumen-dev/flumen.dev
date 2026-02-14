@@ -3,7 +3,10 @@
     "title": "Flumen",
     "description": "Open source, streamlined.",
     "loading": "Loading...",
-    "retry": "Try again"
+    "retry": "Try again",
+    "copied": "Link copied",
+    "copyLink": "Copy link",
+    "viewOnGithub": "View on GitHub"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -161,6 +164,7 @@
     "open": "Open",
     "closed": "Closed",
     "selectRepo": "Select a repository...",
+    "customRepoPlaceholder": "owner/repo (e.g. nuxt/nuxt)",
     "openCount": "{count} open",
     "noResults": "No issues found.",
     "closedAs": "Closed",
@@ -168,6 +172,10 @@
     "needsResponse": "Waiting for your response",
     "search": "Search issues...",
     "count": "No issues | {count} issue | {count} issues",
+    "page": "Page {current} of {total}",
+    "previousPage": "Previous",
+    "nextPage": "Next",
+    "serverSearch": "Searching...",
     "filter": {
       "unassigned": "Unassigned",
       "hasLinkedPr": "Has PR",
@@ -182,6 +190,43 @@
       "leastCommented": "Least commented",
       "recentlyUpdated": "Recently updated"
     },
+    "detail": {
+      "needsOwner": "Needs owner",
+      "noBranchYet": "No branch yet",
+      "claim": "Claim",
+      "claimTitle": "Claim this issue",
+      "claimDescFork": "We'll fork the repository, create a branch, and assign you to this issue.",
+      "claimDescBranch": "Fork exists! We'll create a branch and assign you.",
+      "claimDescCollab": "We'll create a branch and assign you to this issue.",
+      "branchName": "Branch name",
+      "branchExists": "Branch already exists",
+      "branchExistsHint": "Change the name or use the existing one.",
+      "letsGo": "Let's go!",
+      "claiming": "Setting up...",
+      "claimSuccess": "You're on it!",
+      "claimSuccessForked": "Forked, branch created, assigned.",
+      "claimSuccessBranch": "Branch created, assigned.",
+      "copyCommand": "Copy command",
+      "commandCopied": "Command copied!",
+      "useExisting": "Use existing branch",
+      "claimError": "Could not claim this issue.",
+      "forkTimeout": "Fork timed out. Try again.",
+      "othersWorking": "{count} working on this",
+      "othersAlreadyWorking": "{count} person already working on this issue | {count} people already working on this issue"
+    },
+    "event": {
+      "assignedSelf": "self-assigned",
+      "reopened": "reopened this",
+      "renamed": "changed the title"
+    },
+    "sidebar": {
+      "participants": "Participants",
+      "ownerActive": "Owner joined the discussion",
+      "mentions": "Mentions",
+      "reproductions": "Reproductions",
+      "links": "Links",
+      "showLess": "Show less"
+    },
     "error": {
       "fetchError": {
         "title": "Failed to load issues",
@@ -195,6 +240,18 @@
         "title": "Too many requests",
         "description": "GitHub rate limit reached. Please wait a moment and try again."
       }
+    }
+  },
+  "user": {
+    "role": {
+      "owner": "Owner",
+      "ownerDescription": "Owner of this repository",
+      "member": "Member",
+      "memberDescription": "Member of the organization",
+      "collaborator": "Collaborator",
+      "collaboratorDescription": "Has been invited to collaborate",
+      "contributor": "Contributor",
+      "contributorDescription": "Has previously committed to this repository"
     }
   },
   "settings": {

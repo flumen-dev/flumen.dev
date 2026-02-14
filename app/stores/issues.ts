@@ -1,4 +1,4 @@
-import type { Issue } from '~~/shared/types/issue'
+import type { Issue, PaginatedIssues } from '~~/shared/types/issue'
 
 export type IssueSortKey = 'critical' | 'newest' | 'oldest' | 'mostCommented' | 'leastCommented' | 'recentlyUpdated'
 
@@ -49,27 +49,34 @@ export const useIssueStore = defineStore('issues', () => {
   const sortKey = ref<IssueSortKey>('critical')
   const activeFilters = ref<string[]>([])
 
+  // --- Pagination ---
+  const totalCount = ref(0)
+  const endCursor = ref<string | null>(null)
+  const hasMore = ref(false)
+  const cursorHistory = ref<string[]>([])
+
+  // --- Page navigation direction (for button loading indicators) ---
+  const paging = ref<'next' | 'prev' | null>(null)
+
+  // --- Server search ---
+  const searchResults = ref<Issue[]>([])
+  const searching = ref(false)
+  let searchDebounceTimer: ReturnType<typeof setTimeout> | null = null
+  let searchRequestId = 0
+
   // --- Derived ---
   const availableLabels = computed(() => {
-    if (!issues.value.length) return []
-    const set = new Set(issues.value.flatMap(i => i.labels.map(l => l.name)))
+    const source = search.value ? searchResults.value : issues.value
+    if (!source.length) return []
+    const set = new Set(source.flatMap(i => i.labels.map(l => l.name)))
     return [...set].sort()
   })
 
   const filteredIssues = computed(() => {
-    let result = issues.value
+    // When searching, use server-side results
+    let result = search.value ? searchResults.value : issues.value
 
-    // Search
-    if (search.value) {
-      const q = search.value.toLowerCase()
-      result = result.filter(i =>
-        i.title.toLowerCase().includes(q)
-        || `#${i.number}`.includes(q)
-        || i.labels.some(l => l.name.toLowerCase().includes(q)),
-      )
-    }
-
-    // Filters
+    // Filters (applied to both local and search results)
     if (activeFilters.value.includes('unassigned')) {
       result = result.filter(i => !i.assignees.length)
     }
@@ -113,6 +120,11 @@ export const useIssueStore = defineStore('issues', () => {
     return result
   })
 
+  const PAGE_SIZE = 30
+  const currentPage = computed(() => cursorHistory.value.length + 1)
+  const totalPages = computed(() => Math.max(1, Math.ceil(totalCount.value / PAGE_SIZE)))
+  const hasPrevious = computed(() => cursorHistory.value.length > 0)
+
   // --- Error handler ---
   function handleError(err: unknown) {
     const status = (err as { statusCode?: number })?.statusCode
@@ -132,10 +144,18 @@ export const useIssueStore = defineStore('issues', () => {
     if (!selectedRepo.value) return
     loading.value = true
     errorKey.value = null
+    // Reset pagination
+    endCursor.value = null
+    hasMore.value = false
+    cursorHistory.value = []
     try {
-      issues.value = await apiFetch<Issue[]>('/api/issues', {
+      const data = await apiFetch<PaginatedIssues>('/api/issues', {
         params: { state: stateFilter.value, repo: selectedRepo.value },
       })
+      issues.value = data.issues
+      totalCount.value = data.totalCount
+      hasMore.value = data.pageInfo.hasNextPage
+      endCursor.value = data.pageInfo.endCursor
       loaded.value = true
     }
     catch (err) {
@@ -146,15 +166,122 @@ export const useIssueStore = defineStore('issues', () => {
     }
   }
 
+  async function loadNextPage() {
+    if (!selectedRepo.value || !hasMore.value || !endCursor.value || loading.value) return
+    loading.value = true
+    paging.value = 'next'
+    errorKey.value = null
+    try {
+      cursorHistory.value = [...cursorHistory.value, endCursor.value]
+      const data = await apiFetch<PaginatedIssues>('/api/issues', {
+        params: {
+          state: stateFilter.value,
+          repo: selectedRepo.value,
+          after: endCursor.value,
+        },
+      })
+      issues.value = data.issues
+      totalCount.value = data.totalCount
+      hasMore.value = data.pageInfo.hasNextPage
+      endCursor.value = data.pageInfo.endCursor
+    }
+    catch (err) {
+      cursorHistory.value = cursorHistory.value.slice(0, -1)
+      handleError(err)
+    }
+    finally {
+      loading.value = false
+      paging.value = null
+    }
+  }
+
+  async function loadPreviousPage() {
+    if (!selectedRepo.value || !cursorHistory.value.length || loading.value) return
+    loading.value = true
+    paging.value = 'prev'
+    errorKey.value = null
+    try {
+      const history = [...cursorHistory.value]
+      history.pop()
+      const after = history.length ? history[history.length - 1] : undefined
+
+      const params: Record<string, string> = {
+        state: stateFilter.value,
+        repo: selectedRepo.value,
+      }
+      if (after) params.after = after
+
+      const data = await apiFetch<PaginatedIssues>('/api/issues', { params })
+      issues.value = data.issues
+      totalCount.value = data.totalCount
+      hasMore.value = data.pageInfo.hasNextPage
+      endCursor.value = data.pageInfo.endCursor
+      cursorHistory.value = history
+    }
+    catch (err) {
+      handleError(err)
+    }
+    finally {
+      loading.value = false
+      paging.value = null
+    }
+  }
+
+  async function searchIssues(q: string) {
+    if (!selectedRepo.value || !q.trim()) {
+      searchResults.value = []
+      searching.value = false
+      return
+    }
+    const requestId = ++searchRequestId
+    searching.value = true
+    try {
+      const results = await apiFetch<Issue[]>('/api/issues/search', {
+        params: {
+          repo: selectedRepo.value,
+          state: stateFilter.value,
+          q: q.trim(),
+        },
+      })
+      if (requestId !== searchRequestId) return // stale response
+      searchResults.value = results
+    }
+    catch {
+      if (requestId !== searchRequestId) return
+      searchResults.value = []
+    }
+    finally {
+      if (requestId === searchRequestId) {
+        searching.value = false
+      }
+    }
+  }
+
+  // Debounced search watcher
+  watch(search, (q) => {
+    if (searchDebounceTimer) clearTimeout(searchDebounceTimer)
+    if (!q.trim()) {
+      searchResults.value = []
+      searching.value = false
+      return
+    }
+    searching.value = true
+    searchDebounceTimer = setTimeout(() => searchIssues(q), 300)
+  })
+
   async function selectRepo(repo: string) {
     if (repo === selectedRepo.value && loaded.value) return
     selectedRepo.value = repo
     loaded.value = false
+    search.value = ''
+    searchResults.value = []
     await fetchIssues()
   }
 
   async function refresh() {
     loaded.value = false
+    search.value = ''
+    searchResults.value = []
     await fetchIssues()
   }
 
@@ -169,11 +296,23 @@ export const useIssueStore = defineStore('issues', () => {
     search,
     sortKey,
     activeFilters,
+    // Pagination
+    totalCount,
+    hasMore,
+    currentPage,
+    totalPages,
+    hasPrevious,
+    paging,
+    // Search
+    searchResults,
+    searching,
     // Derived
     availableLabels,
     filteredIssues,
     // Actions
     fetchIssues,
+    loadNextPage,
+    loadPreviousPage,
     selectRepo,
     refresh,
   }

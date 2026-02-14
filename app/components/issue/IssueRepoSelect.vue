@@ -5,6 +5,7 @@ const issueStore = useIssueStore()
 const { settings, update } = useUserSettings()
 
 const open = ref(false)
+const customRepo = ref('')
 
 const reposWithCounts = computed(() =>
   repoStore.repos
@@ -21,17 +22,30 @@ const selectedRepoData = computed(() =>
   reposWithCounts.value.find(r => r.fullName === issueStore.selectedRepo),
 )
 
+const isExternalRepo = computed(() =>
+  issueStore.selectedRepo && !reposWithCounts.value.some(r => r.fullName === issueStore.selectedRepo),
+)
+
 async function select(fullName: string) {
   open.value = false
   await issueStore.selectRepo(fullName)
   update({ selectedRepo: fullName })
 }
 
+function submitCustomRepo() {
+  const value = customRepo.value.trim()
+  if (!value.includes('/')) return
+  const [owner, name] = value.split('/')
+  if (!owner || !name) return
+  customRepo.value = ''
+  select(`${owner}/${name}`)
+}
+
 // Restore from settings on mount
 onMounted(async () => {
   await repoStore.fetchAll()
   const saved = settings.value?.selectedRepo
-  if (saved && repoStore.repos.some(r => r.fullName === saved)) {
+  if (saved) {
     await issueStore.selectRepo(saved)
   }
 })
@@ -67,6 +81,15 @@ onMounted(async () => {
           </UBadge>
         </div>
       </template>
+      <template v-else-if="isExternalRepo">
+        <div class="truncate flex items-center gap-1.5 font-medium">
+          <UIcon
+            name="i-lucide-globe"
+            class="size-3.5 text-muted shrink-0"
+          />
+          <span>{{ issueStore.selectedRepo }}</span>
+        </div>
+      </template>
       <span
         v-else
         class="text-muted"
@@ -74,74 +97,102 @@ onMounted(async () => {
     </UButton>
 
     <template #content>
-      <div class="w-96 overflow-y-auto max-h-96">
-        <button
-          v-for="repo in reposWithCounts"
-          :key="repo.id"
-          class="w-full text-left px-3 py-2.5 hover:bg-elevated transition-colors flex items-start gap-3 cursor-pointer"
-          :class="{ 'bg-elevated/50': repo.fullName === issueStore.selectedRepo }"
-          @click="select(repo.fullName)"
+      <div class="w-96 max-h-96 flex flex-col">
+        <!-- Custom repo input -->
+        <form
+          class="flex items-center gap-2 px-3 py-2.5 border-b border-default"
+          @submit.prevent="submitCustomRepo"
         >
           <UIcon
-            :name="repo.fullName === issueStore.selectedRepo ? 'i-lucide-check' : 'i-lucide-book-marked'"
-            class="size-4 mt-0.5 shrink-0"
-            :class="repo.fullName === issueStore.selectedRepo ? 'text-primary' : 'text-muted'"
+            name="i-lucide-globe"
+            class="size-4 text-muted shrink-0"
           />
-          <div class="min-w-0 flex-1">
-            <div class="flex items-center gap-2">
-              <span class="text-sm font-medium truncate">{{ repo.name }}</span>
-              <UBadge
-                v-if="repo.visibility === 'private'"
-                color="neutral"
-                variant="subtle"
-                size="xs"
-              >
-                {{ t('repos.badge.private') }}
-              </UBadge>
-            </div>
-            <p
-              v-if="repo.description"
-              class="text-xs text-muted truncate mt-0.5"
-            >
-              {{ repo.description }}
-            </p>
-            <div class="flex items-center gap-3 mt-1">
-              <span
-                v-if="repo.openIssues"
-                class="inline-flex items-center gap-1 text-xs text-rose-500"
-              >
-                <UIcon
-                  name="i-lucide-circle-dot"
-                  class="size-3.5"
-                />
-                {{ t('issues.openCount', { count: repo.openIssues }) }}
-              </span>
-              <span
-                v-if="repo.openPrs"
-                class="inline-flex items-center gap-1 text-xs text-blue-500"
-              >
-                <UIcon
-                  name="i-lucide-git-pull-request"
-                  class="size-3.5"
-                />
-                {{ repo.openPrs }}
-              </span>
-              <span
-                v-if="repo.language"
-                class="text-xs text-dimmed"
-              >
-                {{ repo.language }}
-              </span>
-            </div>
-          </div>
-        </button>
+          <input
+            v-model="customRepo"
+            :placeholder="t('issues.customRepoPlaceholder')"
+            class="flex-1 min-w-0 text-sm bg-transparent outline-none placeholder:text-muted"
+            @keydown.enter.prevent="submitCustomRepo"
+          >
+          <UButton
+            v-if="customRepo.includes('/')"
+            icon="i-lucide-arrow-right"
+            variant="ghost"
+            color="neutral"
+            size="xs"
+            @click="submitCustomRepo"
+          />
+        </form>
 
-        <p
-          v-if="!reposWithCounts.length"
-          class="px-3 py-4 text-sm text-muted text-center"
-        >
-          {{ t('repos.noResults') }}
-        </p>
+        <!-- Repo list -->
+        <div class="overflow-y-auto flex-1">
+          <button
+            v-for="repo in reposWithCounts"
+            :key="repo.id"
+            class="w-full text-left px-3 py-2.5 hover:bg-elevated transition-colors flex items-start gap-3 cursor-pointer"
+            :class="{ 'bg-elevated/50': repo.fullName === issueStore.selectedRepo }"
+            @click="select(repo.fullName)"
+          >
+            <UIcon
+              :name="repo.fullName === issueStore.selectedRepo ? 'i-lucide-check' : 'i-lucide-book-marked'"
+              class="size-4 mt-0.5 shrink-0"
+              :class="repo.fullName === issueStore.selectedRepo ? 'text-primary' : 'text-muted'"
+            />
+            <div class="min-w-0 flex-1">
+              <div class="flex items-center gap-2">
+                <span class="text-sm font-medium truncate">{{ repo.name }}</span>
+                <UBadge
+                  v-if="repo.visibility === 'private'"
+                  color="neutral"
+                  variant="subtle"
+                  size="xs"
+                >
+                  {{ t('repos.badge.private') }}
+                </UBadge>
+              </div>
+              <p
+                v-if="repo.description"
+                class="text-xs text-muted truncate mt-0.5"
+              >
+                {{ repo.description }}
+              </p>
+              <div class="flex items-center gap-3 mt-1">
+                <span
+                  v-if="repo.openIssues"
+                  class="inline-flex items-center gap-1 text-xs text-rose-500"
+                >
+                  <UIcon
+                    name="i-lucide-circle-dot"
+                    class="size-3.5"
+                  />
+                  {{ t('issues.openCount', { count: repo.openIssues }) }}
+                </span>
+                <span
+                  v-if="repo.openPrs"
+                  class="inline-flex items-center gap-1 text-xs text-blue-500"
+                >
+                  <UIcon
+                    name="i-lucide-git-pull-request"
+                    class="size-3.5"
+                  />
+                  {{ repo.openPrs }}
+                </span>
+                <span
+                  v-if="repo.language"
+                  class="text-xs text-dimmed"
+                >
+                  {{ repo.language }}
+                </span>
+              </div>
+            </div>
+          </button>
+
+          <p
+            v-if="!reposWithCounts.length"
+            class="px-3 py-4 text-sm text-muted text-center"
+          >
+            {{ t('repos.noResults') }}
+          </p>
+        </div>
       </div>
     </template>
   </UPopover>

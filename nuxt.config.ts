@@ -39,6 +39,18 @@ export default defineNuxtConfig({
       },
     },
   },
+
+  vite: {
+    optimizeDeps: {
+      include: [
+        '@nuxt/ui > prosemirror-state',
+        '@nuxt/ui > prosemirror-transform',
+        '@nuxt/ui > prosemirror-model',
+        '@nuxt/ui > prosemirror-view',
+        '@nuxt/ui > prosemirror-gapcursor',
+      ],
+    },
+  },
   echarts: {
     renderer: 'svg',
     charts: ['LineChart', 'BarChart'],

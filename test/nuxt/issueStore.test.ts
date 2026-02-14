@@ -25,11 +25,15 @@ const mockIssue: Issue = {
 
 registerEndpoint('/api/issues', {
   method: 'GET',
-  handler: (event) => {
+  handler: (event: { path: string }) => {
     const url = new URL(event.path, 'http://localhost')
     const repo = url.searchParams.get('repo')
     if (!repo) return { statusCode: 400 }
-    return [mockIssue]
+    return {
+      issues: [mockIssue],
+      totalCount: 1,
+      pageInfo: { hasNextPage: false, endCursor: null },
+    }
   },
 })
 
@@ -45,6 +49,7 @@ async function withStore<T>(fn: (store: ReturnType<typeof useIssueStore>) => T |
       store.errorKey = null
       store.stateFilter = 'open'
       store.search = ''
+      store.searchResults = []
       store.sortKey = 'critical'
       store.activeFilters = []
       result = await fn(store)
@@ -102,27 +107,29 @@ describe('issueStore', () => {
     })
   })
 
-  it('search filters issues by title', async () => {
+  it('search uses server-side searchResults', async () => {
     await withStore((store) => {
       store.issues = [
         { ...mockIssue, id: 'I_1', title: 'Login bug' },
         { ...mockIssue, id: 'I_2', title: 'Dashboard crash' },
       ]
       store.search = 'login'
+      // Server-side search: filteredIssues returns searchResults when search is active
+      store.searchResults = [{ ...mockIssue, id: 'I_1', title: 'Login bug' }]
       expect(store.filteredIssues).toHaveLength(1)
       expect(store.filteredIssues[0]?.title).toBe('Login bug')
     })
   })
 
-  it('search filters by issue number', async () => {
+  it('search returns empty when no server results', async () => {
     await withStore((store) => {
       store.issues = [
         { ...mockIssue, id: 'I_1', number: 42 },
         { ...mockIssue, id: 'I_2', number: 99 },
       ]
       store.search = '#99'
-      expect(store.filteredIssues).toHaveLength(1)
-      expect(store.filteredIssues[0]?.number).toBe(99)
+      // No searchResults set — filteredIssues returns empty
+      expect(store.filteredIssues).toHaveLength(0)
     })
   })
 

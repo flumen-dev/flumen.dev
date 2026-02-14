@@ -6,6 +6,7 @@ const props = defineProps<{
 }>()
 
 const { t } = useI18n()
+const localePath = useLocalePath()
 const createdAgo = useTimeAgo(computed(() => props.issue.createdAt))
 const updatedAgo = useTimeAgo(computed(() => props.issue.updatedAt))
 
@@ -23,10 +24,8 @@ const stateColor = computed(() => {
 </script>
 
 <template>
-  <a
-    :href="issue.url"
-    target="_blank"
-    rel="noopener noreferrer"
+  <NuxtLink
+    :to="localePath({ path: `/issues/${issue.number}`, query: { repo: issue.repository.nameWithOwner } })"
     class="flex items-start gap-3 px-4 py-3 hover:bg-elevated transition-colors"
   >
     <!-- State icon -->
@@ -136,5 +135,5 @@ const stateColor = computed(() => {
         />
       </UTooltip>
     </div>
-  </a>
+  </NuxtLink>
 </template>
