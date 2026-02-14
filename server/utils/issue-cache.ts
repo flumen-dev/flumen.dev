@@ -60,7 +60,7 @@ export async function getOrFetchIssues(
   )
 
   for (const { node, cached } of cacheChecks) {
-    if (cached && cached.updatedAt === node.updatedAt) {
+    if (cached && cached.node && cached.updatedAt === node.updatedAt) {
       resolvedNodes.push(cached.node)
     }
     else {
@@ -93,8 +93,8 @@ export async function getOrFetchIssues(
     resolvedNodes.push(...freshNodes)
   }
 
-  // Convert to Issue with per-user maintainerCommented
-  const issues = resolvedNodes.map(n => toIssue(n, login))
+  // Convert to Issue with per-user maintainerCommented (skip any undefined nodes)
+  const issues = resolvedNodes.filter(Boolean).map(n => toIssue(n, login))
 
   // Return in the same order as the input
   const orderMap = new Map(minimalNodes.map((n, i) => [n.id, i]))
