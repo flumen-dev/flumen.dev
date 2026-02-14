@@ -31,6 +31,15 @@ const isDark = computed({
 // Later use a store e.g.
 const notificationCount = ref(3)
 
+const { pinnedRepos, unpin } = usePinnedRepos()
+
+const { update: updateSettings } = useUserSettings()
+
+function selectPinnedRepo(repo: string) {
+  updateSettings({ selectedRepo: repo })
+  navigateTo(localePath('/issues'))
+}
+
 const mainItems = computed<NavigationMenuItem[]>(() => [
   {
     label: t('nav.dashboard'),
@@ -96,7 +105,7 @@ const mainItems = computed<NavigationMenuItem[]>(() => [
           <span
             class="font-semibold text-sm whitespace-nowrap"
             aria-hidden="true"
-          >{{ t('common.title') }}</span>
+          >{{ $t('common.title') }}</span>
         </div>
         <UDashboardSidebarCollapse />
       </div>
@@ -106,7 +115,7 @@ const mainItems = computed<NavigationMenuItem[]>(() => [
     <template #default="{ collapsed }">
       <UButton
         :label="collapsed ? undefined : t('nav.search')"
-        :aria-label="t('nav.search')"
+        :aria-label="$t('nav.search')"
         icon="i-lucide-search"
         color="neutral"
         variant="outline"
@@ -144,12 +153,57 @@ const mainItems = computed<NavigationMenuItem[]>(() => [
             inset
           >
             <UIcon
-              :name="item.icon!"
+              :name="
+                item.icon!"
               class="size-5 shrink-0"
             />
           </UChip>
         </template>
       </UNavigationMenu>
+
+      <!-- Pinned repos -->
+      <ClientOnly>
+        <nav
+          v-if="pinnedRepos.length && !collapsed"
+          :aria-label="$t('pinnedRepos.pinned')"
+          class="mt-2 border-t border-default pt-2 px-1"
+        >
+          <p class="px-2 pb-1 text-xs font-semibold text-muted uppercase tracking-wide">
+            {{ $t('pinnedRepos.pinned') }}
+          </p>
+          <div class="space-y-0.5">
+            <div
+              v-for="repo in pinnedRepos"
+              :key="repo"
+              class="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-elevated/50 transition-colors group"
+            >
+              <NuxtLink
+                :to="localePath('/issues')"
+                class="flex items-center gap-2 flex-1 min-w-0"
+                @click="selectPinnedRepo(repo)"
+              >
+                <UIcon
+                  name="i-lucide-book-marked"
+                  class="size-4 shrink-0 text-muted"
+                />
+                <span class="truncate">{{ repo.split('/')[1] }}</span>
+              </NuxtLink>
+              <UTooltip :text="$t('pinnedRepos.unpin')">
+                <UButton
+                  icon="i-lucide-pin-off"
+                  size="xs"
+                  color="neutral"
+                  variant="ghost"
+                  square
+                  :aria-label="$t('pinnedRepos.unpin')"
+                  class="opacity-0 group-hover:opacity-100 shrink-0"
+                  @click="unpin(repo)"
+                />
+              </UTooltip>
+            </div>
+          </div>
+        </nav>
+      </ClientOnly>
     </template>
 
     <template #footer="{ collapsed }">
@@ -160,7 +214,7 @@ const mainItems = computed<NavigationMenuItem[]>(() => [
         <UButton
           v-if="!loggedIn"
           icon="i-lucide-github"
-          :label="collapsed ? undefined : t('auth.login')"
+          :label="collapsed ? undefined : $t('auth.login')"
           color="neutral"
           variant="ghost"
           :square="collapsed"
@@ -186,7 +240,7 @@ const mainItems = computed<NavigationMenuItem[]>(() => [
         <ClientOnly>
           <UButton
             :icon="isDark ? 'i-lucide-moon' : 'i-lucide-sun'"
-            :aria-label="isDark ? t('theme.light') : t('theme.dark')"
+            :aria-label="isDark ? $t('theme.light') : $t('theme.dark')"
             color="neutral"
             variant="ghost"
             square
