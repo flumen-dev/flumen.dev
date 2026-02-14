@@ -7,7 +7,8 @@ export default defineEventHandler(async (event) => {
     try {
       await githubFetchWithToken(token, `/repos/${login}/${login}`)
     }
-    catch {
+    catch (err) {
+      if (!(err instanceof GitHubError) || err.status !== 404) throw err
       // Repo doesn't exist — create it
       await githubFetchWithToken(token, '/user/repos', {
         method: 'POST',
