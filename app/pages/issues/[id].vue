@@ -13,7 +13,7 @@ const number = computed(() => Number(route.params.id))
 const repo = computed(() => route.query.repo as string | undefined)
 
 const { data: issue, status, error } = useAsyncData(
-  `issue-${repo.value}-${number.value}`,
+  () => `issue-${repo.value}-${number.value}`,
   () => {
     if (!repo.value || !number.value) {
       throw createError({ statusCode: 400, message: 'Missing repo or issue number' })
@@ -22,6 +22,7 @@ const { data: issue, status, error } = useAsyncData(
       params: { repo: repo.value },
     })
   },
+  { watch: [repo, number] },
 )
 
 const linkedPrs = computed(() => {
@@ -74,9 +75,9 @@ const timelineSections = computed<TimelineSection[]>(() => {
 <template>
   <div class="p-4">
     <IssueHeader
-      v-if="issue"
+      v-if="issue && repo"
       :issue="issue"
-      :repo="repo!"
+      :repo="repo"
       :linked-prs="linkedPrs"
     />
 
@@ -128,8 +129,9 @@ const timelineSections = computed<TimelineSection[]>(() => {
       <div class="hidden lg:block">
         <div class="sticky top-48">
           <IssueSidebar
+            v-if="repo"
             :issue="issue"
-            :repo="repo!"
+            :repo="repo"
           />
         </div>
       </div>

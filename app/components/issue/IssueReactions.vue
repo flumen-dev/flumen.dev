@@ -30,6 +30,8 @@ const availableEmojis = computed(() =>
   allEmojis.filter(e => !props.reactions.some(r => r.content === e)),
 )
 
+const toast = useToast()
+
 async function toggle(content: string, currentlyReacted: boolean) {
   if (pending.value) return
   pending.value = content
@@ -40,6 +42,9 @@ async function toggle(content: string, currentlyReacted: boolean) {
       body: { subjectId: props.subjectId, content, remove: currentlyReacted },
     })
     emit('toggle', content, !currentlyReacted)
+  }
+  catch {
+    toast.add({ title: 'Could not update reaction', color: 'error' })
   }
   finally {
     pending.value = null

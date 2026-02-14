@@ -25,7 +25,7 @@ const mockIssue: Issue = {
 
 registerEndpoint('/api/issues', {
   method: 'GET',
-  handler: (event) => {
+  handler: (event: { path: string }) => {
     const url = new URL(event.path, 'http://localhost')
     const repo = url.searchParams.get('repo')
     if (!repo) return { statusCode: 400 }

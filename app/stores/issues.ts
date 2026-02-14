@@ -1,5 +1,4 @@
 import type { Issue, PaginatedIssues } from '~~/shared/types/issue'
-import type { IssueDetail } from '~~/shared/types/issue-detail'
 
 export type IssueSortKey = 'critical' | 'newest' | 'oldest' | 'mostCommented' | 'leastCommented' | 'recentlyUpdated'
 
@@ -41,7 +40,6 @@ export const useIssueStore = defineStore('issues', () => {
 
   // --- State ---
   const issues = ref<Issue[]>([])
-  const issue = ref<IssueDetail>()
   const selectedRepo = ref<string | null>(null)
   const loaded = ref(false)
   const loading = ref(false)
@@ -271,20 +269,6 @@ export const useIssueStore = defineStore('issues', () => {
     searchDebounceTimer = setTimeout(() => searchIssues(q), 300)
   })
 
-  async function fetchIssue(id: number) {
-    loading.value = true
-    errorKey.value = null
-    try {
-      issue.value = await apiFetch<IssueDetail>(`/api/issues/:number/${id}`)
-    }
-    catch (err) {
-      handleError(err)
-    }
-    finally {
-      loading.value = false
-    }
-  }
-
   async function selectRepo(repo: string) {
     if (repo === selectedRepo.value && loaded.value) return
     selectedRepo.value = repo
@@ -327,7 +311,6 @@ export const useIssueStore = defineStore('issues', () => {
     filteredIssues,
     // Actions
     fetchIssues,
-    fetchIssue,
     loadNextPage,
     loadPreviousPage,
     selectRepo,

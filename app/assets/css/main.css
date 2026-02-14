@@ -37,11 +37,13 @@
   transition: background-color 0.15s;
   cursor: default;
 }
-.mention-chip:hover { background-color: var(--ui-bg-accented); }
+.mention-chip:hover,
+.mention-chip:focus-within { background-color: var(--ui-bg-accented); }
 .mention-avatar { width: 18px; height: 18px; border-radius: 9999px; flex-shrink: 0; }
 .mention-login { color: var(--ui-text-highlighted); }
 .mention-actions { display: none; align-items: center; gap: 2px; margin-left: 2px; }
-.mention-chip:hover .mention-actions { display: inline-flex; }
+.mention-chip:hover .mention-actions,
+.mention-chip:focus-within .mention-actions { display: inline-flex; }
 .mention-btn {
   display: inline-flex;
   align-items: center;

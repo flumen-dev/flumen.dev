@@ -202,6 +202,9 @@ const fetchIssueDetail = defineCachedFunction(
       })
 
       const node = data.repository.issue
+      if (!node) {
+        throw createError({ statusCode: 404, message: 'Issue not found' })
+      }
       issueNode = node
       const items = node.timelineItems.nodes
         .map(toTimelineItem)

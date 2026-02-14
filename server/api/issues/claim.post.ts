@@ -25,7 +25,7 @@ export default defineEventHandler(async (event): Promise<ClaimResult> => {
   }
 
   // 1. Owner can always push directly, otherwise check collaborator
-  let isCollaborator = login === owner
+  let isCollaborator = login.toLowerCase() === owner.toLowerCase()
   if (!isCollaborator) {
     try {
       await githubFetchWithToken(token, `/repos/${owner}/${repoName}/collaborators/${login}`)
@@ -88,17 +88,27 @@ export default defineEventHandler(async (event): Promise<ClaimResult> => {
     targetOwner = login
   }
 
-  // 3. Get default branch SHA
-  const refData = await githubFetchWithToken<{ object: { sha: string } }>(
-    token,
-    `/repos/${owner}/${repoName}/git/ref/heads/main`,
-  ).catch(() =>
-    githubFetchWithToken<{ object: { sha: string } }>(
+  // 3. Get default branch SHA (try main, then master)
+  let sha: string
+  try {
+    const refData = await githubFetchWithToken<{ object: { sha: string } }>(
       token,
-      `/repos/${owner}/${repoName}/git/ref/heads/master`,
-    ),
-  )
-  const sha = refData.data.object.sha
+      `/repos/${owner}/${repoName}/git/ref/heads/main`,
+    )
+    sha = refData.data.object.sha
+  }
+  catch {
+    try {
+      const refData = await githubFetchWithToken<{ object: { sha: string } }>(
+        token,
+        `/repos/${owner}/${repoName}/git/ref/heads/master`,
+      )
+      sha = refData.data.object.sha
+    }
+    catch {
+      throw createError({ statusCode: 404, message: `No default branch found for ${owner}/${repoName}` })
+    }
+  }
 
   // 4. Create branch
   let branchCreated = false
@@ -150,9 +160,7 @@ export default defineEventHandler(async (event): Promise<ClaimResult> => {
   // 7. Build command
   const command = isCollaborator
     ? `git fetch origin && git checkout ${branchName}`
-    : forked
-      ? `git clone ${cloneUrl} && cd ${repoName} && git checkout ${branchName}`
-      : `git fetch origin && git checkout ${branchName}`
+    : `git clone ${cloneUrl} && cd ${repoName} && git checkout ${branchName}`
 
   return {
     forked,
