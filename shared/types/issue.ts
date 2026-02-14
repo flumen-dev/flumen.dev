@@ -66,3 +66,20 @@ export interface GraphQLIssueSearchResult {
     nodes: GraphQLIssueNode[]
   }
 }
+
+export interface PaginatedIssues {
+  issues: Issue[]
+  totalCount: number
+  pageInfo: {
+    hasNextPage: boolean
+    endCursor: string | null
+  }
+}
+
+/** Minimal node returned by the lightweight search query (for cache lookups) */
+export interface MinimalIssueNode {
+  id: string
+  number: number
+  updatedAt: string
+  repository: { nameWithOwner: string, name: string, owner: { login: string } }
+}

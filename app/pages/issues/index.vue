@@ -9,7 +9,13 @@ const store = useIssueStore()
 
 const openCount = computed(() =>
   store.stateFilter === 'open'
-    ? store.issues.length
+    ? store.totalCount
+    : null,
+)
+
+const closedCount = computed(() =>
+  store.stateFilter === 'closed'
+    ? store.totalCount
     : null,
 )
 
@@ -46,9 +52,9 @@ async function setFilter(state: 'open' | 'closed') {
         />
       </div>
 
-      <!-- Loading -->
+      <!-- Loading (initial) -->
       <div
-        v-else-if="store.loading"
+        v-else-if="store.loading && !store.loaded"
         class="py-8 text-center text-muted"
       >
         {{ t('common.loading') }}
@@ -83,27 +89,72 @@ async function setFilter(state: 'open' | 'closed') {
               class="size-4"
             />
             {{ t('issues.closed') }}
+            <span
+              v-if="closedCount !== null"
+              class="text-xs text-muted"
+            >({{ closedCount }})</span>
           </button>
         </div>
 
         <!-- Toolbar -->
         <IssueToolbar />
 
+        <!-- Searching indicator -->
+        <div
+          v-if="store.searching"
+          class="py-4 text-center text-sm text-muted"
+        >
+          {{ t('issues.serverSearch') }}
+        </div>
+
         <!-- Issue list -->
         <div
-          v-if="store.filteredIssues.length"
-          class="rounded-lg border border-default divide-y divide-default overflow-hidden"
+          v-else-if="store.filteredIssues.length"
+          class="space-y-4"
         >
-          <IssueRow
-            v-for="issue in store.filteredIssues"
-            :key="issue.id"
-            :issue="issue"
-          />
+          <div
+            class="rounded-lg border border-default divide-y divide-default overflow-hidden transition-opacity duration-200"
+            :class="store.paging ? 'opacity-50 pointer-events-none' : ''"
+          >
+            <IssueRow
+              v-for="issue in store.filteredIssues"
+              :key="issue.id"
+              :issue="issue"
+            />
+          </div>
+
+          <!-- Pagination (only when not searching) -->
+          <div
+            v-if="!store.search && (store.hasPrevious || store.hasMore)"
+            class="flex items-center justify-between"
+          >
+            <UButton
+              :label="t('issues.previousPage')"
+              icon="i-lucide-chevron-left"
+              variant="outline"
+              size="sm"
+              :disabled="!store.hasPrevious"
+              :loading="store.paging === 'prev'"
+              @click="store.loadPreviousPage()"
+            />
+            <span class="text-sm text-muted">
+              {{ t('issues.page', { current: store.currentPage, total: store.totalPages }) }}
+            </span>
+            <UButton
+              :label="t('issues.nextPage')"
+              trailing-icon="i-lucide-chevron-right"
+              variant="outline"
+              size="sm"
+              :disabled="!store.hasMore"
+              :loading="store.paging === 'next'"
+              @click="store.loadNextPage()"
+            />
+          </div>
         </div>
 
         <!-- Empty -->
         <p
-          v-else
+          v-else-if="!store.searching"
           class="py-8 text-center text-sm text-muted"
         >
           {{ t('issues.noResults') }}

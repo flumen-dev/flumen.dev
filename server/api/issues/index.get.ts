@@ -1,7 +1,6 @@
-import type { GraphQLIssueSearchResult, GraphQLIssueNode, Issue } from '~~/shared/types/issue'
-import { toIssue } from '~~/shared/utils/issue'
+import type { MinimalIssueNode, PaginatedIssues } from '~~/shared/types/issue'
 
-const ISSUES_QUERY = `
+const MINIMAL_SEARCH_QUERY = `
 query($query: String!, $first: Int!, $after: String) {
   search(query: $query, type: ISSUE, first: $first, after: $after) {
     issueCount
@@ -13,19 +12,7 @@ query($query: String!, $first: Int!, $after: String) {
       ... on Issue {
         id
         number
-        title
-        state
-        stateReason
-        url
-        createdAt
         updatedAt
-        closedAt
-        author { login avatarUrl }
-        labels(first: 10) { nodes { name color } }
-        assignees(first: 5) { nodes { login avatarUrl } }
-        milestone { title }
-        comments(first: 100) { totalCount nodes { author { login } } }
-        timelineItems(itemTypes: [CROSS_REFERENCED_EVENT], first: 0) { totalCount }
         repository { nameWithOwner name owner { login } }
       }
     }
@@ -33,44 +20,48 @@ query($query: String!, $first: Int!, $after: String) {
 }
 `
 
-const fetchIssues = defineCachedFunction(
-  async (login: string, token: string, state: string, repo: string): Promise<Issue[]> => {
-    const stateQ = state === 'closed' ? 'is:closed' : 'is:open'
-    const query = `is:issue ${stateQ} repo:${repo} sort:updated-desc`
-    const issues: Issue[] = []
-    let after: string | null = null
+interface MinimalSearchResult {
+  search: {
+    issueCount: number
+    pageInfo: { hasNextPage: boolean, endCursor: string | null }
+    nodes: (MinimalIssueNode | null)[]
+  }
+}
 
-    // Paginate up to 5 pages (500 issues)
-    for (let page = 0; page < 5; page++) {
-      const data: GraphQLIssueSearchResult = await githubGraphQL<GraphQLIssueSearchResult>(token, ISSUES_QUERY, {
-        query,
-        first: 100,
-        after,
-      })
-
-      const nodes = data.search.nodes.filter((n: GraphQLIssueNode | null): n is GraphQLIssueNode => n !== null && 'id' in n)
-      issues.push(...nodes.map(n => toIssue(n, login)))
-
-      if (!data.search.pageInfo.hasNextPage) break
-      after = data.search.pageInfo.endCursor
-    }
-
-    return issues
-  },
-  {
-    maxAge: 60,
-    name: 'issues-list',
-    getKey: (login: string, _token: string, state: string, repo: string) => `${login}:${state}:${repo}`,
-  },
-)
-
-export default defineEventHandler(async (event) => {
+export default defineEventHandler(async (event): Promise<PaginatedIssues> => {
   const { token, login } = await getSessionToken(event)
-  const { state = 'open', repo } = getQuery<{ state?: string, repo?: string }>(event)
+  const { state = 'open', repo, first = '30', after } = getQuery<{
+    state?: string
+    repo?: string
+    first?: string
+    after?: string
+  }>(event)
 
   if (!repo) {
     throw createError({ statusCode: 400, message: 'Missing repo query parameter' })
   }
 
-  return fetchIssues(login, token, state, repo)
+  const pageSize = Math.min(Math.max(Number(first) || 30, 1), 100)
+  const stateQ = state === 'closed' ? 'is:closed' : 'is:open'
+  const query = `is:issue ${stateQ} repo:${repo} sort:updated-desc`
+
+  // 1. Lightweight search — only id, number, updatedAt
+  const data = await githubGraphQL<MinimalSearchResult>(token, MINIMAL_SEARCH_QUERY, {
+    query,
+    first: pageSize,
+    after: after || null,
+  })
+
+  const minimalNodes = data.search.nodes.filter(
+    (n): n is MinimalIssueNode => n !== null && 'id' in n,
+  )
+
+  // 2. Cache-resolve: check storage, fetch misses in batch
+  const issues = await getOrFetchIssues(token, login, minimalNodes)
+
+  return {
+    issues,
+    totalCount: data.search.issueCount,
+    pageInfo: data.search.pageInfo,
+  }
 })

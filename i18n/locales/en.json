@@ -164,6 +164,7 @@
     "open": "Open",
     "closed": "Closed",
     "selectRepo": "Select a repository...",
+    "customRepoPlaceholder": "owner/repo (e.g. nuxt/nuxt)",
     "openCount": "{count} open",
     "noResults": "No issues found.",
     "closedAs": "Closed",
@@ -171,6 +172,10 @@
     "needsResponse": "Waiting for your response",
     "search": "Search issues...",
     "count": "No issues | {count} issue | {count} issues",
+    "page": "Page {current} of {total}",
+    "previousPage": "Previous",
+    "nextPage": "Next",
+    "serverSearch": "Searching...",
     "filter": {
       "unassigned": "Unassigned",
       "hasLinkedPr": "Has PR",
@@ -208,6 +213,39 @@
       "forkTimeout": "Fork timed out. Try again.",
       "othersWorking": "{count} working on this",
       "othersAlreadyWorking": "{count} person already working on this issue | {count} people already working on this issue"
+    },
+    "event": {
+      "labeled": "added",
+      "unlabeled": "removed",
+      "assigned": "assigned",
+      "assignedSelf": "self-assigned",
+      "unassigned": "unassigned",
+      "closed": "closed this as completed",
+      "closedNotPlanned": "closed this as not planned",
+      "reopened": "reopened this",
+      "crossReferencedPr": "referenced this in pull request",
+      "crossReferencedIssue": "referenced this in issue",
+      "milestoned": "added this to milestone",
+      "renamed": "changed the title",
+      "referencedCommit": "referenced this in commit"
+    },
+    "sidebar": {
+      "assignees": "Assignees",
+      "noAssignees": "No one assigned",
+      "labels": "Labels",
+      "noLabels": "No labels",
+      "milestone": "Milestone",
+      "linkedPrs": "Linked pull requests",
+      "created": "Created",
+      "updated": "Updated",
+      "comments": "{count} comment | {count} comments",
+      "participants": "Participants",
+      "ownerActive": "Owner joined the discussion",
+      "mentions": "Mentions",
+      "mentionCount": "{count} mention | {count} mentions",
+      "reproductions": "Reproductions",
+      "links": "Links",
+      "showLess": "Show less"
     },
     "error": {
       "fetchError": {

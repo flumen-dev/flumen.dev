@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import type { IssueDetail } from '~~/shared/types/issue-detail'
+import type { IssueDetail, TimelineComment, TimelineItem } from '~~/shared/types/issue-detail'
 
 definePageMeta({
   middleware: 'auth',
@@ -40,6 +40,35 @@ const linkedPrs = computed(() => {
     })
     .filter(Boolean) as Array<{ number: number, title: string, url: string, state: string, actor: string }>
 })
+
+type NonCommentEvent = Exclude<TimelineItem, { type: 'IssueComment' }>
+type TimelineSection
+  = { type: 'comment', comment: TimelineComment }
+    | { type: 'events', events: NonCommentEvent[] }
+
+const timelineSections = computed<TimelineSection[]>(() => {
+  if (!issue.value) return []
+  const sections: TimelineSection[] = []
+  let pendingEvents: NonCommentEvent[] = []
+
+  for (const item of issue.value.timeline) {
+    if (item.type === 'IssueComment') {
+      if (pendingEvents.length) {
+        sections.push({ type: 'events', events: pendingEvents })
+        pendingEvents = []
+      }
+      sections.push({ type: 'comment', comment: item })
+    }
+    else {
+      pendingEvents.push(item)
+    }
+  }
+  if (pendingEvents.length) {
+    sections.push({ type: 'events', events: pendingEvents })
+  }
+
+  return sections
+})
 </script>
 
 <template>
@@ -67,26 +96,43 @@ const linkedPrs = computed(() => {
 
     <div
       v-else-if="issue"
-      class="flex flex-col gap-4 mt-4"
+      class="mt-4 lg:grid lg:grid-cols-[1fr_260px] lg:gap-6"
     >
-      <IssueBody
-        :id="issue.id"
-        :body="issue.body"
-        :author="issue.author"
-        :author-association="issue.authorAssociation"
-        :created-at="issue.createdAt"
-        :reactions="issue.reactionGroups"
-      />
-
-      <template
-        v-for="item in issue.timeline"
-        :key="item.type === 'IssueComment' ? item.id : item.createdAt"
-      >
-        <IssueComment
-          v-if="item.type === 'IssueComment'"
-          :comment="item"
+      <!-- Main content -->
+      <div class="flex flex-col gap-4 min-w-0">
+        <IssueBody
+          :id="issue.id"
+          :body="issue.body"
+          :author="issue.author"
+          :author-association="issue.authorAssociation"
+          :created-at="issue.createdAt"
+          :reactions="issue.reactionGroups"
         />
-      </template>
+
+        <template
+          v-for="(section, idx) in timelineSections"
+          :key="idx"
+        >
+          <IssueComment
+            v-if="section.type === 'comment'"
+            :comment="section.comment"
+          />
+          <IssueEventGroup
+            v-else
+            :events="section.events"
+          />
+        </template>
+      </div>
+
+      <!-- Sidebar (desktop only) -->
+      <div class="hidden lg:block">
+        <div class="sticky top-48">
+          <IssueSidebar
+            :issue="issue"
+            :repo="repo!"
+          />
+        </div>
+      </div>
     </div>
   </div>
 </template>

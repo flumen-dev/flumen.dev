@@ -29,6 +29,8 @@
     "@nuxt/ui": "4.4.0",
     "@nuxtjs/i18n": "10.2.3",
     "@pinia/nuxt": "0.11.3",
+    "@tiptap/core": "3.19.0",
+    "@tiptap/vue-3": "^3.19.0",
     "@upstash/redis": "^1.36.2",
     "@vercel/analytics": "^1.6.1",
     "@vercel/speed-insights": "^1.3.1",

@@ -10,6 +10,7 @@ const props = defineProps<{
   reactions: ReactionGroup[]
 }>()
 
+const enhancedBody = computed(() => linkifyMentions(props.body))
 const localReactions = ref([...props.reactions])
 
 function onToggle(content: string, added: boolean) {
@@ -33,7 +34,10 @@ function onToggle(content: string, added: boolean) {
 </script>
 
 <template>
-  <div class="rounded-lg border border-default bg-default">
+  <div
+    :id="`comment-${id}`"
+    class="rounded-lg border border-default bg-default"
+  >
     <!-- Author bar -->
     <div class="px-4 py-2 border-b border-default bg-elevated/50 rounded-t-lg">
       <UserCard
@@ -47,9 +51,11 @@ function onToggle(content: string, added: boolean) {
     <!-- Markdown body -->
     <div class="p-4">
       <UEditor
-        :model-value="body"
+        :model-value="enhancedBody"
         content-type="markdown"
         :editable="false"
+        :mention="false"
+        :extensions="[LinkEnhancer]"
       />
       <IssueReactions
         :reactions="localReactions"
