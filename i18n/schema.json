@@ -748,6 +748,57 @@
           },
           "additionalProperties": false
         },
+        "create": {
+          "type": "object",
+          "properties": {
+            "title": {
+              "type": "string"
+            },
+            "button": {
+              "type": "string"
+            },
+            "titleLabel": {
+              "type": "string"
+            },
+            "titlePlaceholder": {
+              "type": "string"
+            },
+            "bodyLabel": {
+              "type": "string"
+            },
+            "bodyPlaceholder": {
+              "type": "string"
+            },
+            "submit": {
+              "type": "string"
+            },
+            "submitting": {
+              "type": "string"
+            },
+            "success": {
+              "type": "string"
+            },
+            "error": {
+              "type": "string"
+            },
+            "noRepo": {
+              "type": "string"
+            },
+            "chooseTemplate": {
+              "type": "string"
+            },
+            "blankIssue": {
+              "type": "string"
+            },
+            "blankIssueDescription": {
+              "type": "string"
+            },
+            "backToTemplates": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
         "error": {
           "type": "object",
           "properties": {
