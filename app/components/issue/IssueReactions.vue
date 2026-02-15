@@ -1,15 +1,16 @@
 <script lang="ts" setup>
-import type { ReactionGroup } from '~~/shared/types/issue-detail'
-
 const props = defineProps<{
   reactions: ReactionGroup[]
   subjectId: string
+  repo: string
+  issueNumber: number
 }>()
 
 const emit = defineEmits<{
   toggle: [content: string, added: boolean]
 }>()
 
+const { t } = useI18n()
 const apiFetch = useRequestFetch()
 const pending = ref<string | null>(null)
 
@@ -26,8 +27,12 @@ const emojiMap: Record<string, string> = {
 
 const allEmojis = Object.keys(emojiMap)
 
+const visibleReactions = computed(() =>
+  props.reactions.filter(r => r.count > 0),
+)
+
 const availableEmojis = computed(() =>
-  allEmojis.filter(e => !props.reactions.some(r => r.content === e)),
+  allEmojis.filter(e => !visibleReactions.value.some(r => r.content === e)),
 )
 
 const toast = useToast()
@@ -39,12 +44,12 @@ async function toggle(content: string, currentlyReacted: boolean) {
   try {
     await apiFetch('/api/issues/reactions', {
       method: 'POST',
-      body: { subjectId: props.subjectId, content, remove: currentlyReacted },
+      body: { subjectId: props.subjectId, content, remove: currentlyReacted, repo: props.repo, issueNumber: props.issueNumber },
     })
     emit('toggle', content, !currentlyReacted)
   }
   catch {
-    toast.add({ title: 'Could not update reaction', color: 'error' })
+    toast.add({ title: t('issues.comment.reactionError'), color: 'error' })
   }
   finally {
     pending.value = null
@@ -55,7 +60,7 @@ async function toggle(content: string, currentlyReacted: boolean) {
 <template>
   <div class="flex items-center gap-1.5 flex-wrap">
     <button
-      v-for="reaction in reactions"
+      v-for="reaction in visibleReactions"
       :key="reaction.content"
       class="inline-flex items-center gap-1 rounded-full border px-3 py-1 text-xs transition-colors cursor-pointer"
       :class="reaction.viewerHasReacted

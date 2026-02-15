@@ -229,6 +229,24 @@
       "links": "Links",
       "showLess": "Show less"
     },
+    "comment": {
+      "placeholder": "Write a comment...",
+      "submit": "Comment",
+      "update": "Update",
+      "edit": "Edit",
+      "delete": "Delete",
+      "write": "Write",
+      "preview": "Preview",
+      "previewEmpty": "Nothing to preview",
+      "editing": "editing",
+      "deleted": "Comment deleted.",
+      "submitted": "Comment posted.",
+      "error": "Could not submit comment.",
+      "deleteError": "Could not delete comment.",
+      "confirmDeleteTitle": "Delete comment?",
+      "confirmDeleteDescription": "This action cannot be undone.",
+      "reactionError": "Could not update reaction."
+    },
     "error": {
       "fetchError": {
         "title": "Failed to load issues",
@@ -261,6 +279,20 @@
     "unpin": "Unpin repository",
     "pinned": "Pinned",
     "search": "Filter pinned..."
+  },
+  "editor": {
+    "bold": "Bold",
+    "italic": "Italic",
+    "strikethrough": "Strikethrough",
+    "headings": "Headings",
+    "bulletList": "Bullet list",
+    "numberedList": "Numbered list",
+    "quote": "Quote",
+    "inlineCode": "Inline code",
+    "codeBlock": "Code block",
+    "divider": "Divider",
+    "link": "Link",
+    "markdown": "Markdown"
   },
   "settings": {
     "appearance": {
