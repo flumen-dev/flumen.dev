@@ -13,6 +13,8 @@ const mockComment: TimelineComment = {
   author: { login: 'alice', avatarUrl: 'https://a.com/alice.png' },
   createdAt: '2025-06-01T00:00:00Z',
   updatedAt: '2025-06-01T00:00:00Z',
+  viewerCanUpdate: true,
+  viewerCanDelete: true,
   reactionGroups: [],
 }
 
@@ -34,6 +36,7 @@ const mockIssue: IssueDetail = {
   labels: [{ name: 'bug', color: 'ff0000' }],
   assignees: [],
   milestone: null,
+  viewerCanUpdate: true,
   reactionGroups: [],
   timeline: [mockComment],
 }
@@ -66,6 +69,8 @@ registerEndpoint('/api/issues/comments', {
       author: { login: 'alice', avatarUrl: 'https://a.com/alice.png' },
       createdAt: '2025-06-03T00:00:00Z',
       updatedAt: '2025-06-03T00:00:00Z',
+      viewerCanUpdate: true,
+      viewerCanDelete: true,
       reactionGroups: [],
     } satisfies TimelineComment
   },
