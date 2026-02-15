@@ -50,7 +50,7 @@ defineExpose({ handleSubmit, vorm })
       <!-- Markdown blocks before this field -->
       <div
         v-for="block in getMarkdownBlocksAt(field.name)"
-        :key="`md-${block.index}`"
+        :key="`md-${field.name}-${block.index}`"
         class="rounded-lg border border-default bg-elevated/30 p-4 mb-5"
       >
         <UiMarkdownRenderer
@@ -127,8 +127,8 @@ defineExpose({ handleSubmit, vorm })
 
   <!-- Trailing markdown blocks (after all fields) -->
   <div
-    v-for="block in markdownBlocks.filter(b => b.index >= schema.length)"
-    :key="`md-trail-${block.index}`"
+    v-for="(block, idx) in markdownBlocks.filter(b => b.index >= schema.length)"
+    :key="`md-trail-${idx}`"
     class="rounded-lg border border-default bg-elevated/30 p-4 mt-5"
   >
     <UiMarkdownRenderer

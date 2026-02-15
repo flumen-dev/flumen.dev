@@ -21,7 +21,7 @@ export default defineEventHandler(async (event) => {
     body?: string
   }>(event)
 
-  if (!repositoryId || !title?.trim()) {
+  if (typeof repositoryId !== 'string' || typeof title !== 'string' || !repositoryId || !title.trim()) {
     throw createError({ statusCode: 400, message: 'Missing repositoryId or title' })
   }
 

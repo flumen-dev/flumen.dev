@@ -76,6 +76,7 @@
 }
 .task-checkbox:not(:disabled) { cursor: pointer; }
 .task-checkbox:not(:disabled):hover { border-color: var(--ui-color-primary); }
+.task-checkbox:not(:disabled):focus-visible { border-color: var(--ui-color-primary); outline: 2px solid var(--ui-color-primary); outline-offset: 1px; }
 .task-checkbox:checked {
   background-color: var(--ui-color-primary);
   border-color: var(--ui-color-primary);

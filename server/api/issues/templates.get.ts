@@ -42,7 +42,7 @@ query($owner: String!, $repo: String!) {
 `
 
 function parseMarkdownTemplate(filename: string, raw: string): IssueMarkdownTemplate | null {
-  const match = raw.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/)
+  const match = raw.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n([\s\S]*)$/)
   if (!match) return null
 
   const frontmatter = YAML.parse(match[1]!) as Record<string, unknown>
@@ -100,9 +100,12 @@ export default defineEventHandler(async (event) => {
     )
     files = data
   }
-  catch {
+  catch (err: unknown) {
     // No ISSUE_TEMPLATE directory — repo has no templates
-    return { repositoryId: repository.id, templates: [] }
+    if (err && typeof err === 'object' && 'statusCode' in err && (err as { statusCode: number }).statusCode === 404) {
+      return { repositoryId: repository.id, templates: [] }
+    }
+    throw err
   }
 
   // Parse each template file
@@ -115,7 +118,10 @@ export default defineEventHandler(async (event) => {
   await Promise.all(templateFiles.map(async (file) => {
     if (!file.download_url) return
     try {
-      const response = await fetch(file.download_url)
+      const response = await fetch(file.download_url, {
+        headers: { Authorization: `token ${token}` },
+      })
+      if (!response.ok) return
       const raw = await response.text()
 
       if (file.name.endsWith('.yml') || file.name.endsWith('.yaml')) {
