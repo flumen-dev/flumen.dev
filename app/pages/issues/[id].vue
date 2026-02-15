@@ -96,7 +96,7 @@ const toast = useToast()
     </div>
 
     <div
-      v-else-if="issue"
+      v-else-if="issue && repo"
       class="mt-4 lg:grid lg:grid-cols-[1fr_260px] lg:gap-6"
     >
       <!-- Main content -->
@@ -108,7 +108,7 @@ const toast = useToast()
           :author-association="issue.authorAssociation"
           :created-at="issue.createdAt"
           :reactions="issue.reactionGroups"
-          :repo="repo!"
+          :repo="repo"
           :issue-number="number"
           :save-body="saveBody"
         />
@@ -118,7 +118,7 @@ const toast = useToast()
           :key="idx"
         >
           <IssueComment
-            v-if="section.type === 'comment' && repo"
+            v-if="section.type === 'comment'"
             :comment="section.comment"
             :repo="repo"
             :issue-number="number"
@@ -133,7 +133,7 @@ const toast = useToast()
 
         <!-- Add comment -->
         <div
-          v-if="loggedIn && !issue.locked && repo"
+          v-if="loggedIn && !issue.locked"
           :class="commentFormRef?.active ? 'sticky bottom-0 z-10' : ''"
         >
           <IssueCommentForm
@@ -149,7 +149,6 @@ const toast = useToast()
       <div class="hidden lg:block">
         <div class="sticky top-48">
           <IssueSidebar
-            v-if="repo"
             :issue="issue"
             :repo="repo"
           />

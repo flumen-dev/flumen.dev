@@ -2,7 +2,7 @@
  * Smart issue detail composable:
  * - Server: defineCachedFunction (30s) prevents GitHub API spam
  * - Client: getCachedData serves from payload on SPA navigation
- * - Mutations: optimistic local update + clearNuxtData for next visit
+ * - Mutations: optimistic local update + clear payload cache for next visit
  * - Scroll position preserved on refresh
  */
 export function useIssueDetail(repo: Ref<string | undefined>, number: Ref<number>) {
