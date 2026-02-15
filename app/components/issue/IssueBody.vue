@@ -19,18 +19,19 @@ const editingId = useState<string | null>('issue-editing-id', () => null)
 const editBody = ref('')
 const submitting = ref(false)
 
-const editing = computed(() => editingId.value === props.id)
+const editing = computed(() => props.viewerCanUpdate && editingId.value === props.id)
 const editDisabled = computed(() => editingId.value !== null && editingId.value !== props.id)
 const enhancedBody = computed(() => linkifyMentions(props.body))
 const { localReactions, onToggle } = useLocalReactions(computed(() => props.reactions))
 
 function startEdit() {
+  if (!props.viewerCanUpdate) return
   editBody.value = props.body
   editingId.value = props.id
 }
 
 async function saveEdit() {
-  if (!editBody.value.trim() || submitting.value) return
+  if (!props.viewerCanUpdate || !editBody.value.trim() || submitting.value) return
   submitting.value = true
 
   try {

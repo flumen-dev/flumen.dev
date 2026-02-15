@@ -14,7 +14,7 @@ const editingId = useState<string | null>('issue-editing-id', () => null)
 const deleting = ref(false)
 const confirmDelete = ref(false)
 
-const editing = computed(() => editingId.value === props.comment.id)
+const editing = computed(() => canUpdate.value && editingId.value === props.comment.id)
 const editDisabled = computed(() => editingId.value !== null && editingId.value !== props.comment.id)
 const canUpdate = computed(() => props.comment.viewerCanUpdate)
 const canDelete = computed(() => props.comment.viewerCanDelete)
@@ -27,6 +27,7 @@ function onUpdated() {
 }
 
 async function deleteComment() {
+  if (!canDelete.value) return
   deleting.value = true
   try {
     await props.removeComment(props.comment.id)
