@@ -694,6 +694,57 @@
           },
           "additionalProperties": false
         },
+        "comment": {
+          "type": "object",
+          "properties": {
+            "placeholder": {
+              "type": "string"
+            },
+            "submit": {
+              "type": "string"
+            },
+            "update": {
+              "type": "string"
+            },
+            "edit": {
+              "type": "string"
+            },
+            "delete": {
+              "type": "string"
+            },
+            "write": {
+              "type": "string"
+            },
+            "preview": {
+              "type": "string"
+            },
+            "previewEmpty": {
+              "type": "string"
+            },
+            "editing": {
+              "type": "string"
+            },
+            "deleted": {
+              "type": "string"
+            },
+            "submitted": {
+              "type": "string"
+            },
+            "error": {
+              "type": "string"
+            },
+            "deleteError": {
+              "type": "string"
+            },
+            "confirmDeleteTitle": {
+              "type": "string"
+            },
+            "confirmDeleteDescription": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
         "error": {
           "type": "object",
           "properties": {
