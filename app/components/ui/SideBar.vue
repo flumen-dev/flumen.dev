@@ -225,7 +225,7 @@ const mainItems = computed<NavigationMenuItem[]>(() => [
                   <UIcon
                     data-freeform-handle
                     name="i-lucide-grip-vertical"
-                    class="size-3.5 shrink-0 text-muted/50 cursor-grab opacity-0 group-hover:opacity-100 transition-opacity"
+                    class="size-3.5 shrink-0 text-muted/50 cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100 transition-opacity"
                   />
                   <NuxtLink
                     :to="localePath('/issues')"
