@@ -1,5 +1,16 @@
 import type { H3Event } from 'h3'
 
+/**
+ * Invalidate the server-side issue detail cache after mutations.
+ * Matches the key format used by defineCachedFunction in [number].get.ts
+ */
+export async function invalidateIssueDetailCache(login: string, repo: string, issueNumber: number) {
+  const [owner, repoName] = repo.split('/')
+  if (!owner || !repoName) return
+  const cacheKey = `nitro:functions:issue-detail:${login}:${owner}/${repoName}#${issueNumber}.json`
+  await useStorage('cache').removeItem(cacheKey)
+}
+
 const GITHUB_API = 'https://api.github.com'
 
 export interface GitHubRequestOptions {

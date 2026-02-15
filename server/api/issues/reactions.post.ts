@@ -15,11 +15,13 @@ mutation($subjectId: ID!, $content: ReactionContent!) {
 `
 
 export default defineEventHandler(async (event) => {
-  const { token } = await getSessionToken(event)
-  const { subjectId, content, remove } = await readBody<{
+  const { token, login } = await getSessionToken(event)
+  const { subjectId, content, remove, repo, issueNumber } = await readBody<{
     subjectId: string
     content: string
     remove: boolean
+    repo: string
+    issueNumber: number
   }>(event)
 
   if (!subjectId || !content) {
@@ -30,6 +32,10 @@ export default defineEventHandler(async (event) => {
     subjectId,
     content,
   })
+
+  if (repo && issueNumber) {
+    await invalidateIssueDetailCache(login, repo, issueNumber)
+  }
 
   return { ok: true }
 })

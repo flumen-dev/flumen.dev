@@ -229,6 +229,23 @@
       "links": "Links",
       "showLess": "Weniger"
     },
+    "comment": {
+      "placeholder": "Kommentar schreiben...",
+      "submit": "Kommentieren",
+      "update": "Aktualisieren",
+      "edit": "Bearbeiten",
+      "delete": "Löschen",
+      "write": "Schreiben",
+      "preview": "Vorschau",
+      "previewEmpty": "Keine Vorschau verfügbar",
+      "editing": "wird bearbeitet",
+      "deleted": "Kommentar gelöscht.",
+      "submitted": "Kommentar gesendet.",
+      "error": "Kommentar konnte nicht gesendet werden.",
+      "deleteError": "Kommentar konnte nicht gelöscht werden.",
+      "confirmDeleteTitle": "Kommentar löschen?",
+      "confirmDeleteDescription": "Diese Aktion kann nicht rückgängig gemacht werden."
+    },
     "error": {
       "fetchError": {
         "title": "Issues konnten nicht geladen werden",

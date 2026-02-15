@@ -1,5 +1,6 @@
 <script lang="ts" setup>
-import type { IssueDetail, TimelineComment, TimelineItem } from '~~/shared/types/issue-detail'
+const { t } = useI18n()
+const { loggedIn } = useUserSession()
 
 definePageMeta({
   middleware: 'auth',
@@ -7,23 +8,19 @@ definePageMeta({
 })
 
 const route = useRoute()
-const apiFetch = useRequestFetch()
 
 const number = computed(() => Number(route.params.id))
 const repo = computed(() => route.query.repo as string | undefined)
 
-const { data: issue, status, error } = useAsyncData(
-  () => `issue-${repo.value}-${number.value}`,
-  () => {
-    if (!repo.value || !number.value) {
-      throw createError({ statusCode: 400, message: 'Missing repo or issue number' })
-    }
-    return apiFetch<IssueDetail>(`/api/issues/${number.value}`, {
-      params: { repo: repo.value },
-    })
-  },
-  { watch: [repo, number] },
-)
+const {
+  issue,
+  status,
+  error,
+  saveBody,
+  submitComment,
+  saveComment,
+  removeComment,
+} = useIssueDetail(repo, number)
 
 const linkedPrs = computed(() => {
   if (!issue.value) return []
@@ -70,6 +67,9 @@ const timelineSections = computed<TimelineSection[]>(() => {
 
   return sections
 })
+
+const commentFormRef = ref<{ active: boolean }>()
+const toast = useToast()
 </script>
 
 <template>
@@ -108,6 +108,9 @@ const timelineSections = computed<TimelineSection[]>(() => {
           :author-association="issue.authorAssociation"
           :created-at="issue.createdAt"
           :reactions="issue.reactionGroups"
+          :repo="repo!"
+          :issue-number="number"
+          :save-body="saveBody"
         />
 
         <template
@@ -115,14 +118,31 @@ const timelineSections = computed<TimelineSection[]>(() => {
           :key="idx"
         >
           <IssueComment
-            v-if="section.type === 'comment'"
+            v-if="section.type === 'comment' && repo"
             :comment="section.comment"
+            :repo="repo"
+            :issue-number="number"
+            :save-comment="saveComment"
+            :remove-comment="removeComment"
           />
           <IssueEventGroup
-            v-else
+            v-else-if="section.type === 'events'"
             :events="section.events"
           />
         </template>
+
+        <!-- Add comment -->
+        <div
+          v-if="loggedIn && !issue.locked && repo"
+          :class="commentFormRef?.active ? 'sticky bottom-0 z-10' : ''"
+        >
+          <IssueCommentForm
+            ref="commentFormRef"
+            :issue-id="issue.id"
+            :submit-comment="submitComment"
+            @submitted="toast.add({ title: t('issues.comment.submitted'), color: 'success' })"
+          />
+        </div>
       </div>
 
       <!-- Sidebar (desktop only) -->

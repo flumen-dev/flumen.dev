@@ -229,6 +229,23 @@
       "links": "Links",
       "showLess": "Show less"
     },
+    "comment": {
+      "placeholder": "Write a comment...",
+      "submit": "Comment",
+      "update": "Update",
+      "edit": "Edit",
+      "delete": "Delete",
+      "write": "Write",
+      "preview": "Preview",
+      "previewEmpty": "Nothing to preview",
+      "editing": "editing",
+      "deleted": "Comment deleted.",
+      "submitted": "Comment posted.",
+      "error": "Could not submit comment.",
+      "deleteError": "Could not delete comment.",
+      "confirmDeleteTitle": "Delete comment?",
+      "confirmDeleteDescription": "This action cannot be undone."
+    },
     "error": {
       "fetchError": {
         "title": "Failed to load issues",
