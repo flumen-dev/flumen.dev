@@ -28,6 +28,7 @@ query($owner: String!, $repo: String!, $number: Int!, $first: Int!, $after: Stri
       labels(first: 20) { nodes { name color } }
       assignees(first: 10) { nodes { login avatarUrl } }
       milestone { title }
+      viewerCanUpdate
       reactionGroups { content viewerHasReacted reactors { totalCount } }
       timelineItems(first: $first, after: $after) {
         pageInfo { hasNextPage endCursor }
@@ -41,6 +42,8 @@ query($owner: String!, $repo: String!, $number: Int!, $first: Int!, $after: Stri
             author { login avatarUrl }
             createdAt
             updatedAt
+            viewerCanUpdate
+            viewerCanDelete
             reactionGroups { content viewerHasReacted reactors { totalCount } }
           }
           ... on LabeledEvent {
@@ -121,6 +124,8 @@ function toTimelineItem(node: GraphQLTimelineNode): TimelineItem | null {
         author: node.author ?? { login: 'ghost', avatarUrl: '' },
         createdAt: node.createdAt,
         updatedAt: node.updatedAt,
+        viewerCanUpdate: node.viewerCanUpdate ?? false,
+        viewerCanDelete: node.viewerCanDelete ?? false,
         reactionGroups: toReactionGroups(node.reactionGroups ?? []),
       }
     case 'LabeledEvent':
@@ -180,6 +185,7 @@ function toIssueDetail(node: GraphQLIssueDetailNode, timeline: TimelineItem[]): 
     labels: node.labels.nodes,
     assignees: node.assignees.nodes,
     milestone: node.milestone?.title ?? null,
+    viewerCanUpdate: node.viewerCanUpdate ?? false,
     reactionGroups: toReactionGroups(node.reactionGroups),
     timeline,
   }

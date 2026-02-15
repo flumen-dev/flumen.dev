@@ -10,6 +10,8 @@ mutation($subjectId: ID!, $body: String!) {
         updatedAt
         authorAssociation
         author { login avatarUrl }
+        viewerCanUpdate
+        viewerCanDelete
         reactionGroups {
           content
           viewerHasReacted
@@ -45,6 +47,8 @@ export default defineEventHandler(async (event) => {
           updatedAt: string
           authorAssociation: string
           author: { login: string, avatarUrl: string }
+          viewerCanUpdate: boolean
+          viewerCanDelete: boolean
           reactionGroups: Array<{ content: string, viewerHasReacted: boolean, reactors: { totalCount: number } }>
         }
       }
@@ -65,6 +69,8 @@ export default defineEventHandler(async (event) => {
     updatedAt: node.updatedAt,
     authorAssociation: node.authorAssociation,
     author: node.author,
+    viewerCanUpdate: node.viewerCanUpdate,
+    viewerCanDelete: node.viewerCanDelete,
     reactionGroups: node.reactionGroups.map(r => ({
       content: r.content,
       count: r.reactors.totalCount,

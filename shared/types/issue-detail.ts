@@ -12,6 +12,8 @@ export interface TimelineComment extends TimelineBase {
   authorAssociation: AuthorAssociation
   author: { login: string, avatarUrl: string }
   updatedAt: string
+  viewerCanUpdate: boolean
+  viewerCanDelete: boolean
   reactionGroups: ReactionGroup[]
 }
 
@@ -137,6 +139,7 @@ export interface IssueDetail {
   }>
 
   milestone: string | null
+  viewerCanUpdate: boolean
   reactionGroups: ReactionGroup[]
 
   timeline: TimelineItem[]
@@ -168,6 +171,7 @@ export interface GraphQLIssueDetailNode {
   labels: { nodes: Array<{ name: string, color: string }> }
   assignees: { nodes: Array<{ login: string, avatarUrl: string }> }
   milestone: { title: string } | null
+  viewerCanUpdate?: boolean
   reactionGroups: Array<{ content: string, viewerHasReacted: boolean, reactors: { totalCount: number } }>
   timelineItems: {
     pageInfo: { hasNextPage: boolean, endCursor: string | null }

@@ -107,6 +107,7 @@ const toast = useToast()
           :author="issue.author"
           :author-association="issue.authorAssociation"
           :created-at="issue.createdAt"
+          :viewer-can-update="issue.viewerCanUpdate"
           :reactions="issue.reactionGroups"
           :repo="repo"
           :issue-number="number"
