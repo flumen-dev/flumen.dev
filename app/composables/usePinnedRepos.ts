@@ -27,5 +27,9 @@ export function usePinnedRepos() {
     else await pin(repo, type)
   }
 
-  return { pinnedRepos, isPinned, getItem, pin, unpin, toggle }
+  async function reorder(items: PinnedItem[]) {
+    await update({ pinnedRepos: items })
+  }
+
+  return { pinnedRepos, isPinned, getItem, pin, unpin, toggle, reorder }
 }

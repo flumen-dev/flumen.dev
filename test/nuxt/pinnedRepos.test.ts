@@ -75,6 +75,20 @@ describe('usePinnedRepos', () => {
     })
   })
 
+  it('reorders pinned repos', async () => {
+    await withPinned(async (pinned) => {
+      await pinned.pin('org/a')
+      await pinned.pin('org/b')
+      await pinned.pin('org/c')
+      await pinned.reorder([
+        { repo: 'org/c', type: 'repo' },
+        { repo: 'org/a', type: 'repo' },
+        { repo: 'org/b', type: 'repo' },
+      ])
+      expect(pinned.pinnedRepos.value.map(p => p.repo)).toEqual(['org/c', 'org/a', 'org/b'])
+    })
+  })
+
   it('does not duplicate when pinning twice', async () => {
     await withPinned(async (pinned) => {
       await pinned.pin('org/repo')
