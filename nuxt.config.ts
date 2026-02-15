@@ -12,6 +12,7 @@ export default defineNuxtConfig({
     'nuxt-auth-utils',
     'nuxt-echarts',
     'nuxt-freeform',
+    'vorm-nuxt',
   ],
   devtools: { enabled: true },
 
