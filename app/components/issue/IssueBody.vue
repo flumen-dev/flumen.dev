@@ -23,7 +23,7 @@ const editing = computed(() => editingId.value === props.id)
 const editDisabled = computed(() => editingId.value !== null && editingId.value !== props.id)
 const isOwn = computed(() => user.value?.login === props.author.login)
 const enhancedBody = computed(() => linkifyMentions(props.body))
-const localReactions = ref([...props.reactions])
+const { localReactions, onToggle } = useLocalReactions(computed(() => props.reactions))
 
 function startEdit() {
   editBody.value = props.body
@@ -43,25 +43,6 @@ async function saveEdit() {
   }
   finally {
     submitting.value = false
-  }
-}
-
-function onToggle(content: string, added: boolean) {
-  const idx = localReactions.value.findIndex(r => r.content === content)
-  if (added && idx === -1) {
-    localReactions.value.push({ content, count: 1, viewerHasReacted: true })
-  }
-  else if (added && idx >= 0) {
-    localReactions.value[idx] = { ...localReactions.value[idx]!, count: localReactions.value[idx]!.count + 1, viewerHasReacted: true }
-  }
-  else if (!added && idx >= 0) {
-    const current = localReactions.value[idx]!
-    if (current.count <= 1) {
-      localReactions.value.splice(idx, 1)
-    }
-    else {
-      localReactions.value[idx] = { ...current, count: current.count - 1, viewerHasReacted: false }
-    }
   }
 }
 </script>

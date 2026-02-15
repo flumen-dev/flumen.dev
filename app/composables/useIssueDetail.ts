@@ -115,10 +115,12 @@ export function useIssueDetail(repo: Ref<string | undefined>, number: Ref<number
 
   // Scroll-preserving refresh
   async function smartRefresh() {
-    const scrollY = window.scrollY
+    const scrollY = import.meta.client ? window.scrollY : 0
     await refresh()
-    await nextTick()
-    window.scrollTo(0, scrollY)
+    if (import.meta.client) {
+      await nextTick()
+      window.scrollTo(0, scrollY)
+    }
   }
 
   return {

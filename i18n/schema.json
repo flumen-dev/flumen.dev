@@ -741,6 +741,9 @@
             },
             "confirmDeleteDescription": {
               "type": "string"
+            },
+            "reactionError": {
+              "type": "string"
             }
           },
           "additionalProperties": false
@@ -839,6 +842,48 @@
           "type": "string"
         },
         "search": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "editor": {
+      "type": "object",
+      "properties": {
+        "bold": {
+          "type": "string"
+        },
+        "italic": {
+          "type": "string"
+        },
+        "strikethrough": {
+          "type": "string"
+        },
+        "headings": {
+          "type": "string"
+        },
+        "bulletList": {
+          "type": "string"
+        },
+        "numberedList": {
+          "type": "string"
+        },
+        "quote": {
+          "type": "string"
+        },
+        "inlineCode": {
+          "type": "string"
+        },
+        "codeBlock": {
+          "type": "string"
+        },
+        "divider": {
+          "type": "string"
+        },
+        "link": {
+          "type": "string"
+        },
+        "markdown": {
           "type": "string"
         }
       },

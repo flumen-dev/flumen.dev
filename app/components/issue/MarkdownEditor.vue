@@ -12,6 +12,7 @@ const emit = defineEmits<{
 const { t } = useI18n()
 
 const mode = ref<'write' | 'code' | 'preview'>('write')
+const toolbarItems = computed(() => getMarkdownToolbarItems(t))
 const enhancedPreview = computed(() => linkifyMentions(model.value))
 </script>
 
@@ -42,7 +43,7 @@ const enhancedPreview = computed(() => linkifyMentions(model.value))
         name="i-lucide-code"
         class="size-3.5 mr-1 align-text-bottom"
       />
-      Markdown
+      {{ t('editor.markdown') }}
     </button>
     <button
       class="px-3 py-1.5 text-sm font-medium transition-colors cursor-pointer"
@@ -72,7 +73,7 @@ const enhancedPreview = computed(() => linkifyMentions(model.value))
     >
       <UEditorToolbar
         :editor="editor"
-        :items="markdownToolbarItems"
+        :items="toolbarItems"
       />
     </UEditor>
   </div>

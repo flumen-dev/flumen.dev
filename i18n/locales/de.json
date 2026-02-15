@@ -244,7 +244,8 @@
       "error": "Kommentar konnte nicht gesendet werden.",
       "deleteError": "Kommentar konnte nicht gelöscht werden.",
       "confirmDeleteTitle": "Kommentar löschen?",
-      "confirmDeleteDescription": "Diese Aktion kann nicht rückgängig gemacht werden."
+      "confirmDeleteDescription": "Diese Aktion kann nicht rückgängig gemacht werden.",
+      "reactionError": "Reaktion konnte nicht aktualisiert werden."
     },
     "error": {
       "fetchError": {
@@ -278,6 +279,20 @@
     "unpin": "Repository loslösen",
     "pinned": "Angeheftet",
     "search": "Angeheftete filtern..."
+  },
+  "editor": {
+    "bold": "Fett",
+    "italic": "Kursiv",
+    "strikethrough": "Durchgestrichen",
+    "headings": "Überschriften",
+    "bulletList": "Aufzählung",
+    "numberedList": "Nummerierung",
+    "quote": "Zitat",
+    "inlineCode": "Inline-Code",
+    "codeBlock": "Codeblock",
+    "divider": "Trennlinie",
+    "link": "Link",
+    "markdown": "Markdown"
   },
   "settings": {
     "appearance": {

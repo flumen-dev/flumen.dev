@@ -10,6 +10,7 @@ const emit = defineEmits<{
   toggle: [content: string, added: boolean]
 }>()
 
+const { t } = useI18n()
 const apiFetch = useRequestFetch()
 const pending = ref<string | null>(null)
 
@@ -48,7 +49,7 @@ async function toggle(content: string, currentlyReacted: boolean) {
     emit('toggle', content, !currentlyReacted)
   }
   catch {
-    toast.add({ title: 'Could not update reaction', color: 'error' })
+    toast.add({ title: t('issues.comment.reactionError'), color: 'error' })
   }
   finally {
     pending.value = null
