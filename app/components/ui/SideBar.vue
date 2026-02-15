@@ -58,6 +58,10 @@ const pinnedDragItems = computed({
 
 // Search filter for pinned repos
 const pinnedSearch = ref('')
+const showPinnedSearch = computed(() => pinnedRepos.value.length > 5)
+watch(showPinnedSearch, (visible) => {
+  if (!visible) pinnedSearch.value = ''
+})
 const filteredPinnedRepos = computed(() => {
   if (!pinnedSearch.value) return pinnedDragItems.value
   const q = pinnedSearch.value.toLowerCase()
@@ -196,7 +200,7 @@ const mainItems = computed<NavigationMenuItem[]>(() => [
             {{ $t('pinnedRepos.pinned') }}
           </p>
           <UInput
-            v-if="pinnedRepos.length > 5"
+            v-if="showPinnedSearch"
             v-model="pinnedSearch"
             :placeholder="$t('pinnedRepos.search')"
             icon="i-lucide-search"
