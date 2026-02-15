@@ -1,4 +1,6 @@
 <script lang="ts" setup>
+import { TaskItem, TaskList } from '@tiptap/extension-list'
+
 const model = defineModel<string>({ default: '' })
 
 defineProps<{
@@ -13,7 +15,7 @@ const { t } = useI18n()
 
 const mode = ref<'write' | 'code' | 'preview'>('write')
 const toolbarItems = computed(() => getMarkdownToolbarItems(t))
-const enhancedPreview = computed(() => linkifyMentions(model.value))
+const taskListExtensions = [TaskList, TaskItem]
 </script>
 
 <template>
@@ -61,13 +63,14 @@ const enhancedPreview = computed(() => linkifyMentions(model.value))
   </div>
 
   <!-- Write (WYSIWYG) -->
-  <div v-show="mode === 'write'">
+  <div v-if="mode === 'write'">
     <UEditor
       v-slot="{ editor }"
       v-model="model"
       content-type="markdown"
       :mention="false"
-      class="w-full min-h-37.5 max-h-96 overflow-y-auto rounded-md border border-default"
+      :extensions="taskListExtensions"
+      class="w-full min-h-60 max-h-96 overflow-y-auto rounded-md border border-default"
       @keydown.meta.enter="emit('submit')"
       @keydown.ctrl.enter="emit('submit')"
     >
@@ -83,7 +86,7 @@ const enhancedPreview = computed(() => linkifyMentions(model.value))
     v-if="mode === 'code'"
     v-model="model"
     :placeholder="placeholder ?? t('issues.comment.placeholder')"
-    :rows="8"
+    :rows="12"
     autoresize
     class="w-full font-mono text-sm"
     @keydown.meta.enter="emit('submit')"
@@ -93,15 +96,11 @@ const enhancedPreview = computed(() => linkifyMentions(model.value))
   <!-- Preview -->
   <div
     v-if="mode === 'preview'"
-    class="min-h-37.5"
+    class="min-h-60"
   >
-    <UEditor
+    <UiMarkdownRenderer
       v-if="model.trim()"
-      :model-value="enhancedPreview"
-      content-type="markdown"
-      :editable="false"
-      :mention="false"
-      :extensions="[LinkEnhancer]"
+      :source="model"
     />
     <p
       v-else
@@ -114,8 +113,60 @@ const enhancedPreview = computed(() => linkifyMentions(model.value))
 
 <style scoped>
 :deep(.tiptap) {
-  min-height: 120px;
+  min-height: 200px;
   padding: 0.75rem;
   outline: none;
+}
+
+:deep(ul[data-type="taskList"]) {
+  list-style: none;
+  padding-left: 0.25rem;
+
+  li[data-checked] {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+
+    > label {
+      flex-shrink: 0;
+      margin-top: 0.2rem;
+
+      > span { display: none; }
+    }
+
+    > div {
+      flex: 1;
+      min-width: 0;
+    }
+
+    input[type="checkbox"] {
+      appearance: none;
+      width: 1.125rem;
+      height: 1.125rem;
+      flex-shrink: 0;
+      border: 2px solid var(--ui-border);
+      border-radius: 0.25rem;
+      background-color: var(--ui-bg);
+      cursor: pointer;
+      display: grid;
+      place-content: center;
+
+      &:hover { border-color: var(--ui-color-primary); }
+
+      &:checked {
+        background-color: var(--ui-color-primary);
+        border-color: var(--ui-color-primary);
+
+        &::after {
+          content: '';
+          width: 0.375rem;
+          height: 0.625rem;
+          border: solid white;
+          border-width: 0 2px 2px 0;
+          transform: rotate(45deg);
+        }
+      }
+    }
+  }
 }
 </style>

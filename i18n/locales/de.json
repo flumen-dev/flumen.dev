@@ -247,6 +247,23 @@
       "confirmDeleteDescription": "Diese Aktion kann nicht rückgängig gemacht werden.",
       "reactionError": "Reaktion konnte nicht aktualisiert werden."
     },
+    "create": {
+      "title": "Neues Issue",
+      "button": "Neues Issue",
+      "titleLabel": "Titel",
+      "titlePlaceholder": "Issue-Titel",
+      "bodyLabel": "Beschreibung",
+      "bodyPlaceholder": "Beschreibe das Issue...",
+      "submit": "Issue erstellen",
+      "submitting": "Wird erstellt...",
+      "success": "Issue erstellt.",
+      "error": "Issue konnte nicht erstellt werden. Bitte versuche es erneut.",
+      "noRepo": "Bitte wähle zuerst ein Repository aus.",
+      "chooseTemplate": "Vorlage auswählen",
+      "blankIssue": "Leeres Issue",
+      "blankIssueDescription": "Von Grund auf ein neues Issue erstellen.",
+      "backToTemplates": "Zurück zu Vorlagen"
+    },
     "error": {
       "fetchError": {
         "title": "Issues konnten nicht geladen werden",

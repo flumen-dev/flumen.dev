@@ -247,6 +247,23 @@
       "confirmDeleteDescription": "This action cannot be undone.",
       "reactionError": "Could not update reaction."
     },
+    "create": {
+      "title": "New Issue",
+      "button": "New Issue",
+      "titleLabel": "Title",
+      "titlePlaceholder": "Issue title",
+      "bodyLabel": "Description",
+      "bodyPlaceholder": "Describe the issue...",
+      "submit": "Create Issue",
+      "submitting": "Creating...",
+      "success": "Issue created.",
+      "error": "Could not create issue. Please try again.",
+      "noRepo": "Please select a repository first.",
+      "chooseTemplate": "Choose a template",
+      "blankIssue": "Blank issue",
+      "blankIssueDescription": "Start from scratch with an empty issue.",
+      "backToTemplates": "Back to templates"
+    },
     "error": {
       "fetchError": {
         "title": "Failed to load issues",

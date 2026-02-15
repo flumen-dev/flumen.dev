@@ -419,11 +419,11 @@ function sanitizeUrl(raw: string): string | null {
 
           <!-- View mode: rendered markdown -->
           <template v-if="!editing">
-            <UEditor
+            <UiMarkdownRenderer
               v-if="store.readme"
-              :model-value="store.readme"
-              content-type="markdown"
-              :editable="false"
+              :source="store.readme"
+              :linkify-mentions="false"
+              :breaks="false"
             />
             <UAlert
               v-else-if="!store.readmeLoading"
@@ -449,11 +449,11 @@ function sanitizeUrl(raw: string): string | null {
           <!-- Edit mode -->
           <template v-else>
             <!-- Preview -->
-            <UEditor
+            <UiMarkdownRenderer
               v-if="readmePreview"
-              :model-value="readmeForm"
-              content-type="markdown"
-              :editable="false"
+              :source="readmeForm"
+              :linkify-mentions="false"
+              :breaks="false"
             />
             <!-- Raw editor -->
             <UTextarea

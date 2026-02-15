@@ -56,3 +56,36 @@
   cursor: pointer;
 }
 .mention-btn:hover { color: var(--ui-text-highlighted); background-color: var(--ui-bg-elevated); }
+
+/* Task list checkboxes */
+.task-list { list-style: none; padding-left: 0.25rem; }
+.task-list li { display: flex; align-items: flex-start; gap: 0.5rem; }
+.task-checkbox {
+  appearance: none;
+  width: 1.125rem;
+  height: 1.125rem;
+  flex-shrink: 0;
+  border: 1.5px solid var(--ui-border);
+  border-radius: 0.25rem;
+  background-color: var(--ui-bg);
+  cursor: default;
+  position: relative;
+  margin-top: 0.1875rem;
+  display: grid;
+  place-content: center;
+}
+.task-checkbox:not(:disabled) { cursor: pointer; }
+.task-checkbox:not(:disabled):hover { border-color: var(--ui-color-primary); }
+.task-checkbox:checked {
+  background-color: var(--ui-color-primary);
+  border-color: var(--ui-color-primary);
+}
+.task-checkbox:checked::after {
+  content: '';
+  width: 0.375rem;
+  height: 0.625rem;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+  margin-bottom: 1px;
+}

@@ -5,6 +5,7 @@ definePageMeta({
 })
 
 const { t } = useI18n()
+const localePath = useLocalePath()
 const store = useIssueStore()
 
 const openCount = computed(() =>
@@ -94,6 +95,14 @@ async function setFilter(state: 'open' | 'closed') {
               class="text-xs text-muted"
             >({{ closedCount }})</span>
           </button>
+          <div class="ml-auto">
+            <UButton
+              :label="t('issues.create.button')"
+              icon="i-lucide-plus"
+              size="sm"
+              :to="localePath({ path: '/issues/new', query: { repo: store.selectedRepo } })"
+            />
+          </div>
         </div>
 
         <!-- Toolbar -->

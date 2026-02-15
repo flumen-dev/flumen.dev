@@ -21,8 +21,18 @@ const submitting = ref(false)
 
 const editing = computed(() => props.viewerCanUpdate && editingId.value === props.id)
 const editDisabled = computed(() => editingId.value !== null && editingId.value !== props.id)
-const enhancedBody = computed(() => linkifyMentions(props.body))
 const { localReactions, onToggle } = useLocalReactions(computed(() => props.reactions))
+
+async function handleTaskToggle({ taskIndex }: TaskToggleDetail) {
+  if (!props.viewerCanUpdate) return
+  const newBody = toggleTaskInMarkdown(props.body, taskIndex)
+  try {
+    await props.saveBody(newBody)
+  }
+  catch {
+    toast.add({ title: t('issues.comment.error'), color: 'error' })
+  }
+}
 
 function startEdit() {
   if (!props.viewerCanUpdate) return
@@ -109,12 +119,10 @@ async function saveEdit() {
       v-else
       class="p-4"
     >
-      <UEditor
-        :model-value="enhancedBody"
-        content-type="markdown"
-        :editable="false"
-        :mention="false"
-        :extensions="[LinkEnhancer]"
+      <UiMarkdownRenderer
+        :source="body"
+        :interactive-tasks="viewerCanUpdate"
+        @task-toggle="handleTaskToggle"
       />
       <IssueReactions
         :reactions="localReactions"
