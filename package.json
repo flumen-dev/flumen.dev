@@ -23,7 +23,7 @@
   },
   "dependencies": {
     "@nuxt/a11y": "1.0.0-alpha.1",
-    "@nuxt/eslint": "1.14.0",
+    "@nuxt/eslint": "1.15.1",
     "@nuxt/image": "2.0.0",
     "@nuxt/test-utils": "4.0.0",
     "@nuxt/ui": "4.4.0",
