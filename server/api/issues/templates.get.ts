@@ -102,7 +102,7 @@ export default defineEventHandler(async (event) => {
   }
   catch (err: unknown) {
     // No ISSUE_TEMPLATE directory — repo has no templates
-    if (err && typeof err === 'object' && 'statusCode' in err && (err as { statusCode: number }).statusCode === 404) {
+    if (err instanceof GitHubError && err.status === 404) {
       return { repositoryId: repository.id, templates: [] }
     }
     throw err

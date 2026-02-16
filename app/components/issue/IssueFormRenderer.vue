@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+import { useVorm } from 'vorm-vue'
 import { githubFormToVorm } from '~~/shared/utils/github-form-to-vorm'
 
 const props = defineProps<{
