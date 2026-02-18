@@ -4,6 +4,10 @@ definePageMeta({
   titleKey: 'nav.repos',
 })
 
+const { t } = useI18n()
+const { user } = useUserSession()
+const { orgs } = useUserSettings()
+
 const store = useRepositoryStore()
 await store.fetchAll()
 
@@ -11,6 +15,16 @@ const search = ref('')
 const sort = ref('pushed')
 const filters = ref<string[]>([])
 const languages = ref<string[]>([])
+
+const orgItems = computed(() => [
+  { label: user.value?.login ?? t('repos.myRepos'), value: '', avatar: { src: user.value?.avatarUrl, alt: user.value?.login } },
+  ...orgs.value.map(org => ({ label: org.login, value: org.login, avatar: { src: org.avatarUrl, alt: org.login } })),
+])
+
+const selectedOrgValue = computed({
+  get: () => store.selectedOrg ?? '',
+  set: (val: string) => store.selectOrg(val || null),
+})
 
 const availableLanguages = computed(() => {
   if (!store.repos.length) return []
@@ -91,11 +105,44 @@ const filteredRepos = computed(() => {
 </script>
 
 <template>
+  <!-- Loading skeleton -->
   <div
     v-if="store.loading"
-    class="p-4"
+    class="p-4 space-y-4"
   >
-    {{ $t('common.loading') }}
+    <!-- Org switcher skeleton -->
+    <div
+      v-if="orgs.length"
+      class="flex items-center gap-2"
+    >
+      <USkeleton
+        v-for="n in Math.min(orgs.length + 1, 5)"
+        :key="n"
+        class="h-8 w-24 rounded-md"
+      />
+    </div>
+
+    <!-- Toolbar skeleton -->
+    <div class="flex items-center gap-3">
+      <USkeleton class="h-9 flex-1 rounded-md" />
+      <USkeleton class="h-4 w-24 rounded" />
+    </div>
+    <div class="flex items-center gap-2">
+      <USkeleton
+        v-for="n in 5"
+        :key="n"
+        class="h-7 w-16 rounded-md"
+      />
+      <USkeleton class="ml-auto h-7 w-28 rounded-md" />
+    </div>
+
+    <!-- Repo cards skeleton -->
+    <div class="rounded-lg border border-default divide-y divide-default overflow-hidden">
+      <RepoCardSkeleton
+        v-for="n in 6"
+        :key="n"
+      />
+    </div>
   </div>
 
   <div
@@ -117,32 +164,64 @@ const filteredRepos = computed(() => {
   </div>
 
   <div
-    v-else-if="store.repos.length"
+    v-else
     class="p-4 space-y-4"
   >
-    <RepoToolbar
-      v-model:search="search"
-      v-model:sort="sort"
-      v-model:filters="filters"
-      v-model:languages="languages"
-      :count="filteredRepos.length"
-      :available-languages="availableLanguages"
-    />
-
+    <!-- Org switcher -->
     <div
-      v-if="filteredRepos.length"
-      class="rounded-lg border border-default divide-y divide-default overflow-hidden"
+      v-if="orgs.length"
+      class="flex items-center gap-2"
     >
-      <RepoCard
-        v-for="repo in filteredRepos"
-        :key="repo.id"
-        :repo="repo"
-        :activity="store.activity[repo.fullName]?.weeks"
-        :open-prs="store.prCounts[repo.fullName]"
-        :open-issues="store.issueCounts[repo.fullName]"
-        :notifications="store.notificationCounts[repo.fullName]"
-      />
+      <button
+        v-for="item in orgItems"
+        :key="item.value"
+        class="inline-flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-colors"
+        :class="selectedOrgValue === item.value
+          ? 'bg-primary text-inverted'
+          : 'bg-muted text-toned hover:bg-accented'"
+        @click="selectedOrgValue = item.value"
+      >
+        <UAvatar
+          :src="item.avatar.src"
+          :alt="item.avatar.alt"
+          size="3xs"
+        />
+        {{ item.label }}
+      </button>
     </div>
+
+    <template v-if="store.repos.length">
+      <RepoToolbar
+        v-model:search="search"
+        v-model:sort="sort"
+        v-model:filters="filters"
+        v-model:languages="languages"
+        :count="filteredRepos.length"
+        :available-languages="availableLanguages"
+      />
+
+      <div
+        v-if="filteredRepos.length"
+        class="rounded-lg border border-default divide-y divide-default overflow-hidden"
+      >
+        <RepoCard
+          v-for="repo in filteredRepos"
+          :key="repo.id"
+          :repo="repo"
+          :activity="store.activity[repo.fullName]?.weeks"
+          :open-prs="store.prCounts[repo.fullName]"
+          :open-issues="store.issueCounts[repo.fullName]"
+          :notifications="store.notificationCounts[repo.fullName]"
+        />
+      </div>
+
+      <p
+        v-else
+        class="text-sm text-muted"
+      >
+        {{ $t('repos.noResults') }}
+      </p>
+    </template>
 
     <p
       v-else
@@ -150,12 +229,5 @@ const filteredRepos = computed(() => {
     >
       {{ $t('repos.noResults') }}
     </p>
-  </div>
-
-  <div
-    v-else
-    class="p-4 text-muted"
-  >
-    {{ $t('repos.noResults') }}
   </div>
 </template>

@@ -99,6 +99,8 @@
       "inactive": "Inaktiv",
       "archived": "Archiviert"
     },
+    "myRepos": "Meine Repositories",
+    "allOrgs": "Alle Organisationen",
     "filter": {
       "public": "Öffentlich",
       "private": "Privat",

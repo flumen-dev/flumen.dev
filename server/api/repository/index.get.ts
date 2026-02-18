@@ -1,7 +1,11 @@
 export default defineEventHandler(async (event) => {
-  const { data } = await githubCachedFetchAll<GitHubRepo>(event, '/user/repos', {
-    params: { sort: 'pushed', direction: 'desc', type: 'owner' },
-  })
+  const org = getQuery(event).org as string | undefined
+
+  const endpoint = org ? `/orgs/${org}/repos` : '/user/repos'
+  const params: Record<string, string> = { sort: 'pushed', direction: 'desc' }
+  if (!org) params.type = 'owner'
+
+  const { data } = await githubCachedFetchAll<GitHubRepo>(event, endpoint, { params })
 
   return data.map(toRepository)
 })
