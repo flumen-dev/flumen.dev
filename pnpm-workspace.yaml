@@ -4,3 +4,6 @@ onlyBuiltDependencies:
   - sharp
   - unrs-resolver
   - vue-demi
+
+overrides:
+  ajv@<8.18.0: '>=8.18.0'

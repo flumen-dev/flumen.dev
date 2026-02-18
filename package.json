@@ -67,10 +67,5 @@
   "engines": {
     "node": ">=24"
   },
-  "packageManager": "pnpm@10.29.2",
-  "pnpm": {
-    "overrides": {
-      "tar": ">=7.5.8"
-    }
-  }
+  "packageManager": "pnpm@10.29.2"
 }
