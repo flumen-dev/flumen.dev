@@ -47,7 +47,7 @@ export async function getSessionToken(event: H3Event): Promise<{ token: string, 
   return { token, userId: session.user!.id as number, login: session.user!.login }
 }
 
-const ORG_PATTERN = /^[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,37}[a-zA-Z0-9])?$/
+const ORG_PATTERN = /^(?!.*--)[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,37}[a-zA-Z0-9])?$/
 
 export function getOrgQuery(event: H3Event): string | undefined {
   const org = getQuery(event).org as string | undefined
