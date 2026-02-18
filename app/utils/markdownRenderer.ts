@@ -1,4 +1,4 @@
-import DOMPurify from 'isomorphic-dompurify'
+import DOMPurify from 'dompurify'
 import { Marked } from 'marked'
 
 const REPRO_RE = /stackblitz\.com|codesandbox\.io|codepen\.io|replay\.io|github\.com\/.*\/reproductions?\//i
@@ -67,5 +67,6 @@ const PURIFY_CONFIG = {
 export function renderMarkdown(source: string, breaks = true): string {
   const instance = breaks ? markedBreaks : markedNoBreaks
   const raw = instance.parse(source) as string
+  if (import.meta.server) return raw
   return DOMPurify.sanitize(raw, PURIFY_CONFIG) as string
 }
