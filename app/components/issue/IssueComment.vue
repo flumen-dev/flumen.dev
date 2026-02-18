@@ -1,8 +1,11 @@
 <script lang="ts" setup>
+import type { MentionUser } from '~~/shared/types/editor'
+
 const props = defineProps<{
   comment: TimelineComment
   repo: string
   issueNumber: number
+  mentionUsers?: MentionUser[]
   saveComment: (id: string, body: string) => Promise<{ id: string, body: string, bodyHTML: string, updatedAt: string } | undefined>
   removeComment: (id: string) => Promise<void>
 }>()
@@ -58,6 +61,8 @@ async function deleteComment() {
   <IssueCommentForm
     v-if="editing"
     :issue-id="comment.id"
+    :repo-context="repo"
+    :mention-users="mentionUsers"
     :edit-comment="comment"
     :save-comment="saveComment"
     @saved="onUpdated"
@@ -116,6 +121,7 @@ async function deleteComment() {
     <div class="p-4">
       <UiMarkdownRenderer
         :source="comment.body"
+        :repo-context="repo"
         :interactive-tasks="canUpdate"
         @task-toggle="handleTaskToggle"
       />

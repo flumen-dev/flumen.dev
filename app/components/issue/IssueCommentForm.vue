@@ -1,6 +1,8 @@
 <script lang="ts" setup>
 const props = defineProps<{
   issueId: string
+  repoContext?: string
+  mentionUsers?: MentionUser[]
   editComment?: TimelineComment
   submitComment?: (subjectId: string, body: string) => Promise<TimelineComment | undefined>
   saveComment?: (id: string, body: string) => Promise<{ id: string, body: string, bodyHTML: string, updatedAt: string } | undefined>
@@ -13,45 +15,63 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useI18n()
+const toast = useToast()
 const { user } = useUserSession()
 
 const body = ref(props.editComment?.body ?? '')
 const submitting = ref(false)
 const error = ref('')
 const focused = ref(false)
-const unpinned = ref(false)
+const pinEnabled = ref(true)
+const hydrated = ref(false)
 
 const editingId = useState<string | null>('issue-editing-id', () => null)
 const isEdit = computed(() => !!props.editComment)
 const someoneEditing = computed(() => !isEdit.value && editingId.value !== null)
-const active = computed(() => !unpinned.value && (focused.value || body.value.length > 0))
+const active = computed(() => pinEnabled.value && (focused.value || body.value.length > 0))
+const submitDisabled = computed(() => {
+  if (!hydrated.value) return false
+  return !hasMeaningfulMarkdown(body.value) || someoneEditing.value || submitting.value
+})
+const draftKey = computed(() => isEdit.value
+  ? `issue-comment-edit:${props.editComment?.id || props.issueId}`
+  : `issue-comment-new:${props.issueId}`)
 
-function unpin() {
-  unpinned.value = true
-}
-
-watch(focused, (isFocused) => {
-  if (isFocused) unpinned.value = false
+const { hasDraft, discardDraft, markSavedBaseline } = useMarkdownDraft({
+  key: draftKey,
+  value: body,
+  onRestored: () => {
+    toast.add({
+      title: t('issues.draft.restored'),
+      color: 'info',
+    })
+  },
 })
 
-watch(body, () => {
-  unpinned.value = false
+function togglePin() {
+  pinEnabled.value = !pinEnabled.value
+}
+
+onMounted(() => {
+  hydrated.value = true
 })
 
 defineExpose({ active })
 
 async function submit() {
-  if (!body.value.trim() || submitting.value) return
+  if (submitDisabled.value) return
   submitting.value = true
   error.value = ''
 
   try {
     if (isEdit.value && props.saveComment) {
       await props.saveComment(props.editComment!.id, body.value)
+      markSavedBaseline()
       emit('saved')
     }
     else if (props.submitComment) {
       await props.submitComment(props.issueId, body.value)
+      markSavedBaseline()
       emit('submitted')
       body.value = ''
     }
@@ -67,47 +87,60 @@ async function submit() {
 
 <template>
   <div
-    class="relative rounded-lg border border-default bg-default"
+    class="relative rounded-lg border border-default bg-default overflow-hidden"
     @focusin="focused = true"
     @focusout="focused = false"
   >
-    <!-- Sticky pin indicator -->
-    <Transition name="fade">
-      <button
-        v-if="active"
-        class="absolute -top-2 -right-2 z-10 flex items-center justify-center size-5 rounded-full bg-primary text-white shadow-sm cursor-pointer hover:bg-primary/80 transition-colors"
-        @mousedown.prevent
-        @click.stop="unpin"
-      >
-        <UIcon
-          name="i-lucide-pin"
-          class="size-3"
-        />
-      </button>
-    </Transition>
+    <EditorMarkdownEditor
+      v-model="body"
+      :repo-context="props.repoContext"
+      :mention-users="props.mentionUsers"
+      :framed="false"
+      :show-header="true"
+      @submit="submit"
+    >
+      <template #header-left="{ mode, setMode }">
+        <div class="flex items-center gap-3">
+          <UAvatar
+            :src="user?.avatarUrl"
+            :alt="user?.login"
+            size="xs"
+          />
+          <span class="text-sm font-medium">{{ user?.login }}</span>
+          <span
+            v-if="isEdit"
+            class="text-xs text-muted"
+          >
+            {{ t('issues.comment.editing') }}
+          </span>
 
-    <!-- Author bar -->
-    <div class="px-4 py-2 border-b border-default bg-elevated/50 rounded-t-lg flex items-center gap-2">
-      <UAvatar
-        :src="user?.avatarUrl"
-        :alt="user?.login"
-        size="xs"
-      />
-      <span class="text-sm font-medium">{{ user?.login }}</span>
-      <span
-        v-if="isEdit"
-        class="text-xs text-muted"
-      >
-        {{ t('issues.comment.editing') }}
-      </span>
-    </div>
+          <div class="h-4 w-px bg-default" />
 
-    <div class="p-4">
-      <IssueMarkdownEditor
-        v-model="body"
-        @submit="submit"
-      />
+          <EditorSourceToggle
+            :model-value="mode"
+            @update:model-value="setMode"
+          />
+        </div>
+      </template>
 
+      <template #header-right>
+        <button
+          class="flex items-center justify-center size-5 rounded-full transition-colors"
+          :class="pinEnabled
+            ? 'bg-primary text-white shadow-sm cursor-pointer hover:bg-primary/80'
+            : 'bg-elevated text-muted ring-1 ring-default cursor-default'"
+          @mousedown.prevent
+          @click.stop="togglePin"
+        >
+          <UIcon
+            name="i-lucide-pin"
+            class="size-3"
+          />
+        </button>
+      </template>
+    </EditorMarkdownEditor>
+
+    <div class="p-4 pt-0">
       <div
         v-if="error"
         class="text-sm text-red-500 mt-3 mb-2"
@@ -124,10 +157,17 @@ async function submit() {
           @click="emit('cancel')"
         />
         <UButton
+          v-if="hasDraft"
+          :label="t('issues.draft.discard')"
+          color="neutral"
+          variant="ghost"
+          @click="discardDraft()"
+        />
+        <UButton
           :label="isEdit ? t('issues.comment.update') : t('issues.comment.submit')"
           icon="i-lucide-send"
           :loading="submitting"
-          :disabled="!body.trim() || someoneEditing"
+          :disabled="submitDisabled"
           @click="submit"
         />
       </div>

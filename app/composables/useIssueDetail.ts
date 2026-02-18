@@ -5,6 +5,8 @@
  * - Mutations: optimistic local update + clear payload cache for next visit
  * - Scroll position preserved on refresh
  */
+import { normalizeMarkdownMentions } from '~/utils/normalizeMarkdownMentions'
+
 export function useIssueDetail(repo: Ref<string | undefined>, number: Ref<number>) {
   const apiFetch = useRequestFetch()
   const nuxtApp = useNuxtApp()
@@ -42,9 +44,10 @@ export function useIssueDetail(repo: Ref<string | undefined>, number: Ref<number
 
   async function saveBody(newBody: string) {
     if (!issue.value || !repo.value) return
+    const normalizedBody = normalizeMarkdownMentions(newBody)
     const result = await apiFetch<{ id: string, body: string, bodyHTML: string, updatedAt: string }>('/api/issues/body', {
       method: 'PATCH',
-      body: { id: issue.value.id, body: newBody, repo: repo.value, issueNumber: number.value },
+      body: { id: issue.value.id, body: normalizedBody, repo: repo.value, issueNumber: number.value },
     })
     issue.value = {
       ...issue.value,
@@ -58,9 +61,10 @@ export function useIssueDetail(repo: Ref<string | undefined>, number: Ref<number
 
   async function submitComment(subjectId: string, body: string) {
     if (!repo.value) return
+    const normalizedBody = normalizeMarkdownMentions(body)
     const comment = await apiFetch<TimelineComment>('/api/issues/comments', {
       method: 'POST',
-      body: { subjectId, body, repo: repo.value, issueNumber: number.value },
+      body: { subjectId, body: normalizedBody, repo: repo.value, issueNumber: number.value },
     })
     if (issue.value) {
       issue.value = {
@@ -74,9 +78,10 @@ export function useIssueDetail(repo: Ref<string | undefined>, number: Ref<number
 
   async function saveComment(id: string, body: string) {
     if (!repo.value) return
+    const normalizedBody = normalizeMarkdownMentions(body)
     const result = await apiFetch<{ id: string, body: string, bodyHTML: string, updatedAt: string }>('/api/issues/comments', {
       method: 'PATCH',
-      body: { id, body, repo: repo.value, issueNumber: number.value },
+      body: { id, body: normalizedBody, repo: repo.value, issueNumber: number.value },
     })
     if (issue.value) {
       issue.value = {

@@ -1,3 +1,5 @@
+import { createGitHubReferenceRegex } from '~/utils/githubReferences'
+
 /**
  * Pre-process markdown: convert plain @mentions to GitHub profile links.
  * Already-linked mentions like [@user](url) are left untouched.
@@ -70,4 +72,69 @@ export function enhanceMentionChips(dom: HTMLElement) {
       e.preventDefault()
     })
   })
+}
+
+/**
+ * Post-render DOM enhancement: convert `close(s) #123` / `fix(es) #123` / `resolve(s) #123`
+ * plain text references into GitHub issue links with chip styling.
+ */
+export function enhanceGitHubReferences(dom: HTMLElement, repoContext?: string) {
+  if (!repoContext) return
+
+  const regex = createGitHubReferenceRegex('gi')
+  const textNodes: Text[] = []
+
+  const walker = document.createTreeWalker(dom, NodeFilter.SHOW_TEXT, {
+    acceptNode(node) {
+      const textNode = node as Text
+      const parent = textNode.parentElement
+      if (!parent) return NodeFilter.FILTER_REJECT
+      if (parent.closest('a, code, pre')) return NodeFilter.FILTER_REJECT
+      regex.lastIndex = 0
+      return regex.test(textNode.nodeValue || '')
+        ? NodeFilter.FILTER_ACCEPT
+        : NodeFilter.FILTER_REJECT
+    },
+  })
+
+  let current: Node | null
+  while ((current = walker.nextNode())) {
+    textNodes.push(current as Text)
+  }
+
+  for (const node of textNodes) {
+    const text = node.nodeValue || ''
+    regex.lastIndex = 0
+
+    const fragment = document.createDocumentFragment()
+    let last = 0
+    let match: RegExpExecArray | null
+
+    while ((match = regex.exec(text)) !== null) {
+      const start = match.index
+      const end = start + match[0].length
+      const keyword = match[1] || ''
+      const issue = match[2] || ''
+
+      if (start > last) {
+        fragment.append(document.createTextNode(text.slice(last, start)))
+      }
+
+      const link = document.createElement('a')
+      link.href = `https://github.com/${repoContext}/issues/${issue}`
+      link.target = '_blank'
+      link.rel = 'noopener noreferrer'
+      link.className = 'github-ref'
+      link.textContent = `${keyword} #${issue}`
+      fragment.append(link)
+
+      last = end
+    }
+
+    if (last < text.length) {
+      fragment.append(document.createTextNode(text.slice(last)))
+    }
+
+    node.replaceWith(fragment)
+  }
 }

@@ -90,3 +90,148 @@
   transform: rotate(45deg);
   margin-bottom: 1px;
 }
+
+/* Shared markdown content styling (renderer + WYSIWYG editor) */
+.markdown-content {
+  font-size: 0.875rem;
+  line-height: 1.625;
+  color: var(--ui-text);
+  word-wrap: break-word;
+}
+
+.markdown-content :where(h1) { font-size: 1.5rem; font-weight: 700; margin: 1.5rem 0 0.75rem; border-bottom: 1px solid var(--ui-border); padding-bottom: 0.25rem; }
+.markdown-content :where(h2) { font-size: 1.25rem; font-weight: 700; margin: 1.25rem 0 0.625rem; border-bottom: 1px solid var(--ui-border); padding-bottom: 0.25rem; }
+.markdown-content :where(h3) { font-size: 1.125rem; font-weight: 600; margin: 1rem 0 0.5rem; }
+.markdown-content :where(h4) { font-size: 1rem; font-weight: 600; margin: 0.75rem 0 0.375rem; }
+
+.markdown-content :where(p) { margin: 0.5rem 0; }
+.markdown-content :where(p:first-child) { margin-top: 0; }
+.markdown-content :where(p:last-child) { margin-bottom: 0; }
+
+.markdown-content :where(a) { color: var(--ui-color-primary); text-decoration: none; }
+.markdown-content :where(a:hover) { text-decoration: underline; }
+.markdown-content :where(a > img) { display: inline; }
+
+.markdown-content :where(.github-ref) {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 0.25rem;
+  padding: 0.1rem 0.4rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1.2;
+  background-color: color-mix(in oklab, var(--ui-color-primary) 12%, transparent);
+  color: var(--ui-color-primary);
+  text-decoration: none;
+}
+
+.markdown-content :where(ul),
+.markdown-content :where(ol) { padding-left: 1.5rem; margin: 0.5rem 0; }
+.markdown-content :where(ul) { list-style: disc; }
+.markdown-content :where(ol) { list-style: decimal; }
+.markdown-content :where(li) { margin: 0.25rem 0; }
+
+.markdown-content :where(.task-list),
+.markdown-content :where(ul[data-type="taskList"]) {
+  list-style: none;
+  padding-left: 0.25rem;
+}
+
+.markdown-content :where(.task-list li),
+.markdown-content :where(ul[data-type="taskList"] li) {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.markdown-content :where(blockquote) {
+  border-left: 3px solid var(--ui-border);
+  padding: 0.25rem 1rem;
+  margin: 0.5rem 0;
+  color: var(--ui-text-muted);
+}
+
+.markdown-content :where(code) {
+  background-color: var(--ui-bg-muted);
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.25rem;
+  font-size: 0.8125rem;
+}
+
+.markdown-content :where(pre) {
+  background-color: var(--ui-bg-elevated);
+  border: 1px solid var(--ui-border);
+  border-radius: 0.375rem;
+  padding: 0.75rem 1rem;
+  margin: 0.75rem 0;
+  overflow-x: auto;
+}
+
+.markdown-content :where(pre code) {
+  background: none;
+  padding: 0;
+  border-radius: 0;
+  font-size: 0.8125rem;
+}
+
+.markdown-content :where(table) {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 0.75rem 0;
+}
+
+.markdown-content :where(th),
+.markdown-content :where(td) {
+  border: 1px solid var(--ui-border);
+  padding: 0.375rem 0.75rem;
+  text-align: left;
+}
+
+.markdown-content :where(th) {
+  background-color: var(--ui-bg-elevated);
+  font-weight: 600;
+}
+
+.markdown-content :where(hr) {
+  border: none;
+  border-top: 1px solid var(--ui-border);
+  margin: 1rem 0;
+}
+
+.markdown-content :where(img) {
+  max-width: 100%;
+  border-radius: 0.375rem;
+}
+
+.markdown-content :where(details) {
+  border: 1px solid var(--ui-border);
+  border-radius: 0.375rem;
+  padding: 0.5rem 0.75rem;
+  margin: 0.5rem 0;
+}
+
+.markdown-content :where(summary) {
+  cursor: pointer;
+  font-weight: 500;
+}
+
+/* Keep editor mentions visually close to rendered mention chips */
+.markdown-content :where(.mention),
+.markdown-content :where([data-type="mention"]) {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 9999px;
+  padding: 1px 0.375rem;
+  background-color: var(--ui-bg-muted);
+  color: var(--ui-text-highlighted);
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.markdown-content :where(.mention:hover),
+.markdown-content :where([data-type="mention"]:hover) {
+  background-color: var(--ui-bg-accented);
+  text-decoration: none;
+}

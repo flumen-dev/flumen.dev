@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { toggleTaskInMarkdown } from '../../app/utils/taskListExtension'
 import { linkifyMentions } from '../../app/utils/linkExtension'
+import { normalizeMarkdownMentions } from '../../app/utils/normalizeMarkdownMentions'
 
 describe('toggleTaskInMarkdown', () => {
   it('toggles unchecked to checked by index', () => {
@@ -71,5 +72,22 @@ describe('linkifyMentions', () => {
 
   it('handles mention at end of string', () => {
     expect(linkifyMentions('Thanks @reviewer')).toBe('Thanks [@reviewer](https://github.com/reviewer)')
+  })
+})
+
+describe('normalizeMarkdownMentions', () => {
+  it('normalizes label-style mention syntax', () => {
+    const value = 'Hey [@ label="Gonzo17"] please check this'
+    expect(normalizeMarkdownMentions(value)).toBe('Hey @Gonzo17 please check this')
+  })
+
+  it('normalizes markdown link mentions', () => {
+    const value = 'Hello [@alice](https://github.com/alice)'
+    expect(normalizeMarkdownMentions(value)).toBe('Hello @alice')
+  })
+
+  it('keeps regular text untouched', () => {
+    const value = 'No mention syntax here'
+    expect(normalizeMarkdownMentions(value)).toBe(value)
   })
 })

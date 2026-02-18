@@ -141,6 +141,14 @@ describe('useIssueDetail', () => {
     })
   })
 
+  it('saveBody normalizes markdown mention links before sending', async () => {
+    await withIssueDetail(async (detail) => {
+      const result = await detail.saveBody('Hello [@alice](https://github.com/alice)')
+      expect(result!.body).toBe('Hello @alice')
+      expect(detail.issue.value!.body).toBe('Hello @alice')
+    })
+  })
+
   it('saveBody preserves other issue fields', async () => {
     await withIssueDetail(async (detail) => {
       await detail.saveBody('New body')
@@ -162,6 +170,13 @@ describe('useIssueDetail', () => {
       const last = detail.issue.value!.timeline[1]!
       expect(last.type).toBe('IssueComment')
       expect((last as TimelineComment).body).toBe('New comment')
+    })
+  })
+
+  it('submitComment normalizes markdown mention links before sending', async () => {
+    await withIssueDetail(async (detail) => {
+      const comment = await detail.submitComment('I_1', 'Ping [@alice](https://github.com/alice)')
+      expect(comment!.body).toBe('Ping @alice')
     })
   })
 

@@ -697,9 +697,6 @@
         "comment": {
           "type": "object",
           "properties": {
-            "placeholder": {
-              "type": "string"
-            },
             "submit": {
               "type": "string"
             },
@@ -710,15 +707,6 @@
               "type": "string"
             },
             "delete": {
-              "type": "string"
-            },
-            "write": {
-              "type": "string"
-            },
-            "preview": {
-              "type": "string"
-            },
-            "previewEmpty": {
               "type": "string"
             },
             "editing": {
@@ -743,6 +731,18 @@
               "type": "string"
             },
             "reactionError": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "draft": {
+          "type": "object",
+          "properties": {
+            "restored": {
+              "type": "string"
+            },
+            "discard": {
               "type": "string"
             }
           },
@@ -901,41 +901,122 @@
     "editor": {
       "type": "object",
       "properties": {
-        "bold": {
+        "placeholder": {
           "type": "string"
         },
-        "italic": {
+        "source": {
           "type": "string"
         },
-        "strikethrough": {
+        "wysiwyg": {
           "type": "string"
         },
-        "headings": {
+        "editedAgo": {
           "type": "string"
         },
-        "bulletList": {
-          "type": "string"
+        "toolbar": {
+          "type": "object",
+          "properties": {
+            "headings": {
+              "type": "string"
+            },
+            "heading1": {
+              "type": "string"
+            },
+            "heading2": {
+              "type": "string"
+            },
+            "heading3": {
+              "type": "string"
+            },
+            "bold": {
+              "type": "string"
+            },
+            "italic": {
+              "type": "string"
+            },
+            "strikethrough": {
+              "type": "string"
+            },
+            "inlineCode": {
+              "type": "string"
+            },
+            "link": {
+              "type": "string"
+            },
+            "image": {
+              "type": "string"
+            },
+            "bulletList": {
+              "type": "string"
+            },
+            "orderedList": {
+              "type": "string"
+            },
+            "taskList": {
+              "type": "string"
+            },
+            "blockquote": {
+              "type": "string"
+            },
+            "codeBlock": {
+              "type": "string"
+            },
+            "divider": {
+              "type": "string"
+            },
+            "undo": {
+              "type": "string"
+            },
+            "redo": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
         },
-        "numberedList": {
-          "type": "string"
-        },
-        "quote": {
-          "type": "string"
-        },
-        "inlineCode": {
-          "type": "string"
-        },
-        "codeBlock": {
-          "type": "string"
-        },
-        "divider": {
-          "type": "string"
-        },
-        "link": {
-          "type": "string"
-        },
-        "markdown": {
-          "type": "string"
+        "suggestion": {
+          "type": "object",
+          "properties": {
+            "text": {
+              "type": "string"
+            },
+            "paragraph": {
+              "type": "string"
+            },
+            "heading1": {
+              "type": "string"
+            },
+            "heading2": {
+              "type": "string"
+            },
+            "heading3": {
+              "type": "string"
+            },
+            "lists": {
+              "type": "string"
+            },
+            "bulletList": {
+              "type": "string"
+            },
+            "orderedList": {
+              "type": "string"
+            },
+            "taskList": {
+              "type": "string"
+            },
+            "insert": {
+              "type": "string"
+            },
+            "blockquote": {
+              "type": "string"
+            },
+            "codeBlock": {
+              "type": "string"
+            },
+            "divider": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
         }
       },
       "additionalProperties": false

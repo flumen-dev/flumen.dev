@@ -3,6 +3,7 @@ import { useVorm } from 'vorm-vue'
 import { githubFormToVorm } from '~~/shared/utils/github-form-to-vorm'
 
 const props = defineProps<{
+  repoContext?: string
   fields: Array<{
     type: 'markdown' | 'input' | 'textarea' | 'dropdown' | 'checkboxes'
     id?: string
@@ -85,17 +86,23 @@ defineExpose({ handleSubmit, vorm })
       />
 
       <!-- Textarea -->
-      <UTextarea
+      <div
         v-else-if="field.type === 'textarea'"
-        :model-value="String(modelValue ?? '')"
-        :placeholder="field.placeholder"
-        :rows="8"
-        size="lg"
-        autoresize
-        class="w-full"
-        @update:model-value="onUpdate($event)"
-        @blur="vorm.validateFieldByName(field.name)"
-      />
+        class="rounded-md border border-default bg-default overflow-hidden"
+      >
+        <EditorMarkdownEditor
+          :model-value="String(modelValue ?? '')"
+          :repo-context="props.repoContext"
+          :placeholder="field.placeholder"
+          :show-header="true"
+          :framed="false"
+          min-height="12rem"
+          class="w-full"
+          @update:model-value="onUpdate($event)"
+          @submit="handleSubmit"
+          @blur="vorm.validateFieldByName(field.name)"
+        />
+      </div>
 
       <!-- Select -->
       <USelect

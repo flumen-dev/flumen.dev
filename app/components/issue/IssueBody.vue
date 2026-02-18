@@ -9,6 +9,7 @@ const props = defineProps<{
   reactions: ReactionGroup[]
   repo: string
   issueNumber: number
+  mentionUsers?: MentionUser[]
   saveBody: (newBody: string) => Promise<{ id: string, body: string, bodyHTML: string, updatedAt: string } | undefined>
 }>()
 
@@ -22,6 +23,17 @@ const submitting = ref(false)
 const editing = computed(() => props.viewerCanUpdate && editingId.value === props.id)
 const editDisabled = computed(() => editingId.value !== null && editingId.value !== props.id)
 const { localReactions, onToggle } = useLocalReactions(computed(() => props.reactions))
+const { hasDraft, discardDraft, markSavedBaseline } = useMarkdownDraft({
+  key: computed(() => `issue-body:${props.id}`),
+  value: editBody,
+  enabled: editing,
+  onRestored: () => {
+    toast.add({
+      title: t('issues.draft.restored'),
+      color: 'info',
+    })
+  },
+})
 
 async function handleTaskToggle({ taskIndex }: TaskToggleDetail) {
   if (!props.viewerCanUpdate) return
@@ -41,11 +53,12 @@ function startEdit() {
 }
 
 async function saveEdit() {
-  if (!props.viewerCanUpdate || !editBody.value.trim() || submitting.value) return
+  if (!props.viewerCanUpdate || !hasMeaningfulMarkdown(editBody.value) || submitting.value) return
   submitting.value = true
 
   try {
     await props.saveBody(editBody.value)
+    markSavedBaseline()
     editingId.value = null
   }
   catch {
@@ -93,8 +106,10 @@ async function saveEdit() {
       v-if="editing"
       class="p-4"
     >
-      <IssueMarkdownEditor
+      <EditorMarkdownEditor
         v-model="editBody"
+        :repo-context="repo"
+        :mention-users="mentionUsers"
         @submit="saveEdit"
       />
       <div class="flex items-center justify-end gap-2 mt-3">
@@ -105,10 +120,17 @@ async function saveEdit() {
           @click="editingId = null"
         />
         <UButton
+          v-if="hasDraft"
+          :label="t('issues.draft.discard')"
+          color="neutral"
+          variant="ghost"
+          @click="discardDraft()"
+        />
+        <UButton
           :label="t('issues.comment.update')"
           icon="i-lucide-send"
           :loading="submitting"
-          :disabled="!editBody.trim()"
+          :disabled="!hasMeaningfulMarkdown(editBody)"
           @click="saveEdit"
         />
       </div>
@@ -121,6 +143,7 @@ async function saveEdit() {
     >
       <UiMarkdownRenderer
         :source="body"
+        :repo-context="repo"
         :interactive-tasks="viewerCanUpdate"
         @task-toggle="handleTaskToggle"
       />

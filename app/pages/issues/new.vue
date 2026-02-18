@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import type { IssueTemplate, IssueFormTemplate } from '~~/server/api/issues/templates.get'
-import { formDataToMarkdown } from '~~/shared/utils/form-data-to-markdown'
+import { normalizeMarkdownMentions } from '~/utils/normalizeMarkdownMentions'
 
 definePageMeta({
   middleware: 'auth',
@@ -29,6 +29,18 @@ const repositoryId = ref('')
 const hasTemplates = ref(false)
 const selectedFormTemplate = ref<IssueFormTemplate | null>(null)
 const formRenderer = ref<{ handleSubmit: () => void, vorm: { formData: Record<string, unknown> } }>()
+const plainBodyDraftKey = computed(() => repo.value ? `issue-create-body:${repo.value}` : null)
+const { hasDraft: hasPlainBodyDraft, discardDraft: discardPlainBodyDraft, markSavedBaseline: markPlainBodyDraftSaved } = useMarkdownDraft({
+  key: plainBodyDraftKey,
+  value: body,
+  enabled: computed(() => step.value === 'form'),
+  onRestored: () => {
+    toast.add({
+      title: t('issues.draft.restored'),
+      color: 'info',
+    })
+  },
+})
 
 watchEffect(async () => {
   if (!repo.value) {
@@ -81,6 +93,7 @@ function backToTemplates() {
 async function submitIssue(issueBody: string) {
   if (!title.value.trim() || submitting.value || !repo.value) return
   submitting.value = true
+  const normalizedBody = normalizeMarkdownMentions(issueBody)
 
   try {
     const result = await apiFetch<{ number: number }>('/api/issues/create', {
@@ -88,23 +101,27 @@ async function submitIssue(issueBody: string) {
       body: {
         repositoryId: repositoryId.value,
         title: title.value,
-        body: issueBody,
+        body: normalizedBody,
         repo: repo.value,
       },
     })
     toast.add({ title: t('issues.create.success'), color: 'success' })
     await router.push(localePath({ path: `/issues/${result.number}`, query: { repo: repo.value } }))
+    return true
   }
   catch {
     toast.add({ title: t('issues.create.error'), color: 'error' })
+    return false
   }
   finally {
     submitting.value = false
   }
 }
 
-function submitPlain() {
-  submitIssue(body.value)
+async function submitPlain() {
+  const success = await submitIssue(body.value)
+  if (!success) return
+  markPlainBodyDraftSaved()
 }
 
 function submitForm(formData: Record<string, unknown>) {
@@ -194,6 +211,7 @@ function submitForm(formData: Record<string, unknown>) {
       <!-- Form fields rendered by Vorm -->
       <IssueFormRenderer
         ref="formRenderer"
+        :repo-context="repo || undefined"
         :fields="selectedFormTemplate.body"
         @submit="submitForm"
       />
@@ -205,6 +223,13 @@ function submitForm(formData: Record<string, unknown>) {
           color="neutral"
           variant="ghost"
           :to="localePath('/issues')"
+        />
+        <UButton
+          v-if="hasPlainBodyDraft"
+          :label="t('issues.draft.discard')"
+          color="neutral"
+          variant="ghost"
+          @click="discardPlainBodyDraft()"
         />
         <UButton
           :label="submitting ? t('issues.create.submitting') : t('issues.create.submit')"
@@ -254,11 +279,16 @@ function submitForm(formData: Record<string, unknown>) {
         <label class="text-sm font-medium">
           {{ t('issues.create.bodyLabel') }}
         </label>
-        <IssueMarkdownEditor
-          v-model="body"
-          :placeholder="t('issues.create.bodyPlaceholder')"
-          @submit="submitPlain"
-        />
+        <div class="rounded-md border border-default bg-default overflow-hidden">
+          <EditorMarkdownEditor
+            v-model="body"
+            :repo-context="repo || undefined"
+            :placeholder="t('issues.create.bodyPlaceholder')"
+            :show-header="true"
+            :framed="false"
+            @submit="submitPlain"
+          />
+        </div>
       </div>
 
       <!-- Actions -->

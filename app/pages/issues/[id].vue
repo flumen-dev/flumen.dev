@@ -39,6 +39,30 @@ const linkedPrs = computed(() => {
     .filter(Boolean) as Array<{ number: number, title: string, url: string, state: string, actor: string }>
 })
 
+const mentionUsers = computed<MentionUser[]>(() => {
+  if (!issue.value) return []
+
+  const users = new Map<string, string>()
+  users.set(issue.value.author.login, issue.value.author.avatarUrl)
+
+  for (const assignee of issue.value.assignees) {
+    users.set(assignee.login, assignee.avatarUrl)
+  }
+
+  for (const item of issue.value.timeline) {
+    if (item.type === 'IssueComment') {
+      users.set(item.author.login, item.author.avatarUrl)
+    }
+  }
+
+  return Array.from(users.entries())
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([label, src]) => ({
+      label,
+      avatar: src ? { src } : undefined,
+    }))
+})
+
 type NonCommentEvent = Exclude<TimelineItem, { type: 'IssueComment' }>
 type TimelineSection
   = { type: 'comment', comment: TimelineComment }
@@ -110,6 +134,7 @@ const toast = useToast()
           :viewer-can-update="issue.viewerCanUpdate"
           :reactions="issue.reactionGroups"
           :repo="repo"
+          :mention-users="mentionUsers"
           :issue-number="number"
           :save-body="saveBody"
         />
@@ -122,6 +147,7 @@ const toast = useToast()
             v-if="section.type === 'comment'"
             :comment="section.comment"
             :repo="repo"
+            :mention-users="mentionUsers"
             :issue-number="number"
             :save-comment="saveComment"
             :remove-comment="removeComment"
@@ -140,6 +166,8 @@ const toast = useToast()
           <IssueCommentForm
             ref="commentFormRef"
             :issue-id="issue.id"
+            :repo-context="repo"
+            :mention-users="mentionUsers"
             :submit-comment="submitComment"
             @submitted="toast.add({ title: t('issues.comment.submitted'), color: 'success' })"
           />

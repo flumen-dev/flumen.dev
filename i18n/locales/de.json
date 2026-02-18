@@ -230,14 +230,10 @@
       "showLess": "Weniger"
     },
     "comment": {
-      "placeholder": "Kommentar schreiben...",
       "submit": "Kommentieren",
       "update": "Aktualisieren",
       "edit": "Bearbeiten",
       "delete": "Löschen",
-      "write": "Schreiben",
-      "preview": "Vorschau",
-      "previewEmpty": "Keine Vorschau verfügbar",
       "editing": "wird bearbeitet",
       "deleted": "Kommentar gelöscht.",
       "submitted": "Kommentar gesendet.",
@@ -246,6 +242,10 @@
       "confirmDeleteTitle": "Kommentar löschen?",
       "confirmDeleteDescription": "Diese Aktion kann nicht rückgängig gemacht werden.",
       "reactionError": "Reaktion konnte nicht aktualisiert werden."
+    },
+    "draft": {
+      "restored": "Entwurf wiederhergestellt.",
+      "discard": "Entwurf verwerfen"
     },
     "create": {
       "title": "Neues Issue",
@@ -298,18 +298,45 @@
     "search": "Angeheftete filtern..."
   },
   "editor": {
-    "bold": "Fett",
-    "italic": "Kursiv",
-    "strikethrough": "Durchgestrichen",
-    "headings": "Überschriften",
-    "bulletList": "Aufzählung",
-    "numberedList": "Nummerierung",
-    "quote": "Zitat",
-    "inlineCode": "Inline-Code",
-    "codeBlock": "Codeblock",
-    "divider": "Trennlinie",
-    "link": "Link",
-    "markdown": "Markdown"
+    "placeholder": "Schreibe etwas...",
+    "source": "Quelltext",
+    "wysiwyg": "Vorschau",
+    "editedAgo": "bearbeitet {time}",
+    "toolbar": {
+      "headings": "Überschriften",
+      "heading1": "Überschrift 1",
+      "heading2": "Überschrift 2",
+      "heading3": "Überschrift 3",
+      "bold": "Fett",
+      "italic": "Kursiv",
+      "strikethrough": "Durchgestrichen",
+      "inlineCode": "Code",
+      "link": "Link",
+      "image": "Bild",
+      "bulletList": "Aufzählung",
+      "orderedList": "Nummerierte Liste",
+      "taskList": "Aufgabenliste",
+      "blockquote": "Zitat",
+      "codeBlock": "Codeblock",
+      "divider": "Trennlinie",
+      "undo": "Rückgängig",
+      "redo": "Wiederholen"
+    },
+    "suggestion": {
+      "text": "Text",
+      "paragraph": "Absatz",
+      "heading1": "Überschrift 1",
+      "heading2": "Überschrift 2",
+      "heading3": "Überschrift 3",
+      "lists": "Listen",
+      "bulletList": "Aufzählung",
+      "orderedList": "Nummerierte Liste",
+      "taskList": "Aufgabenliste",
+      "insert": "Einfügen",
+      "blockquote": "Zitat",
+      "codeBlock": "Codeblock",
+      "divider": "Trennlinie"
+    }
   },
   "settings": {
     "appearance": {
