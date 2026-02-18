@@ -1,5 +1,7 @@
 import DOMPurify from 'dompurify'
 import { Marked } from 'marked'
+import type { IOptions as SanitizeHtmlOptions } from 'sanitize-html'
+import sanitizeHtml from 'sanitize-html'
 
 const REPRO_RE = /stackblitz\.com|codesandbox\.io|codepen\.io|replay\.io|github\.com\/.*\/reproductions?\//i
 
@@ -64,9 +66,25 @@ const PURIFY_CONFIG = {
   ],
 }
 
+const SERVER_SANITIZE_CONFIG: SanitizeHtmlOptions = {
+  allowedTags: PURIFY_CONFIG.ALLOWED_TAGS,
+  allowedAttributes: {
+    '*': ['class', 'id', 'title', 'data-task', 'data-mention', 'align', 'colspan', 'rowspan'],
+    'a': ['href', 'target', 'rel'],
+    'img': ['src', 'alt', 'title', 'loading'],
+    'input': ['type', 'checked', 'disabled', 'class'],
+  },
+  allowedSchemes: ['http', 'https', 'mailto', 'tel'],
+  allowedSchemesAppliedToAttributes: ['href', 'src'],
+  allowProtocolRelative: false,
+}
+
 export function renderMarkdown(source: string, breaks = true): string {
   const instance = breaks ? markedBreaks : markedNoBreaks
   const raw = instance.parse(source) as string
-  if (import.meta.server) return raw
+  if (import.meta.server) {
+    return sanitizeHtml(raw, SERVER_SANITIZE_CONFIG)
+  }
+
   return DOMPurify.sanitize(raw, PURIFY_CONFIG) as string
 }

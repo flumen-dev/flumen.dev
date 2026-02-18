@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import type { MarkdownEditorProps } from '~~/shared/types/editor'
+
 const props = withDefaults(defineProps<MarkdownEditorProps>(), {
   placeholder: '',
   minHeight: '10rem',

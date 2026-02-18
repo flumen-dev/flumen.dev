@@ -65,12 +65,18 @@ async function submit() {
 
   try {
     if (isEdit.value && props.saveComment) {
-      await props.saveComment(props.editComment!.id, body.value)
+      const result = await props.saveComment(props.editComment!.id, body.value)
+      if (!result) {
+        throw new Error('Failed to save comment')
+      }
       markSavedBaseline()
       emit('saved')
     }
     else if (props.submitComment) {
-      await props.submitComment(props.issueId, body.value)
+      const result = await props.submitComment(props.issueId, body.value)
+      if (!result) {
+        throw new Error('Failed to submit comment')
+      }
       markSavedBaseline()
       emit('submitted')
       body.value = ''
