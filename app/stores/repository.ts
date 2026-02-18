@@ -39,11 +39,11 @@ export const useRepositoryStore = defineStore('repository', () => {
       // Repos first (blocking — needed for the list)
       repos.value = await apiFetch<Repository[]>('/api/repository', { params })
 
-      // Counts + activity in parallel (non-blocking enrichment)
+      // Counts + activity in parallel (non-blocking enrichment, same org scope)
       const [counts, notifications, act] = await Promise.all([
-        apiFetch<{ prCounts: Record<string, number>, issueCounts: Record<string, number> }>('/api/repository/counts'),
-        apiFetch<Record<string, number>>('/api/repository/notifications'),
-        apiFetch<Record<string, RepoActivity>>('/api/repository/activity'),
+        apiFetch<{ prCounts: Record<string, number>, issueCounts: Record<string, number> }>('/api/repository/counts', { params }),
+        apiFetch<Record<string, number>>('/api/repository/notifications', { params }),
+        apiFetch<Record<string, RepoActivity>>('/api/repository/activity', { params }),
       ])
       prCounts.value = counts.prCounts
       issueCounts.value = counts.issueCounts

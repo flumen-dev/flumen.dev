@@ -47,6 +47,16 @@ export async function getSessionToken(event: H3Event): Promise<{ token: string, 
   return { token, userId: session.user!.id as number, login: session.user!.login }
 }
 
+const ORG_PATTERN = /^[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,37}[a-zA-Z0-9])?$/
+
+export function getOrgQuery(event: H3Event): string | undefined {
+  const org = getQuery(event).org as string | undefined
+  if (org && !ORG_PATTERN.test(org)) {
+    throw createError({ statusCode: 400, message: 'Invalid org parameter' })
+  }
+  return org
+}
+
 export function getRepoParams(event: H3Event): { owner: string, repo: string } {
   const { owner, repo } = getRouterParams(event)
   if (!owner || !repo) {

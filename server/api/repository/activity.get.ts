@@ -41,5 +41,15 @@ const fetchActivity = defineCachedFunction(
 
 export default defineEventHandler(async (event) => {
   const { token, login } = await getSessionToken(event)
-  return fetchActivity(login, token)
+  const org = getOrgQuery(event)
+  const activity = await fetchActivity(login, token)
+
+  if (!org) return activity
+
+  // Filter to only include repos owned by the selected org
+  const filtered: Record<string, RepoActivity> = {}
+  for (const [repo, data] of Object.entries(activity)) {
+    if (repo.startsWith(`${org}/`)) filtered[repo] = data
+  }
+  return filtered
 })

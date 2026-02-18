@@ -17,5 +17,15 @@ const fetchNotificationCounts = defineCachedFunction(
 
 export default defineEventHandler(async (event) => {
   const { token, login } = await getSessionToken(event)
-  return fetchNotificationCounts(login, token)
+  const org = getOrgQuery(event)
+  const counts = await fetchNotificationCounts(login, token)
+
+  if (!org) return counts
+
+  // Filter to only include repos owned by the selected org
+  const filtered: Record<string, number> = {}
+  for (const [repo, count] of Object.entries(counts)) {
+    if (repo.startsWith(`${org}/`)) filtered[repo] = count
+  }
+  return filtered
 })

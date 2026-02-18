@@ -21,10 +21,13 @@ const orgItems = computed(() => [
   ...orgs.value.map(org => ({ label: org.login, value: org.login, avatar: { src: org.avatarUrl, alt: org.login } })),
 ])
 
-const selectedOrgValue = computed({
-  get: () => store.selectedOrg ?? '',
-  set: (val: string) => store.selectOrg(val || null),
-})
+const selectedOrgValue = computed(() => store.selectedOrg ?? '')
+
+async function handleOrgChange(orgValue: string) {
+  const org = orgValue || null
+  if (org === store.selectedOrg) return
+  await store.selectOrg(org)
+}
 
 const availableLanguages = computed(() => {
   if (!store.repos.length) return []
@@ -175,11 +178,12 @@ const filteredRepos = computed(() => {
       <button
         v-for="item in orgItems"
         :key="item.value"
+        :aria-pressed="selectedOrgValue === item.value"
         class="inline-flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-colors"
         :class="selectedOrgValue === item.value
           ? 'bg-primary text-inverted'
           : 'bg-muted text-toned hover:bg-accented'"
-        @click="selectedOrgValue = item.value"
+        @click="handleOrgChange(item.value)"
       >
         <UAvatar
           :src="item.avatar.src"

@@ -307,9 +307,6 @@
         "myRepos": {
           "type": "string"
         },
-        "allOrgs": {
-          "type": "string"
-        },
         "filter": {
           "type": "object",
           "properties": {

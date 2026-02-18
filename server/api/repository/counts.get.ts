@@ -1,8 +1,9 @@
 const fetchCounts = defineCachedFunction(
-  async (_login: string, token: string) => {
+  async (_cacheKey: string, token: string, org?: string) => {
+    const endpoint = org ? `/orgs/${org}/repos` : '/user/repos'
     const { data: repos } = await githubFetchAllWithToken<GitHubRepo>(
       token,
-      '/user/repos',
+      endpoint,
       { params: { per_page: 100 } },
     )
 
@@ -13,10 +14,12 @@ const fetchCounts = defineCachedFunction(
 
     return githubRepoCountsGraphQL(token, repoList)
   },
-  { maxAge: 300, name: 'repo-counts', getKey: (login: string) => login },
+  { maxAge: 300, name: 'repo-counts', getKey: (cacheKey: string) => cacheKey },
 )
 
 export default defineEventHandler(async (event) => {
   const { token, login } = await getSessionToken(event)
-  return fetchCounts(login, token)
+  const org = getOrgQuery(event)
+  const cacheKey = org ? `${login}:${org}` : login
+  return fetchCounts(cacheKey, token, org)
 })
