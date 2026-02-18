@@ -22,7 +22,7 @@ type ImageHandlerEditor = {
   }
 }
 
-function pickImageAndInsert(onSelect: (src: string) => void) {
+function pickImageAndInsert(onSelect: (src: string) => void, onError?: (error: Error) => void) {
   if (!import.meta.client) return
 
   const input = document.createElement('input')
@@ -39,6 +39,10 @@ function pickImageAndInsert(onSelect: (src: string) => void) {
         onSelect(reader.result)
       }
     }
+    reader.onerror = () => {
+      const error = reader.error ?? new Error('Failed to read the selected image file.')
+      onError?.(error)
+    }
     reader.readAsDataURL(file)
   }
 
@@ -46,12 +50,17 @@ function pickImageAndInsert(onSelect: (src: string) => void) {
 }
 
 export function useMarkdownEditorHandlers() {
+  const toast = useToast()
+  const { t } = useI18n()
+
   const handlers = {
     image: {
       canExecute: (editor: ImageHandlerEditor) => editor.can().setImage({ src: '' }),
       execute: (editor: ImageHandlerEditor) => {
         pickImageAndInsert((src) => {
           editor.chain().focus().setImage({ src }).run()
+        }, () => {
+          toast.add({ title: t('editor.imageReadError'), color: 'error' })
         })
 
         return editor.chain()

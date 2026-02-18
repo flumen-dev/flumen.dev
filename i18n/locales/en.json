@@ -299,9 +299,12 @@
   },
   "editor": {
     "placeholder": "Write something...",
+    "pin": "Pin editor",
+    "unpin": "Unpin editor",
     "source": "Source",
     "wysiwyg": "Preview",
     "editedAgo": "edited {time}",
+    "imageReadError": "Could not read the selected image.",
     "toolbar": {
       "headings": "Headings",
       "heading1": "Heading 1",

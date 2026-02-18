@@ -1,7 +1,4 @@
 <script setup lang="ts">
-import type { MarkdownEditorMode, MarkdownEditorProps } from '~~/shared/types/editor'
-import { normalizeMarkdownMentions } from '~/utils/normalizeMarkdownMentions'
-
 const props = withDefaults(defineProps<MarkdownEditorProps>(), {
   placeholder: '',
   minHeight: '10rem',
@@ -13,6 +10,7 @@ const props = withDefaults(defineProps<MarkdownEditorProps>(), {
 const emit = defineEmits<{
   'update:modelValue': [value: string]
   'submit': []
+  'blur': []
 }>()
 
 const { t } = useI18n()
@@ -70,6 +68,23 @@ function onKeyDown(event: KeyboardEvent) {
 function setMode(value: MarkdownEditorMode) {
   mode.value = value
 }
+
+function onFocusOut(event: FocusEvent) {
+  const currentTarget = event.currentTarget
+
+  if (!(currentTarget instanceof HTMLElement)) {
+    return
+  }
+
+  const nextTarget = event.relatedTarget
+
+  if (nextTarget instanceof Node && currentTarget.contains(nextTarget)) {
+    return
+  }
+
+  emit('blur')
+}
+
 const { editorHandlers } = useMarkdownEditorHandlers()
 
 const appendToBody = import.meta.client
@@ -83,6 +98,7 @@ const appendToBody = import.meta.client
     :class="[
       props.framed ? 'rounded-md border border-default bg-default' : '',
     ]"
+    @focusout="onFocusOut"
   >
     <!-- Header bar: mode toggle + edited indicator -->
     <div

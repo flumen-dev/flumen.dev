@@ -299,9 +299,12 @@
   },
   "editor": {
     "placeholder": "Schreibe etwas...",
+    "pin": "Editor anheften",
+    "unpin": "Editor lösen",
     "source": "Quelltext",
     "wysiwyg": "Vorschau",
     "editedAgo": "bearbeitet {time}",
+    "imageReadError": "Das ausgewählte Bild konnte nicht gelesen werden.",
     "toolbar": {
       "headings": "Überschriften",
       "heading1": "Überschrift 1",

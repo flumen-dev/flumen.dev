@@ -29,6 +29,6 @@ export interface MarkdownEditorProps {
 export type MarkdownEditorMode = 'wysiwyg' | 'source'
 
 export interface GitHubReference {
-  type: 'closes' | 'fixes' | 'resolves'
+  type: 'close' | 'closes' | 'fix' | 'fixes' | 'resolve' | 'resolves'
   number: number
 }

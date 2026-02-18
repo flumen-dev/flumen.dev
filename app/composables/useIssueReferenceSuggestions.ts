@@ -1,5 +1,4 @@
 import type { EditorSuggestionMenuItem } from '@nuxt/ui'
-import type { RepoIssue } from '~~/shared/types/repository'
 
 type IssueReferenceSuggestionItem = EditorSuggestionMenuItem<{
   issueReference: {
@@ -22,7 +21,13 @@ export function useIssueReferenceSuggestions(repoContext: Ref<string | undefined
       return
     }
 
-    const [owner, repo] = repoValue.split('/')
+    const segments = repoValue.split('/')
+    if (segments.length !== 2) {
+      issueSuggestionItems.value = []
+      return
+    }
+
+    const [owner, repo] = segments
     if (!owner || !repo) {
       issueSuggestionItems.value = []
       return

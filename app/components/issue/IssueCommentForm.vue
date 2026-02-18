@@ -30,7 +30,7 @@ const isEdit = computed(() => !!props.editComment)
 const someoneEditing = computed(() => !isEdit.value && editingId.value !== null)
 const active = computed(() => pinEnabled.value && (focused.value || body.value.length > 0))
 const submitDisabled = computed(() => {
-  if (!hydrated.value) return false
+  if (!hydrated.value) return true
   return !hasMeaningfulMarkdown(body.value) || someoneEditing.value || submitting.value
 })
 const draftKey = computed(() => isEdit.value
@@ -125,10 +125,14 @@ async function submit() {
 
       <template #header-right>
         <button
+          type="button"
           class="flex items-center justify-center size-5 rounded-full transition-colors"
           :class="pinEnabled
             ? 'bg-primary text-white shadow-sm cursor-pointer hover:bg-primary/80'
             : 'bg-elevated text-muted ring-1 ring-default cursor-default'"
+          :aria-label="pinEnabled ? t('editor.unpin') : t('editor.pin')"
+          :title="pinEnabled ? t('editor.unpin') : t('editor.pin')"
+          :aria-pressed="pinEnabled"
           @mousedown.prevent
           @click.stop="togglePin"
         >

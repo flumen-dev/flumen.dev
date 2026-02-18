@@ -96,7 +96,7 @@
   font-size: 0.875rem;
   line-height: 1.625;
   color: var(--ui-text);
-  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .markdown-content :where(h1) { font-size: 1.5rem; font-weight: 700; margin: 1.5rem 0 0.75rem; border-bottom: 1px solid var(--ui-border); padding-bottom: 0.25rem; }

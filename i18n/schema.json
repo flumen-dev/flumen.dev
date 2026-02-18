@@ -904,6 +904,12 @@
         "placeholder": {
           "type": "string"
         },
+        "pin": {
+          "type": "string"
+        },
+        "unpin": {
+          "type": "string"
+        },
         "source": {
           "type": "string"
         },
@@ -911,6 +917,9 @@
           "type": "string"
         },
         "editedAgo": {
+          "type": "string"
+        },
+        "imageReadError": {
           "type": "string"
         },
         "toolbar": {
