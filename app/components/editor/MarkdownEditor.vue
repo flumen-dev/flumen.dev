@@ -42,9 +42,13 @@ const {
   mentionUsers: props.mentionUsers,
 })
 
-const editedTimeAgo = props.updatedAt && props.createdAt && props.updatedAt !== props.createdAt
-  ? useTimeAgo(computed(() => props.updatedAt!))
-  : null
+const editedTimeAgo = computed(() => {
+  if (props.updatedAt && props.createdAt && props.updatedAt !== props.createdAt) {
+    return useTimeAgo(computed(() => props.updatedAt!))
+  }
+
+  return null
+})
 
 const placeholderText = computed(() => props.placeholder || t('editor.placeholder'))
 
@@ -120,14 +124,14 @@ const appendToBody = import.meta.client
         :mode="mode"
       >
         <span
-          v-if="editedTimeAgo"
+          v-if="editedTimeAgo?.value"
           class="text-xs text-dimmed flex items-center gap-1"
         >
           <UIcon
             name="i-lucide-pencil"
             class="size-3"
           />
-          {{ t('editor.editedAgo', { time: editedTimeAgo }) }}
+          {{ t('editor.editedAgo', { time: editedTimeAgo.value }) }}
         </span>
       </slot>
     </div>
