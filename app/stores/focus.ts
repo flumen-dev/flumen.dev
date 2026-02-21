@@ -1,5 +1,6 @@
 import type { FocusItem } from '~~/server/api/focus/working-on.get'
 import type { CreatedIssueItem } from '~~/server/api/focus/created.get'
+import type { FocusCounts } from '~~/server/api/focus/counts.get'
 import type { PaginatedResponse } from '~~/shared/types/pagination'
 
 type SectionKey = 'workingOn' | 'created' | 'watching' | 'recent'
@@ -138,6 +139,28 @@ export const useFocusStore = defineStore('focus', () => {
 
   const expanded = ref<SectionKey | null>(null)
 
+  // --- Counts (lightweight, loaded on mount) ---
+  const counts = ref<FocusCounts | null>(null)
+  const countsFetchedAt = ref<number | null>(null)
+  const countsLoading = ref(false)
+
+  async function fetchCounts() {
+    if (!isStale(countsFetchedAt.value)) return
+    countsLoading.value = true
+    try {
+      const res = await apiFetch<FocusCounts>('/api/focus/counts')
+      // Only apply if no full section data has loaded in the meantime
+      counts.value = res
+      countsFetchedAt.value = Date.now()
+    }
+    catch {
+      // Non-critical — sections still work without counts
+    }
+    finally {
+      countsLoading.value = false
+    }
+  }
+
   // --- Simple sections ---
   const workingOn = ref<{ data: FocusItem[], loading: boolean, error: boolean, fetchedAt: number | null }>({
     data: [],
@@ -252,6 +275,9 @@ export const useFocusStore = defineStore('focus', () => {
 
   return {
     expanded,
+    counts,
+    countsLoading,
+    fetchCounts,
     workingOn,
     watching,
     recent,

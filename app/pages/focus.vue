@@ -8,6 +8,9 @@ const { t } = useI18n()
 const store = useFocusStore()
 const localePath = useLocalePath()
 
+// Load counts on mount (lightweight, single API call)
+onMounted(() => store.fetchCounts())
+
 const sections = [
   { key: 'workingOn' as const, icon: 'i-lucide-hammer', emptyIcon: 'i-lucide-hard-hat' },
   { key: 'created' as const, icon: 'i-lucide-pen-line', emptyIcon: 'i-lucide-file-text' },
@@ -23,9 +26,20 @@ function sectionState(key: SectionKey) {
 
 function sectionCount(key: SectionKey): number | null {
   const state = sectionState(key)
-  if (!state.fetchedAt) return null
-  if (key === 'created') return store.createdTotalCount
-  return state.data.length
+
+  // Full data takes priority over counts
+  if (key === 'created' && state.fetchedAt) return store.createdTotalCount
+  if (state.fetchedAt) return state.data.length
+
+  // Fall back to lightweight counts
+  if (!store.counts) return null
+  if (key === 'workingOn') return store.counts.workingOn
+  if (key === 'created') {
+    return store.createdStateFilter === 'closed'
+      ? store.counts.createdClosed
+      : store.counts.createdOpen
+  }
+  return null
 }
 </script>
 
@@ -51,8 +65,12 @@ function sectionCount(key: SectionKey): number | null {
         </h2>
 
         <!-- Count badge -->
+        <USkeleton
+          v-if="store.countsLoading && sectionCount(s.key) == null"
+          class="h-5 w-6 rounded-full"
+        />
         <UBadge
-          v-if="sectionCount(s.key) != null && sectionCount(s.key)! > 0"
+          v-else-if="sectionCount(s.key) != null && sectionCount(s.key)! > 0"
           :label="String(sectionCount(s.key))"
           color="neutral"
           variant="subtle"
