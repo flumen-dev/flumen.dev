@@ -76,18 +76,28 @@ function usePaginatedSection<T>(
 
   async function nextPage() {
     if (!_hasMore.value || !endCursor.value) return
+    const cursor = endCursor.value
     paging.value = 'next'
-    cursorHistory.value.push(endCursor.value)
-    await fetchData(endCursor.value)
-    paging.value = null
+    try {
+      await fetchData(cursor)
+      cursorHistory.value.push(cursor)
+    }
+    finally {
+      paging.value = null
+    }
   }
 
   async function prevPage() {
     if (!cursorHistory.value.length) return
+    const prevCursor = cursorHistory.value.slice(0, -1).at(-1) ?? null
     paging.value = 'prev'
-    cursorHistory.value.pop()
-    await fetchData(cursorHistory.value.at(-1) ?? null)
-    paging.value = null
+    try {
+      await fetchData(prevCursor)
+      cursorHistory.value.pop()
+    }
+    finally {
+      paging.value = null
+    }
   }
 
   async function refresh() {

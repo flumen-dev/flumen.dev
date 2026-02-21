@@ -26,7 +26,7 @@ const stateIcon = computed(() => {
 const waitingDays = computed(() => {
   if (!props.item.needsResponse || !props.item.lastCommentAt) return null
   const days = Math.floor((Date.now() - new Date(props.item.lastCommentAt).getTime()) / (1000 * 60 * 60 * 24))
-  return days
+  return days > 0 ? days : null
 })
 
 // --- Heat indicator (feature 2) ---
