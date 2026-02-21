@@ -1,41 +1,66 @@
-const ADD_REACTION = `
-mutation($subjectId: ID!, $content: ReactionContent!) {
-  addReaction(input: { subjectId: $subjectId, content: $content }) {
-    reaction { content }
-  }
-}
-`
+/**
+ * REST-based reaction endpoint — fallback for orgs that block OAuth App GraphQL access.
+ * Uses: POST /repos/{owner}/{repo}/issues/{number}/reactions
+ *       DELETE /repos/{owner}/{repo}/issues/{number}/reactions/{id}
+ */
 
-const REMOVE_REACTION = `
-mutation($subjectId: ID!, $content: ReactionContent!) {
-  removeReaction(input: { subjectId: $subjectId, content: $content }) {
-    reaction { content }
-  }
+// GraphQL ReactionContent → REST content string
+const REACTION_MAP: Record<string, string> = {
+  THUMBS_UP: '+1',
+  THUMBS_DOWN: '-1',
+  LAUGH: 'laugh',
+  HOORAY: 'hooray',
+  CONFUSED: 'confused',
+  HEART: 'heart',
+  ROCKET: 'rocket',
+  EYES: 'eyes',
 }
-`
 
 export default defineEventHandler(async (event) => {
   const { token, login } = await getSessionToken(event)
-  const { subjectId, content, remove, repo, issueNumber } = await readBody<{
-    subjectId: string
+  const { content, remove, repo, issueNumber } = await readBody<{
     content: string
     remove: boolean
     repo: string
     issueNumber: number
   }>(event)
 
-  if (!subjectId || !content) {
-    throw createError({ statusCode: 400, message: 'Missing subjectId or content' })
+  if (!content || !repo || !issueNumber) {
+    throw createError({ statusCode: 400, message: 'Missing content, repo or issueNumber' })
   }
 
-  await githubGraphQL(token, remove ? REMOVE_REACTION : ADD_REACTION, {
-    subjectId,
-    content,
-  })
+  const restContent = REACTION_MAP[content] || content.toLowerCase()
+  const [owner, repoName] = repo.split('/')
 
-  if (repo && issueNumber) {
-    await invalidateIssueDetailCache(login, repo, issueNumber)
+  if (remove) {
+    // Need to find the reaction ID first
+    const { data: reactions } = await githubFetchWithToken<Array<{ id: number, content: string, user: { login: string } }>>(
+      token,
+      `/repos/${owner}/${repoName}/issues/${issueNumber}/reactions`,
+      { params: { per_page: 100 } },
+    )
+    const mine = reactions.find(r => r.content === restContent && r.user.login === login)
+    if (mine) {
+      const res = await fetch(`https://api.github.com/repos/${owner}/${repoName}/issues/${issueNumber}/reactions/${mine.id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `token ${token}`,
+          'Accept': 'application/vnd.github+json',
+          'X-GitHub-Api-Version': '2022-11-28',
+        },
+      })
+      if (!res.ok) {
+        throw new GitHubError(res.status, 'DELETE reaction', `GitHub API ${res.status}: ${res.statusText}`)
+      }
+    }
+  }
+  else {
+    await githubFetchWithToken(token, `/repos/${owner}/${repoName}/issues/${issueNumber}/reactions`, {
+      method: 'POST',
+      body: { content: restContent },
+    })
   }
 
+  await invalidateIssueDetailCache(login, repo, issueNumber)
   return { ok: true }
 })
