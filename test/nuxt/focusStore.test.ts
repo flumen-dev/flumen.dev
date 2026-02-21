@@ -71,6 +71,15 @@ registerEndpoint('/api/focus/working-on', {
   handler: () => ({ items: [] }),
 })
 
+registerEndpoint('/api/focus/counts', {
+  method: 'GET',
+  handler: () => ({
+    workingOn: 3,
+    createdOpen: 12,
+    createdClosed: 45,
+  }),
+})
+
 async function withStore<T>(fn: (store: ReturnType<typeof useFocusStore>) => T | Promise<T>): Promise<T> {
   let result: T
   const Wrapper = defineComponent({
@@ -214,6 +223,42 @@ describe('focusStore', () => {
       await store.refreshSection('created')
       expect(store.createdPage).toBe(1)
       expect(store.created.data[0]!.title).toBe('Created issue')
+    })
+  })
+
+  // --- Counts ---
+
+  it('fetchCounts loads lightweight counts', async () => {
+    await withStore(async (store) => {
+      expect(store.counts).toBeNull()
+
+      await store.fetchCounts()
+      expect(store.counts).toEqual({
+        workingOn: 3,
+        createdOpen: 12,
+        createdClosed: 45,
+      })
+    })
+  })
+
+  it('fetchCounts does not refetch within staleness window', async () => {
+    await withStore(async (store) => {
+      await store.fetchCounts()
+      const firstFetchedCounts = store.counts
+
+      await store.fetchCounts() // should be cached
+      expect(store.counts).toBe(firstFetchedCounts) // same reference
+    })
+  })
+
+  it('full section fetch takes priority over counts', async () => {
+    await withStore(async (store) => {
+      await store.fetchCounts()
+      expect(store.counts!.createdOpen).toBe(12)
+
+      // Full fetch returns totalCount: 2 (different from counts' 12)
+      await store.toggle('created')
+      expect(store.createdTotalCount).toBe(2) // full data wins
     })
   })
 })
