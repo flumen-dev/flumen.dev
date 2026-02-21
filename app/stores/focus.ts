@@ -19,7 +19,7 @@ interface PaginatedSection<T> {
   currentPage: ComputedRef<number>
   totalPages: ComputedRef<number>
   paging: Ref<'next' | 'prev' | null>
-  fetch: (after?: string | null) => Promise<void>
+  fetch: (after?: string | null) => Promise<boolean>
   nextPage: () => Promise<void>
   prevPage: () => Promise<void>
   refresh: () => Promise<void>
@@ -52,7 +52,7 @@ function usePaginatedSection<T>(
     return Date.now() - fetchedAt.value > STALE_MS
   }
 
-  async function fetchData(after?: string | null) {
+  async function fetchData(after?: string | null): Promise<boolean> {
     loading.value = true
     error.value = false
     try {
@@ -65,9 +65,11 @@ function usePaginatedSection<T>(
       totalCount.value = res.totalCount
       _hasMore.value = res.pageInfo.hasNextPage
       endCursor.value = res.pageInfo.endCursor
+      return true
     }
     catch {
       error.value = true
+      return false
     }
     finally {
       loading.value = false
@@ -79,8 +81,9 @@ function usePaginatedSection<T>(
     const cursor = endCursor.value
     paging.value = 'next'
     try {
-      await fetchData(cursor)
-      cursorHistory.value.push(cursor)
+      if (await fetchData(cursor)) {
+        cursorHistory.value.push(cursor)
+      }
     }
     finally {
       paging.value = null
@@ -92,8 +95,9 @@ function usePaginatedSection<T>(
     const prevCursor = cursorHistory.value.slice(0, -1).at(-1) ?? null
     paging.value = 'prev'
     try {
-      await fetchData(prevCursor)
-      cursorHistory.value.pop()
+      if (await fetchData(prevCursor)) {
+        cursorHistory.value.pop()
+      }
     }
     finally {
       paging.value = null
