@@ -60,6 +60,7 @@ function onBranchNameChange() {
   if (!branchName.value) return
   checkTimeout = setTimeout(() => checkBranchStatus(branchName.value), 500)
 }
+onBeforeUnmount(() => clearTimeout(checkTimeout))
 
 // --- Computed ---
 
