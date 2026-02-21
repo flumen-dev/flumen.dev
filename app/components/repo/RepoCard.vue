@@ -21,8 +21,15 @@ const activityTooltip = computed(() => {
 })
 
 const { isPinned, toggle: togglePin } = usePinnedRepos()
+const localePath = useLocalePath()
+const issueStore = useIssueStore()
 
 const expandedSection = ref<'issues' | 'prs' | 'notifications' | null>(null)
+
+function navigateToIssues() {
+  issueStore.selectRepo(props.repo.fullName)
+  navigateTo(localePath('/issues'))
+}
 
 function toggleSection(section: 'issues' | 'prs' | 'notifications') {
   expandedSection.value = expandedSection.value === section ? null : section
@@ -30,7 +37,10 @@ function toggleSection(section: 'issues' | 'prs' | 'notifications') {
 </script>
 
 <template>
-  <div class="px-4 py-3 hover:bg-elevated transition-colors">
+  <div
+    class="px-4 py-3 hover:bg-elevated transition-colors cursor-pointer"
+    @click="navigateToIssues"
+  >
     <div class="flex items-start gap-3">
       <!-- Activity dot -->
       <UTooltip
@@ -48,14 +58,12 @@ function toggleSection(section: 'issues' | 'prs' | 'notifications') {
       <div class="min-w-0 flex-1">
         <!-- Row 1: Name + badges + time -->
         <div class="flex items-center gap-2">
-          <NuxtLink
-            :to="repo.htmlUrl"
-            external
-            target="_blank"
-            class="font-semibold text-highlighted truncate hover:underline"
+          <button
+            class="font-semibold text-highlighted truncate hover:underline cursor-pointer text-left"
+            @click="navigateToIssues"
           >
             {{ repo.name }}
-          </NuxtLink>
+          </button>
 
           <UBadge
             v-if="repo.archived"
