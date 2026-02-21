@@ -23,8 +23,7 @@
   },
   "auth": {
     "loginWithGithub": "Mit GitHub anmelden",
-    "login": "Anmelden",
-    "forbidden": "Du musst dich anmelden, um auf diese Seite zuzugreifen."
+    "login": "Anmelden"
   },
   "welcome": {
     "greeting": "Willkommen bei"

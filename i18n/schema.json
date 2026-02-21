@@ -78,9 +78,6 @@
         },
         "login": {
           "type": "string"
-        },
-        "forbidden": {
-          "type": "string"
         }
       },
       "additionalProperties": false
