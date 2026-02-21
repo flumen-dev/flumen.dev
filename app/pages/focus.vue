@@ -24,23 +24,37 @@ function sectionState(key: SectionKey) {
   return store[key]
 }
 
-function sectionCount(key: SectionKey): number | null {
-  const state = sectionState(key)
-
-  // Full data takes priority over counts
-  if (key === 'created' && state.fetchedAt) return store.createdTotalCount
-  if (state.fetchedAt) return state.data.length
-
-  // Fall back to lightweight counts
-  if (!store.counts) return null
-  if (key === 'workingOn') return store.counts.workingOn
-  if (key === 'created') {
-    return store.createdStateFilter === 'closed'
-      ? store.counts.createdClosed
-      : store.counts.createdOpen
+const sectionCounts = computed(() => {
+  const result: Record<SectionKey, number | null> = {
+    workingOn: null,
+    created: null,
+    watching: null,
+    recent: null,
   }
-  return null
-}
+
+  for (const key of ['workingOn', 'created', 'watching', 'recent'] as SectionKey[]) {
+    const state = sectionState(key)
+
+    // Full data takes priority over counts
+    if (key === 'created' && state.fetchedAt) {
+      result[key] = store.createdTotalCount
+    }
+    else if (state.fetchedAt) {
+      result[key] = state.data.length
+    }
+    // Fall back to lightweight counts
+    else if (store.counts) {
+      if (key === 'workingOn') result[key] = store.counts.workingOn
+      else if (key === 'created') {
+        result[key] = store.createdStateFilter === 'closed'
+          ? store.counts.createdClosed
+          : store.counts.createdOpen
+      }
+    }
+  }
+
+  return result
+})
 </script>
 
 <template>
@@ -66,12 +80,12 @@ function sectionCount(key: SectionKey): number | null {
 
         <!-- Count badge -->
         <USkeleton
-          v-if="store.countsLoading && sectionCount(s.key) == null"
+          v-if="store.countsLoading && sectionCounts[s.key] == null"
           class="h-5 w-6 rounded-full"
         />
         <UBadge
-          v-else-if="sectionCount(s.key) != null && sectionCount(s.key)! > 0"
-          :label="String(sectionCount(s.key))"
+          v-else-if="sectionCounts[s.key] != null && sectionCounts[s.key]! > 0"
+          :label="String(sectionCounts[s.key])"
           color="neutral"
           variant="subtle"
           size="sm"

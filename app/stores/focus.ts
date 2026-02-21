@@ -149,7 +149,6 @@ export const useFocusStore = defineStore('focus', () => {
     countsLoading.value = true
     try {
       const res = await apiFetch<FocusCounts>('/api/focus/counts')
-      // Only apply if no full section data has loaded in the meantime
       counts.value = res
       countsFetchedAt.value = Date.now()
     }

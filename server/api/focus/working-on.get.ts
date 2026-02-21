@@ -56,7 +56,7 @@ export default defineEventHandler(async (event): Promise<WorkingOnResponse> => {
     // getKeys returns full keys — read with the exact key returned
     const claims = await storage.getItem<ClaimEntry[]>(rawKey)
     if (!claims) continue
-    const mine = claims.find(c => c.login === login)
+    const mine = claims.find(c => c.login.toLowerCase() === login.toLowerCase())
     if (!mine) continue
 
     const parsed = parseClaimKey(rawKey)

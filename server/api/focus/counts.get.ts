@@ -25,12 +25,12 @@ export default defineEventHandler(async (event): Promise<FocusCounts> => {
   const storage = useStorage('data')
   const allKeys = await storage.getKeys('issue-claims')
   let claimedCount = 0
+  const loginLower = login.toLowerCase()
   for (const rawKey of allKeys) {
+    if (!parseClaimKey(rawKey)) continue
     const claims = await storage.getItem<ClaimEntry[]>(rawKey)
     if (!claims) continue
-    const parsed = parseClaimKey(rawKey)
-    if (!parsed) continue
-    if (claims.some(c => c.login === login)) {
+    if (claims.some(c => c.login.toLowerCase() === loginLower)) {
       claimedCount++
     }
   }
