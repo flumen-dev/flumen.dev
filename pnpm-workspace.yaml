@@ -4,3 +4,7 @@ onlyBuiltDependencies:
   - sharp
   - unrs-resolver
   - vue-demi
+
+overrides:
+  devalue@<=5.6.2: '>=5.6.3'
+  minimatch@<10.2.1: '>=10.2.1'
