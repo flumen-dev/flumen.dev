@@ -6,7 +6,8 @@
     "retry": "Try again",
     "copied": "Link copied",
     "copyLink": "Copy link",
-    "viewOnGithub": "View on GitHub"
+    "viewOnGithub": "View on GitHub",
+    "close": "Close"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -341,6 +342,34 @@
       "codeBlock": "Code Block",
       "divider": "Divider"
     }
+  },
+  "cli": {
+    "title": "Connect CLI",
+    "description": "Connect your local flumli CLI to push code and create pull requests directly from Flumen.",
+    "tokenLabel": "Token",
+    "tokenPlaceholder": "Paste token from CLI",
+    "connect": "Connect",
+    "connecting": "Connecting...",
+    "connected": "CLI connected",
+    "notConnected": "CLI not connected",
+    "disconnect": "Disconnect",
+    "invalidToken": "Invalid token. Make sure flumli is running and the token is correct.",
+    "willAutoCheckout": "Branch will be checked out locally after claiming.",
+    "checkingOut": "Checking out branch...",
+    "checkoutSuccess": "Branch checked out locally",
+    "checkoutError": "Local checkout failed",
+    "push": "Push",
+    "pushed": "Commits pushed to remote",
+    "pushing": "Pushing...",
+    "createPr": "Create PR",
+    "createPrDesc": "Push your commits and create a draft pull request.",
+    "createPrOnlyDesc": "Create a draft pull request for your branch.",
+    "prTitle": "PR title",
+    "pushAndCreatePr": "Push & Create PR",
+    "pushWithPr": "Pushed & PR created",
+    "pushFailed": "Push failed",
+    "nothingToPush": "Nothing to push",
+    "viewPr": "View PR"
   },
   "settings": {
     "appearance": {

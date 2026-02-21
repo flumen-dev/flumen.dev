@@ -11,6 +11,7 @@ export interface UserSettings {
   locale: string
   selectedRepo: string | null
   pinnedRepos: PinnedItem[]
+  cliToken: string | null
 }
 
 export const defaultUserSettings: UserSettings = {
@@ -19,6 +20,7 @@ export const defaultUserSettings: UserSettings = {
   locale: 'en',
   selectedRepo: null,
   pinnedRepos: [],
+  cliToken: null,
 }
 
 export const accentColors = [

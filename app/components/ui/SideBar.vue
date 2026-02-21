@@ -265,6 +265,16 @@ const mainItems = computed<NavigationMenuItem[]>(() => [
           </TheFreeform>
         </nav>
       </ClientOnly>
+
+      <!-- CLI Status -->
+      <ClientOnly>
+        <div
+          v-if="loggedIn && !collapsed"
+          class="border-t border-default pt-2 px-1"
+        >
+          <UiCliStatus />
+        </div>
+      </ClientOnly>
     </template>
 
     <template #footer="{ collapsed }">

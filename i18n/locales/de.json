@@ -6,7 +6,8 @@
     "retry": "Erneut versuchen",
     "copied": "Link kopiert",
     "copyLink": "Link kopieren",
-    "viewOnGithub": "Auf GitHub ansehen"
+    "viewOnGithub": "Auf GitHub ansehen",
+    "close": "Schließen"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -341,6 +342,34 @@
       "codeBlock": "Codeblock",
       "divider": "Trennlinie"
     }
+  },
+  "cli": {
+    "title": "CLI verbinden",
+    "description": "Verbinde deine lokale flumli CLI, um Code zu pushen und Pull Requests direkt aus Flumen zu erstellen.",
+    "tokenLabel": "Token",
+    "tokenPlaceholder": "Token aus CLI einfügen",
+    "connect": "Verbinden",
+    "connecting": "Verbinde...",
+    "connected": "CLI verbunden",
+    "notConnected": "CLI nicht verbunden",
+    "disconnect": "Trennen",
+    "invalidToken": "Ungültiges Token. Stelle sicher, dass flumli läuft und das Token korrekt ist.",
+    "willAutoCheckout": "Branch wird nach dem Claim lokal ausgecheckt.",
+    "checkingOut": "Branch wird ausgecheckt...",
+    "checkoutSuccess": "Branch lokal ausgecheckt",
+    "checkoutError": "Lokaler Checkout fehlgeschlagen",
+    "push": "Pushen",
+    "pushed": "Commits zum Remote gepusht",
+    "pushing": "Pushe...",
+    "createPr": "PR erstellen",
+    "createPrDesc": "Pushe deine Commits und erstelle einen Draft-Pull-Request.",
+    "createPrOnlyDesc": "Erstelle einen Draft-Pull-Request für deinen Branch.",
+    "prTitle": "PR-Titel",
+    "pushAndCreatePr": "Pushen & PR erstellen",
+    "pushWithPr": "Gepusht & PR erstellt",
+    "pushFailed": "Push fehlgeschlagen",
+    "nothingToPush": "Nichts zu pushen",
+    "viewPr": "PR ansehen"
   },
   "settings": {
     "appearance": {
