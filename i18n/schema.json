@@ -1138,6 +1138,54 @@
           },
           "additionalProperties": false
         },
+        "created": {
+          "type": "object",
+          "properties": {
+            "title": {
+              "type": "string"
+            },
+            "empty": {
+              "type": "string"
+            },
+            "needsResponse": {
+              "type": "string"
+            },
+            "comments": {
+              "type": "string"
+            },
+            "waitingDays": {
+              "type": "string"
+            },
+            "waitingSince": {
+              "type": "string"
+            },
+            "heat": {
+              "type": "string"
+            },
+            "stale": {
+              "type": "string"
+            },
+            "staleHint": {
+              "type": "string"
+            },
+            "prApproved": {
+              "type": "string"
+            },
+            "prChangesRequested": {
+              "type": "string"
+            },
+            "ciPassed": {
+              "type": "string"
+            },
+            "ciFailed": {
+              "type": "string"
+            },
+            "ciPending": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
         "watching": {
           "type": "object",
           "properties": {
