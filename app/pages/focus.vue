@@ -157,7 +157,20 @@ function sectionState(key: 'workingOn' | 'watching' | 'recent') {
           </div>
         </template>
 
-        <!-- Watching & Recent: placeholder -->
+        <!-- Watching: placeholder -->
+        <template v-else-if="s.key === 'watching'">
+          <div class="p-6 text-center">
+            <UIcon
+              :name="s.emptyIcon"
+              class="size-8 text-dimmed mx-auto mb-2"
+            />
+            <p class="text-sm text-muted">
+              {{ t('focus.watching.empty') }}
+            </p>
+          </div>
+        </template>
+
+        <!-- Recent: placeholder -->
         <template v-else>
           <div class="p-6 text-center">
             <UIcon
@@ -165,7 +178,7 @@ function sectionState(key: 'workingOn' | 'watching' | 'recent') {
               class="size-8 text-dimmed mx-auto mb-2"
             />
             <p class="text-sm text-muted">
-              {{ t(`focus.${s.key}.empty`) }}
+              {{ t('focus.recent.empty') }}
             </p>
           </div>
         </template>
