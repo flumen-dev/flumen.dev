@@ -156,13 +156,7 @@ interface GQLCreatedNode {
   repository: { nameWithOwner: string }
 }
 
-interface CreatedResponse {
-  items: CreatedIssueItem[]
-  totalCount: number
-  pageInfo: { hasNextPage: boolean, endCursor: string | null }
-}
-
-export default defineEventHandler(async (event): Promise<CreatedResponse> => {
+export default defineEventHandler(async (event): Promise<PaginatedResponse<CreatedIssueItem>> => {
   const { token, login } = await getSessionToken(event)
   const { state = 'open', first = '20', after } = getQuery<{
     state?: string

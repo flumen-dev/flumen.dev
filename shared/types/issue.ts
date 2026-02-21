@@ -1,3 +1,5 @@
+import type { PageInfo } from './pagination'
+
 export interface Issue {
   id: string
   number: number
@@ -70,10 +72,7 @@ export interface GraphQLIssueSearchResult {
 export interface PaginatedIssues {
   issues: Issue[]
   totalCount: number
-  pageInfo: {
-    hasNextPage: boolean
-    endCursor: string | null
-  }
+  pageInfo: PageInfo
 }
 
 /** Minimal node returned by the lightweight search query (for cache lookups) */
