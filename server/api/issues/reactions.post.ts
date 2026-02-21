@@ -33,7 +33,7 @@ export default defineEventHandler(async (event) => {
   const [owner, repoName] = repo.split('/')
 
   if (remove) {
-    // Need to find the reaction ID first
+    // Find the reaction ID to delete (first 100 reactions — sufficient for typical issues)
     const { data: reactions } = await githubFetchWithToken<Array<{ id: number, content: string, user: { login: string } }>>(
       token,
       `/repos/${owner}/${repoName}/issues/${issueNumber}/reactions`,
