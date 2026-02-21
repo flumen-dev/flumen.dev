@@ -17,6 +17,7 @@
     "repos": "Repositories",
     "settings": "Settings",
     "search": "Search...",
+    "focus": "Focus",
     "profile": "Profile",
     "logout": "Log out"
   },
@@ -370,6 +371,20 @@
     "pushFailed": "Push failed",
     "nothingToPush": "Nothing to push",
     "viewPr": "View PR"
+  },
+  "focus": {
+    "workingOn": {
+      "title": "Working On",
+      "empty": "No active work yet. Claim an issue to get started."
+    },
+    "watching": {
+      "title": "Watching",
+      "empty": "Nothing bookmarked yet. Bookmark issues you want to keep an eye on."
+    },
+    "recent": {
+      "title": "Recent",
+      "empty": "No recent activity yet. Your latest interactions will show up here."
+    }
   },
   "settings": {
     "appearance": {

@@ -17,6 +17,7 @@
     "repos": "Repositories",
     "settings": "Einstellungen",
     "search": "Suchen...",
+    "focus": "Fokus",
     "profile": "Profil",
     "logout": "Abmelden"
   },
@@ -370,6 +371,20 @@
     "pushFailed": "Push fehlgeschlagen",
     "nothingToPush": "Nichts zu pushen",
     "viewPr": "PR ansehen"
+  },
+  "focus": {
+    "workingOn": {
+      "title": "In Arbeit",
+      "empty": "Noch nichts in Arbeit. Übernimm ein Issue, um loszulegen."
+    },
+    "watching": {
+      "title": "Beobachtet",
+      "empty": "Noch nichts vorgemerkt. Merke dir Issues vor, die du im Blick behalten willst."
+    },
+    "recent": {
+      "title": "Kürzlich",
+      "empty": "Noch keine Aktivität. Deine letzten Interaktionen erscheinen hier."
+    }
   },
   "settings": {
     "appearance": {

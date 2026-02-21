@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import type { NavigationMenuItem } from '@nuxt/ui'
-import type { PinnedItemType } from '~~/shared/types/settings'
 
 interface PinnedDragItem {
   id: string
@@ -73,6 +72,12 @@ const mainItems = computed<NavigationMenuItem[]>(() => [
     label: t('nav.dashboard'),
     icon: 'i-lucide-layout-dashboard',
     to: localePath('/'),
+  },
+  {
+    label: t('nav.focus'),
+    icon: 'i-lucide-crosshair',
+    to: localePath('/focus'),
+    disabled: !loggedIn.value,
   },
   {
     label: t('nav.repos'),
