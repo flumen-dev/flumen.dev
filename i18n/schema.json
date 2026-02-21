@@ -27,6 +27,9 @@
         },
         "viewOnGithub": {
           "type": "string"
+        },
+        "close": {
+          "type": "string"
         }
       },
       "additionalProperties": false
@@ -1029,6 +1032,90 @@
             }
           },
           "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "cli": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "tokenLabel": {
+          "type": "string"
+        },
+        "tokenPlaceholder": {
+          "type": "string"
+        },
+        "connect": {
+          "type": "string"
+        },
+        "connecting": {
+          "type": "string"
+        },
+        "connected": {
+          "type": "string"
+        },
+        "notConnected": {
+          "type": "string"
+        },
+        "disconnect": {
+          "type": "string"
+        },
+        "invalidToken": {
+          "type": "string"
+        },
+        "willAutoCheckout": {
+          "type": "string"
+        },
+        "checkingOut": {
+          "type": "string"
+        },
+        "checkoutSuccess": {
+          "type": "string"
+        },
+        "checkoutError": {
+          "type": "string"
+        },
+        "push": {
+          "type": "string"
+        },
+        "pushed": {
+          "type": "string"
+        },
+        "pushing": {
+          "type": "string"
+        },
+        "createPr": {
+          "type": "string"
+        },
+        "createPrDesc": {
+          "type": "string"
+        },
+        "createPrOnlyDesc": {
+          "type": "string"
+        },
+        "prTitle": {
+          "type": "string"
+        },
+        "pushAndCreatePr": {
+          "type": "string"
+        },
+        "pushWithPr": {
+          "type": "string"
+        },
+        "pushFailed": {
+          "type": "string"
+        },
+        "nothingToPush": {
+          "type": "string"
+        },
+        "viewPr": {
+          "type": "string"
         }
       },
       "additionalProperties": false
