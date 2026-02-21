@@ -377,6 +377,22 @@
       "title": "In Arbeit",
       "empty": "Noch nichts in Arbeit. Übernimm ein Issue, um loszulegen."
     },
+    "created": {
+      "title": "Erstellt",
+      "empty": "Noch keine Issues erstellt.",
+      "needsResponse": "Antwort nötig",
+      "comments": "{count} Kommentar | {count} Kommentare",
+      "waitingDays": "{days}T wartend",
+      "waitingSince": "Wartet auf Antwort von {author}",
+      "heat": "Heat-Score: {score}",
+      "stale": "Inaktiv",
+      "staleHint": "Keine Aktivität seit 30+ Tagen und kein verknüpfter PR",
+      "prApproved": "Genehmigt",
+      "prChangesRequested": "Änderungen angefragt",
+      "ciPassed": "CI bestanden",
+      "ciFailed": "CI fehlgeschlagen",
+      "ciPending": "CI ausstehend"
+    },
     "watching": {
       "title": "Beobachtet",
       "empty": "Noch nichts vorgemerkt. Merke dir Issues vor, die du im Blick behalten willst."

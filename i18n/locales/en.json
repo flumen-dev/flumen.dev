@@ -377,6 +377,22 @@
       "title": "Working On",
       "empty": "No active work yet. Claim an issue to get started."
     },
+    "created": {
+      "title": "Created",
+      "empty": "No issues created yet.",
+      "needsResponse": "Needs response",
+      "comments": "{count} comment | {count} comments",
+      "waitingDays": "{days}d waiting",
+      "waitingSince": "Waiting for response from {author}",
+      "heat": "Heat score: {score}",
+      "stale": "Stale",
+      "staleHint": "No activity for 30+ days and no linked PR",
+      "prApproved": "Approved",
+      "prChangesRequested": "Changes requested",
+      "ciPassed": "CI passed",
+      "ciFailed": "CI failed",
+      "ciPending": "CI pending"
+    },
     "watching": {
       "title": "Watching",
       "empty": "Nothing bookmarked yet. Bookmark issues you want to keep an eye on."

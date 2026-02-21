@@ -10,12 +10,22 @@ const localePath = useLocalePath()
 
 const sections = [
   { key: 'workingOn' as const, icon: 'i-lucide-hammer', emptyIcon: 'i-lucide-hard-hat' },
+  { key: 'created' as const, icon: 'i-lucide-pen-line', emptyIcon: 'i-lucide-file-text' },
   { key: 'watching' as const, icon: 'i-lucide-eye', emptyIcon: 'i-lucide-bookmark' },
   { key: 'recent' as const, icon: 'i-lucide-clock', emptyIcon: 'i-lucide-activity' },
 ] as const
 
-function sectionState(key: 'workingOn' | 'watching' | 'recent') {
+type SectionKey = typeof sections[number]['key']
+
+function sectionState(key: SectionKey) {
   return store[key]
+}
+
+function sectionCount(key: SectionKey): number | null {
+  const state = sectionState(key)
+  if (!state.fetchedAt) return null
+  if (key === 'created') return store.createdTotalCount
+  return state.data.length
 }
 </script>
 
@@ -26,7 +36,7 @@ function sectionState(key: 'workingOn' | 'watching' | 'recent') {
       :key="s.key"
       class="rounded-lg border border-default"
     >
-      <!-- Section header (always visible, clickable) -->
+      <!-- Section header -->
       <button
         class="flex w-full items-center gap-2.5 px-4 py-3 cursor-pointer hover:bg-elevated transition-colors"
         :class="{ 'rounded-lg': store.expanded !== s.key, 'rounded-t-lg': store.expanded === s.key }"
@@ -42,21 +52,44 @@ function sectionState(key: 'workingOn' | 'watching' | 'recent') {
 
         <!-- Count badge -->
         <UBadge
-          v-if="sectionState(s.key).fetchedAt && sectionState(s.key).data.length > 0"
-          :label="String(sectionState(s.key).data.length)"
+          v-if="sectionCount(s.key) != null && sectionCount(s.key)! > 0"
+          :label="String(sectionCount(s.key))"
           color="neutral"
           variant="subtle"
           size="sm"
         />
 
+        <!-- Created: state filter chips (inside header, right of count) -->
+        <template v-if="s.key === 'created' && store.expanded === 'created'">
+          <div
+            class="flex items-center gap-1 ml-2"
+            @click.stop
+          >
+            <UBadge
+              :label="t('issues.open')"
+              :color="store.createdStateFilter === 'open' ? 'primary' : 'neutral'"
+              :variant="store.createdStateFilter === 'open' ? 'solid' : 'subtle'"
+              size="sm"
+              class="cursor-pointer"
+              @click="store.setCreatedFilter('open')"
+            />
+            <UBadge
+              :label="t('issues.closed')"
+              :color="store.createdStateFilter === 'closed' ? 'primary' : 'neutral'"
+              :variant="store.createdStateFilter === 'closed' ? 'solid' : 'subtle'"
+              size="sm"
+              class="cursor-pointer"
+              @click="store.setCreatedFilter('closed')"
+            />
+          </div>
+        </template>
+
         <div class="ml-auto flex items-center gap-2">
-          <!-- Loading spinner -->
           <UIcon
             v-if="sectionState(s.key).loading"
             name="i-lucide-loader-2"
             class="size-4 text-dimmed animate-spin"
           />
-          <!-- Chevron -->
           <UIcon
             :name="store.expanded === s.key ? 'i-lucide-chevron-up' : 'i-lucide-chevron-down'"
             class="size-4 text-dimmed"
@@ -69,10 +102,10 @@ function sectionState(key: 'workingOn' | 'watching' | 'recent') {
         v-if="store.expanded === s.key"
         class="border-t border-default"
       >
-        <!-- Working On: real data -->
+        <!-- Working On -->
         <template v-if="s.key === 'workingOn'">
           <div
-            v-if="sectionState(s.key).loading && !sectionState(s.key).data.length"
+            v-if="store.workingOn.loading && !store.workingOn.data.length"
             class="p-6 text-center"
           >
             <UIcon
@@ -85,15 +118,15 @@ function sectionState(key: 'workingOn' | 'watching' | 'recent') {
           </div>
 
           <div
-            v-else-if="sectionState(s.key).data.length === 0"
+            v-else-if="store.workingOn.data.length === 0"
             class="p-6 text-center"
           >
             <UIcon
-              :name="s.emptyIcon"
+              name="i-lucide-hard-hat"
               class="size-8 text-dimmed mx-auto mb-2"
             />
             <p class="text-sm text-muted">
-              {{ t(`focus.${s.key}.empty`) }}
+              {{ t('focus.workingOn.empty') }}
             </p>
           </div>
 
@@ -106,7 +139,6 @@ function sectionState(key: 'workingOn' | 'watching' | 'recent') {
               :target="item.type === 'pr' ? '_blank' : undefined"
               class="flex items-start gap-3 px-4 py-3 hover:bg-elevated transition-colors border-b border-default last:border-b-0"
             >
-              <!-- Type icon -->
               <UIcon
                 :name="item.type === 'issue' ? 'i-lucide-circle-dot' : 'i-lucide-git-pull-request'"
                 class="size-4 mt-0.5 shrink-0"
@@ -144,7 +176,6 @@ function sectionState(key: 'workingOn' | 'watching' | 'recent') {
                 </div>
               </div>
 
-              <!-- Branch chip for claimed issues -->
               <UBadge
                 v-if="item.branchName"
                 :label="item.branchName"
@@ -157,11 +188,60 @@ function sectionState(key: 'workingOn' | 'watching' | 'recent') {
           </div>
         </template>
 
+        <!-- Created -->
+        <template v-else-if="s.key === 'created'">
+          <!-- Skeleton loading -->
+          <div v-if="store.created.loading && !store.created.data.length">
+            <FocusCardSkeleton
+              v-for="i in 10"
+              :key="i"
+            />
+          </div>
+
+          <!-- Empty state -->
+          <div
+            v-else-if="store.created.data.length === 0"
+            class="p-6 text-center"
+          >
+            <UIcon
+              name="i-lucide-file-text"
+              class="size-8 text-dimmed mx-auto mb-2"
+            />
+            <p class="text-sm text-muted">
+              {{ t('focus.created.empty') }}
+            </p>
+          </div>
+
+          <!-- Items + pagination -->
+          <div v-else>
+            <div
+              class="transition-opacity duration-200"
+              :class="store.createdPaging ? 'opacity-50 pointer-events-none' : ''"
+            >
+              <FocusCreatedIssueCard
+                v-for="item in store.created.data"
+                :key="item.id"
+                :item="item"
+              />
+            </div>
+
+            <UiPaginator
+              :current-page="store.createdPage"
+              :total-pages="store.createdTotalPages"
+              :has-more="store.createdHasMore"
+              :has-previous="store.createdHasPrevious"
+              :paging="store.createdPaging"
+              @next="store.createdNextPage()"
+              @previous="store.createdPrevPage()"
+            />
+          </div>
+        </template>
+
         <!-- Watching: placeholder -->
         <template v-else-if="s.key === 'watching'">
           <div class="p-6 text-center">
             <UIcon
-              :name="s.emptyIcon"
+              name="i-lucide-bookmark"
               class="size-8 text-dimmed mx-auto mb-2"
             />
             <p class="text-sm text-muted">
@@ -174,7 +254,7 @@ function sectionState(key: 'workingOn' | 'watching' | 'recent') {
         <template v-else>
           <div class="p-6 text-center">
             <UIcon
-              :name="s.emptyIcon"
+              name="i-lucide-activity"
               class="size-8 text-dimmed mx-auto mb-2"
             />
             <p class="text-sm text-muted">

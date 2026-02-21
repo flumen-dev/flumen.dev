@@ -146,7 +146,6 @@ export default defineEventHandler(async (event): Promise<WorkingOnResponse> => {
     })
 
     for (const pr of data.search.nodes) {
-      // Skip PRs that are already represented by a claimed issue
       items.push({
         type: 'pr',
         repo: pr.repository.nameWithOwner,
