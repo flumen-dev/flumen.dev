@@ -58,6 +58,9 @@
         "search": {
           "type": "string"
         },
+        "focus": {
+          "type": "string"
+        },
         "profile": {
           "type": "string"
         },
@@ -1116,6 +1119,48 @@
         },
         "viewPr": {
           "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "focus": {
+      "type": "object",
+      "properties": {
+        "workingOn": {
+          "type": "object",
+          "properties": {
+            "title": {
+              "type": "string"
+            },
+            "empty": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "watching": {
+          "type": "object",
+          "properties": {
+            "title": {
+              "type": "string"
+            },
+            "empty": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "recent": {
+          "type": "object",
+          "properties": {
+            "title": {
+              "type": "string"
+            },
+            "empty": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
         }
       },
       "additionalProperties": false
