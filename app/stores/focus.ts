@@ -105,9 +105,11 @@ function usePaginatedSection<T>(
   }
 
   async function refresh() {
-    fetchedAt.value = null
+    const prevHistory = cursorHistory.value
     cursorHistory.value = []
-    await fetchData()
+    if (!await fetchData()) {
+      cursorHistory.value = prevHistory
+    }
   }
 
   return {
