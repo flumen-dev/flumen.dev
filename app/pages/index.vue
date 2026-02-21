@@ -1,21 +1,17 @@
 <script setup lang="ts">
 const { loggedIn } = useUserSession()
+const localePath = useLocalePath()
 
 definePageMeta({
   layout: false,
-  titleKey: 'nav.dashboard',
 })
+
+// Logged-in users land on Focus
+if (loggedIn.value) {
+  await navigateTo(localePath('/focus'), { redirectCode: 302 })
+}
 </script>
 
 <template>
   <UiWelcomeScreen v-if="!loggedIn" />
-
-  <NuxtLayout
-    v-else
-    name="default"
-  >
-    <div class="p-6">
-      <h1>{{ $t('nav.dashboard') }}</h1>
-    </div>
-  </NuxtLayout>
 </template>

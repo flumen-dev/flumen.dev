@@ -373,6 +373,8 @@
     "viewPr": "View PR"
   },
   "focus": {
+    "title": "Focus",
+    "description": "Your personal command center. See what needs your attention across all repositories.",
     "workingOn": {
       "title": "Working On",
       "empty": "No active work yet. Claim an issue to get started."

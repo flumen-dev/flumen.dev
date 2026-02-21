@@ -59,6 +59,22 @@ const sectionCounts = computed(() => {
 
 <template>
   <div class="p-4 space-y-4">
+    <!-- Intro -->
+    <div class="flex items-center gap-3">
+      <UIcon
+        name="i-lucide-crosshair"
+        class="size-6 text-primary shrink-0"
+      />
+      <div>
+        <h1 class="text-lg font-semibold text-highlighted">
+          {{ t('focus.title') }}
+        </h1>
+        <p class="text-sm text-muted">
+          {{ t('focus.description') }}
+        </p>
+      </div>
+    </div>
+
     <section
       v-for="s in sections"
       :key="s.key"

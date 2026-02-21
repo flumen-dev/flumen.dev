@@ -373,6 +373,8 @@
     "viewPr": "PR ansehen"
   },
   "focus": {
+    "title": "Focus",
+    "description": "Deine persönliche Kommandozentrale. Sieh auf einen Blick, was deine Aufmerksamkeit braucht.",
     "workingOn": {
       "title": "In Arbeit",
       "empty": "Noch nichts in Arbeit. Übernimm ein Issue, um loszulegen."
