@@ -133,32 +133,16 @@ async function setFilter(state: 'open' | 'closed') {
           </div>
 
           <!-- Pagination (only when not searching) -->
-          <div
-            v-if="!store.search && (store.hasPrevious || store.hasMore)"
-            class="flex items-center justify-between"
-          >
-            <UButton
-              :label="t('issues.previousPage')"
-              icon="i-lucide-chevron-left"
-              variant="outline"
-              size="sm"
-              :disabled="!store.hasPrevious"
-              :loading="store.paging === 'prev'"
-              @click="store.loadPreviousPage()"
-            />
-            <span class="text-sm text-muted">
-              {{ t('issues.page', { current: store.currentPage, total: store.totalPages }) }}
-            </span>
-            <UButton
-              :label="t('issues.nextPage')"
-              trailing-icon="i-lucide-chevron-right"
-              variant="outline"
-              size="sm"
-              :disabled="!store.hasMore"
-              :loading="store.paging === 'next'"
-              @click="store.loadNextPage()"
-            />
-          </div>
+          <UiPaginator
+            v-if="!store.search"
+            :current-page="store.currentPage"
+            :total-pages="store.totalPages"
+            :has-more="store.hasMore"
+            :has-previous="store.hasPrevious"
+            :paging="store.paging"
+            @next="store.loadNextPage()"
+            @previous="store.loadPreviousPage()"
+          />
         </div>
 
         <!-- Empty -->
