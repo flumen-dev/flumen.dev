@@ -26,7 +26,7 @@ const userMenuItems = computed(() => [
     icon: 'i-lucide-log-out',
     onSelect: async () => {
       await clear()
-      await navigateTo('/', { external: true })
+      await navigateTo(localePath('/'), { external: true })
     },
   }],
 ])
