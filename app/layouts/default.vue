@@ -9,6 +9,8 @@ const { load: loadSettings } = useUserSettings()
 
 await loadSettings()
 
+const hasTeleportContent = useState('has-page-title-teleport', () => false)
+
 const pageTitle = computed(() => {
   const key = route.meta.titleKey as string | undefined
   if (!key) {
@@ -29,7 +31,15 @@ useHead({
     <UDashboardPanel>
       <template #header>
         <header role="banner">
-          <UDashboardNavbar :title="pageTitle" />
+          <UDashboardNavbar>
+            <template #title>
+              <div
+                id="page-title-teleport"
+                class="contents"
+              />
+              <span :class="{ hidden: hasTeleportContent }">{{ pageTitle }}</span>
+            </template>
+          </UDashboardNavbar>
         </header>
       </template>
 

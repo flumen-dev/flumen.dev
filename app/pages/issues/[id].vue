@@ -8,6 +8,14 @@ definePageMeta({
 })
 
 const route = useRoute()
+const hasTeleportContent = useState('has-page-title-teleport', () => false)
+
+onMounted(() => {
+  hasTeleportContent.value = true
+})
+onUnmounted(() => {
+  hasTeleportContent.value = false
+})
 
 const number = computed(() => Number(route.params.id))
 const repo = computed(() => route.query.repo as string | undefined)
@@ -97,90 +105,110 @@ const toast = useToast()
 </script>
 
 <template>
-  <div class="p-4">
-    <IssueHeader
-      v-if="issue && repo"
-      :issue="issue"
-      :repo="repo"
-      :linked-prs="linkedPrs"
-    />
-
-    <div
-      v-if="status === 'pending'"
-      class="py-8 text-center text-muted"
-    >
-      {{ $t('common.loading') }}
-    </div>
-
-    <div
-      v-else-if="error"
-      class="py-8 text-center text-muted"
-    >
-      {{ error.message }}
-    </div>
-
-    <div
-      v-else-if="issue && repo"
-      class="mt-4 lg:grid lg:grid-cols-[1fr_260px] lg:gap-6"
-    >
-      <!-- Main content -->
-      <div class="flex flex-col gap-4 min-w-0">
-        <IssueBody
-          :id="issue.id"
-          :body="issue.body"
-          :author="issue.author"
-          :author-association="issue.authorAssociation"
-          :created-at="issue.createdAt"
-          :viewer-can-update="issue.viewerCanUpdate"
-          :reactions="issue.reactionGroups"
-          :repo="repo"
-          :mention-users="mentionUsers"
-          :issue-number="number"
-          :save-body="saveBody"
-        />
-
-        <template
-          v-for="(section, idx) in timelineSections"
-          :key="idx"
+  <div>
+    <Teleport to="#page-title-teleport">
+      <div class="flex items-center gap-2">
+        <NuxtLinkLocale
+          v-if="repo"
+          :to="{ path: '/issues', query: { repo } }"
+          class="text-sm font-semibold text-highlighted hover:text-primary transition-colors truncate"
         >
-          <IssueComment
-            v-if="section.type === 'comment'"
-            :comment="section.comment"
+          {{ repo }}
+        </NuxtLinkLocale>
+        <span class="font-mono text-sm text-muted">#{{ number }}</span>
+        <RepoStarButton
+          v-if="repo"
+          :repo="repo"
+          show-count
+        />
+      </div>
+    </Teleport>
+
+    <div class="p-4">
+      <IssueHeader
+        v-if="issue && repo"
+        :issue="issue"
+        :repo="repo"
+        :linked-prs="linkedPrs"
+      />
+
+      <div
+        v-if="status === 'pending'"
+        class="py-8 text-center text-muted"
+      >
+        {{ $t('common.loading') }}
+      </div>
+
+      <div
+        v-else-if="error"
+        class="py-8 text-center text-muted"
+      >
+        {{ error.message }}
+      </div>
+
+      <div
+        v-else-if="issue && repo"
+        class="mt-4 lg:grid lg:grid-cols-[1fr_260px] lg:gap-6"
+      >
+        <!-- Main content -->
+        <div class="flex flex-col gap-4 min-w-0">
+          <IssueBody
+            :id="issue.id"
+            :body="issue.body"
+            :author="issue.author"
+            :author-association="issue.authorAssociation"
+            :created-at="issue.createdAt"
+            :viewer-can-update="issue.viewerCanUpdate"
+            :reactions="issue.reactionGroups"
             :repo="repo"
             :mention-users="mentionUsers"
             :issue-number="number"
-            :save-comment="saveComment"
-            :remove-comment="removeComment"
+            :save-body="saveBody"
           />
-          <IssueEventGroup
-            v-else-if="section.type === 'events'"
-            :events="section.events"
-          />
-        </template>
 
-        <!-- Add comment -->
-        <div
-          v-if="loggedIn && !issue.locked"
-          :class="commentFormRef?.active ? 'sticky bottom-0 z-10' : ''"
-        >
-          <IssueCommentForm
-            ref="commentFormRef"
-            :issue-id="issue.id"
-            :repo-context="repo"
-            :mention-users="mentionUsers"
-            :submit-comment="submitComment"
-            @submitted="toast.add({ title: t('issues.comment.submitted'), color: 'success' })"
-          />
+          <template
+            v-for="(section, idx) in timelineSections"
+            :key="idx"
+          >
+            <IssueComment
+              v-if="section.type === 'comment'"
+              :comment="section.comment"
+              :repo="repo"
+              :mention-users="mentionUsers"
+              :issue-number="number"
+              :save-comment="saveComment"
+              :remove-comment="removeComment"
+            />
+            <IssueEventGroup
+              v-else-if="section.type === 'events'"
+              :events="section.events"
+            />
+          </template>
+
+          <!-- Add comment -->
+          <div
+            v-if="loggedIn && !issue.locked"
+            :class="commentFormRef?.active ? 'sticky bottom-0 z-10' : ''"
+          >
+            <IssueCommentForm
+              ref="commentFormRef"
+              :issue-id="issue.id"
+              :repo-context="repo"
+              :mention-users="mentionUsers"
+              :submit-comment="submitComment"
+              @submitted="toast.add({ title: t('issues.comment.submitted'), color: 'success' })"
+            />
+          </div>
         </div>
-      </div>
 
-      <!-- Sidebar (desktop only) -->
-      <div class="hidden lg:block">
-        <div class="sticky top-48">
-          <IssueSidebar
-            :issue="issue"
-            :repo="repo"
-          />
+        <!-- Sidebar (desktop only) -->
+        <div class="hidden lg:block">
+          <div class="sticky top-48">
+            <IssueSidebar
+              :issue="issue"
+              :repo="repo"
+            />
+          </div>
         </div>
       </div>
     </div>
