@@ -8,11 +8,8 @@ definePageMeta({
 })
 
 const route = useRoute()
-const hasTeleportContent = useState('has-page-title-teleport', () => false)
+const hasTeleportContent = useState('has-page-title-teleport', () => true)
 
-onMounted(() => {
-  hasTeleportContent.value = true
-})
 onUnmounted(() => {
   hasTeleportContent.value = false
 })
