@@ -310,6 +310,12 @@
         "myRepos": {
           "type": "string"
         },
+        "star": {
+          "type": "string"
+        },
+        "unstar": {
+          "type": "string"
+        },
         "filter": {
           "type": "object",
           "properties": {
