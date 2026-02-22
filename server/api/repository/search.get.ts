@@ -1,16 +1,37 @@
-interface GitHubSearchResult {
-  items: Array<{
-    id: number
-    full_name: string
-    name: string
-    owner: { login: string }
-    description: string | null
-    language: string | null
-    visibility: string
-    open_issues_count: number
-    stargazers_count: number
-    fork: boolean
-  }>
+const SEARCH_QUERY = /* GraphQL */ `
+  query SearchRepos($q: String!) {
+    search(query: $q, type: REPOSITORY, first: 10) {
+      nodes {
+        ... on Repository {
+          databaseId
+          nameWithOwner
+          name
+          owner { login }
+          description
+          primaryLanguage { name }
+          visibility
+          openIssues: issues(states: OPEN) { totalCount }
+          stargazerCount
+          isFork
+          viewerHasStarred
+        }
+      }
+    }
+  }
+`
+
+interface GQLRepoNode {
+  databaseId: number
+  nameWithOwner: string
+  name: string
+  owner: { login: string }
+  description: string | null
+  primaryLanguage: { name: string } | null
+  visibility: string
+  openIssues: { totalCount: number }
+  stargazerCount: number
+  isFork: boolean
+  viewerHasStarred: boolean
 }
 
 export default defineEventHandler(async (event) => {
@@ -22,22 +43,25 @@ export default defineEventHandler(async (event) => {
     return []
   }
 
-  const { data } = await githubFetchWithToken<GitHubSearchResult>(
-    token,
-    '/search/repositories',
-    { params: { q, per_page: 10, sort: 'stars', order: 'desc' } },
-  )
+  const data = await githubGraphQL<{
+    search: {
+      nodes: (GQLRepoNode | null)[]
+    }
+  }>(token, SEARCH_QUERY, { q: `${q} sort:stars-desc` })
 
-  return data.items.map(r => ({
-    id: r.id,
-    fullName: r.full_name,
-    name: r.name,
-    owner: r.owner.login,
-    description: r.description,
-    language: r.language,
-    visibility: r.visibility,
-    openIssues: r.open_issues_count,
-    stars: r.stargazers_count,
-    fork: r.fork,
-  }))
+  return data.search.nodes
+    .filter((n): n is GQLRepoNode => n !== null && 'databaseId' in n)
+    .map(r => ({
+      id: r.databaseId,
+      fullName: r.nameWithOwner,
+      name: r.name,
+      owner: r.owner.login,
+      description: r.description,
+      language: r.primaryLanguage?.name ?? null,
+      visibility: r.visibility.toLowerCase(),
+      openIssues: r.openIssues.totalCount,
+      stars: r.stargazerCount,
+      fork: r.isFork,
+      starred: r.viewerHasStarred,
+    }))
 })

@@ -19,16 +19,10 @@ defineProps<{
     </span>
 
     <!-- Stars -->
-    <span
-      v-if="repo.stargazersCount"
-      class="flex items-center gap-1"
-    >
-      <UIcon
-        name="i-lucide-star"
-        class="size-3.5"
-      />
-      {{ repo.stargazersCount }}
-    </span>
+    <RepoStarButton
+      :repo="repo.fullName"
+      show-count
+    />
 
     <!-- Forks -->
     <span

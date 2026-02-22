@@ -101,6 +101,8 @@
       "archived": "Archiviert"
     },
     "myRepos": "Meine Repositories",
+    "star": "Stern geben",
+    "unstar": "Stern entfernen",
     "filter": {
       "public": "Öffentlich",
       "private": "Privat",

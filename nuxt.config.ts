@@ -9,6 +9,7 @@ export default defineNuxtConfig({
     '@nuxt/ui',
     '@nuxtjs/i18n',
     '@pinia/nuxt',
+    'pinia-plugin-persistedstate/nuxt',
     'nuxt-auth-utils',
     'nuxt-echarts',
     'nuxt-freeform',

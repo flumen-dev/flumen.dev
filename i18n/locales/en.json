@@ -101,6 +101,8 @@
       "unknown": "unknown"
     },
     "myRepos": "My Repositories",
+    "star": "Star",
+    "unstar": "Unstar",
     "filter": {
       "public": "Public",
       "private": "Private",
