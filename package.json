@@ -13,6 +13,7 @@
     "test:coverage": "vitest --coverage",
     "test:unit": "vitest --project unit --run",
     "test:nuxt": "vitest --project nuxt --run",
+    "test:integration": "vitest --project integration --run",
     "test:types": "nuxi typecheck",
     "lint": "eslint .",
     "knip": "knip",
