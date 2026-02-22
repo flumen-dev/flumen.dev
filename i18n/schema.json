@@ -459,6 +459,12 @@
             },
             "readmeSaved": {
               "type": "string"
+            },
+            "statusUpdated": {
+              "type": "string"
+            },
+            "statusCleared": {
+              "type": "string"
             }
           },
           "additionalProperties": false
@@ -491,6 +497,9 @@
               "type": "string"
             },
             "readmeSaveFailed": {
+              "type": "string"
+            },
+            "statusFailed": {
               "type": "string"
             }
           },
@@ -1283,6 +1292,105 @@
               "type": "string"
             },
             "empty": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "status": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "setStatus": {
+          "type": "string"
+        },
+        "save": {
+          "type": "string"
+        },
+        "clear": {
+          "type": "string"
+        },
+        "busy": {
+          "type": "string"
+        },
+        "busyHint": {
+          "type": "string"
+        },
+        "clearAfter": {
+          "type": "string"
+        },
+        "emojiPlaceholder": {
+          "type": "string"
+        },
+        "messagePlaceholder": {
+          "type": "string"
+        },
+        "expiry": {
+          "type": "object",
+          "properties": {
+            "30m": {
+              "type": "string"
+            },
+            "1h": {
+              "type": "string"
+            },
+            "4h": {
+              "type": "string"
+            },
+            "today": {
+              "type": "string"
+            },
+            "week": {
+              "type": "string"
+            },
+            "never": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "remaining": {
+          "type": "object",
+          "properties": {
+            "minutes": {
+              "type": "string"
+            },
+            "hours": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "presets": {
+          "type": "object",
+          "properties": {
+            "fluming": {
+              "type": "string"
+            },
+            "coding": {
+              "type": "string"
+            },
+            "reviewing": {
+              "type": "string"
+            },
+            "focused": {
+              "type": "string"
+            },
+            "wfh": {
+              "type": "string"
+            },
+            "mobile": {
+              "type": "string"
+            },
+            "break": {
+              "type": "string"
+            },
+            "away": {
               "type": "string"
             }
           },

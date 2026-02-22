@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { mountSuspended, registerEndpoint } from '@nuxt/test-utils/runtime'
 import { defineComponent, h } from 'vue'
 import type { GitHubProfile, GitHubEmail } from '../../shared/types/profile'
+import type { UserStatus } from '../../shared/types/status'
 
 const mockProfile: GitHubProfile = {
   login: 'testuser',
@@ -33,6 +34,9 @@ registerEndpoint('/api/user/readme', { method: 'PUT', handler: () => ({ sha: 'de
 registerEndpoint('/api/user/profile', { method: 'PATCH', handler: () => ({ ...mockProfile, name: 'Updated' }) })
 registerEndpoint('/api/user/emails/visibility', { method: 'PATCH', handler: () => ({}) })
 registerEndpoint('/api/user/social-accounts', { method: 'DELETE', handler: () => ({}) })
+registerEndpoint('/api/user/status', { method: 'GET', handler: () => ({ emoji: '🔨', message: 'Pushing commits', limitedAvailability: false, expiresAt: null } satisfies UserStatus) })
+registerEndpoint('/api/user/status', { method: 'PATCH', handler: () => ({ emoji: '🌊', message: 'Fluming', limitedAvailability: false, expiresAt: null } satisfies UserStatus) })
+registerEndpoint('/api/user/status', { method: 'DELETE', handler: () => ({ cleared: true }) })
 
 async function withStore<T>(fn: (store: ReturnType<typeof useProfileStore>) => T | Promise<T>): Promise<T> {
   let result: T
@@ -45,6 +49,7 @@ async function withStore<T>(fn: (store: ReturnType<typeof useProfileStore>) => T
       store.socials = []
       store.readme = null
       store.readmeSha = null
+      store.status = null
       store.loaded = false
       result = await fn(store)
       return () => h('div')
@@ -138,6 +143,43 @@ describe('profileStore', () => {
       await store.saveReadme('# New README')
       expect(store.readme).toBe('# New README')
       expect(store.readmeSha).toBe('def456')
+    })
+  })
+
+  it('fetchAll loads status', async () => {
+    await withStore(async (store) => {
+      await store.fetchAll()
+      expect(store.status?.emoji).toBe('🔨')
+      expect(store.status?.message).toBe('Pushing commits')
+    })
+  })
+
+  it('fetchStatus loads status independently', async () => {
+    await withStore(async (store) => {
+      expect(store.status).toBeNull()
+      await store.fetchStatus()
+      expect(store.status?.emoji).toBe('🔨')
+      expect(store.status?.limitedAvailability).toBe(false)
+    })
+  })
+
+  it('updateStatus sets new status from response', async () => {
+    await withStore(async (store) => {
+      const ok = await store.updateStatus({ emoji: ':ocean:', message: 'Fluming' })
+      expect(ok).toBe(true)
+      expect(store.status?.emoji).toBe('🌊')
+      expect(store.status?.message).toBe('Fluming')
+    })
+  })
+
+  it('clearStatus resets status to empty', async () => {
+    await withStore(async (store) => {
+      store.status = { emoji: '🔨', message: 'Coding', limitedAvailability: false, expiresAt: null }
+      const ok = await store.clearStatus()
+      expect(ok).toBe(true)
+      expect(store.status?.emoji).toBeNull()
+      expect(store.status?.message).toBeNull()
+      expect(store.status?.limitedAvailability).toBe(false)
     })
   })
 })
