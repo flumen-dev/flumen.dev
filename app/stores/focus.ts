@@ -2,8 +2,9 @@ import type { FocusItem } from '~~/server/api/focus/working-on.get'
 import type { CreatedIssueItem } from '~~/server/api/focus/created.get'
 import type { FocusCounts } from '~~/server/api/focus/counts.get'
 import type { PaginatedResponse } from '~~/shared/types/pagination'
+import type { InboxItem } from '~~/shared/types/inbox'
 
-type SectionKey = 'workingOn' | 'created' | 'watching' | 'recent'
+type SectionKey = 'workingOn' | 'inbox' | 'created' | 'watching' | 'recent'
 
 const STALE_MS = 2 * 60 * 1000 // 2 minutes
 
@@ -168,6 +169,173 @@ export const useFocusStore = defineStore('focus', () => {
     fetchedAt: null,
   })
 
+  // --- Inbox: 3 paginated categories ---
+  const inboxReviewRequests = usePaginatedSection<InboxItem>(
+    apiFetch,
+    '/api/focus/inbox',
+    20,
+    () => ({ category: 'reviewRequests' }),
+  )
+  const inboxAssigned = usePaginatedSection<InboxItem>(
+    apiFetch,
+    '/api/focus/inbox',
+    20,
+    () => ({ category: 'assigned' }),
+  )
+  const inboxMentions = usePaginatedSection<InboxItem>(
+    apiFetch,
+    '/api/focus/inbox',
+    20,
+    () => ({ category: 'mentions' }),
+  )
+
+  // Unified loading/fetchedAt for the inbox section header
+  const inboxLoading = computed(() =>
+    inboxReviewRequests.loading.value || inboxAssigned.loading.value || inboxMentions.loading.value,
+  )
+  const inboxFetchedAt = computed(() => {
+    const times = [inboxReviewRequests.fetchedAt.value, inboxAssigned.fetchedAt.value, inboxMentions.fetchedAt.value]
+    if (times.some(t => t === null)) return null
+    return Math.min(...times.filter(Boolean) as number[])
+  })
+
+  // Expose as a unified object for sectionState() compatibility
+  const inbox = computed(() => ({
+    loading: inboxLoading.value,
+    fetchedAt: inboxFetchedAt.value,
+  }))
+
+  async function fetchInbox() {
+    await Promise.all([
+      inboxReviewRequests.isStale() ? inboxReviewRequests.fetch() : Promise.resolve(true),
+      inboxAssigned.isStale() ? inboxAssigned.fetch() : Promise.resolve(true),
+      inboxMentions.isStale() ? inboxMentions.fetch() : Promise.resolve(true),
+    ])
+  }
+
+  // --- Inbox filtering (server-side when needed) ---
+  type InboxCategory = 'reviewRequests' | 'assigned' | 'mentions'
+
+  const inboxSections: Record<InboxCategory, PaginatedSection<InboxItem>> = {
+    reviewRequests: inboxReviewRequests,
+    assigned: inboxAssigned,
+    mentions: inboxMentions,
+  }
+
+  // Cache unfiltered data so we can restore without API call
+  const inboxUnfilteredCache = new Map<InboxCategory, { data: InboxItem[], totalCount: number }>()
+
+  function cacheUnfiltered(category: InboxCategory) {
+    const section = inboxSections[category]
+    if (!inboxUnfilteredCache.has(category) && section.fetchedAt.value) {
+      inboxUnfilteredCache.set(category, {
+        data: [...section.data.value],
+        totalCount: section.totalCount.value,
+      })
+    }
+  }
+
+  async function filterInbox(category: InboxCategory, search: string, repos: string[]) {
+    const section = inboxSections[category]
+    const hasFilter = search.length > 0 || repos.length > 0
+
+    // Cache unfiltered state on first filter
+    cacheUnfiltered(category)
+
+    if (!hasFilter) {
+      // Restore from cache
+      const cached = inboxUnfilteredCache.get(category)
+      if (cached) {
+        section.data.value = cached.data
+        section.totalCount.value = cached.totalCount
+      }
+      return
+    }
+
+    // If all items fit on one page, filter client-side
+    const cached = inboxUnfilteredCache.get(category)
+    const allLoaded = cached && cached.totalCount <= 20
+
+    if (allLoaded) {
+      const searchLower = search.toLowerCase()
+      section.data.value = cached.data.filter((i) => {
+        if (search && !i.title.toLowerCase().includes(searchLower) && !`#${i.number}`.includes(search)) return false
+        if (repos.length > 0 && !repos.includes(i.repo)) return false
+        return true
+      })
+      section.totalCount.value = section.data.value.length
+      return
+    }
+
+    // Server-side filter: multiple repos = multiple calls not practical, use first repo
+    const params: Record<string, string | number> = { category, first: 20 }
+    if (search) params.search = search
+    if (repos.length === 1 && repos[0]) params.repo = repos[0]
+
+    section.loading.value = true
+    try {
+      const res = await apiFetch<PaginatedResponse<InboxItem>>('/api/focus/inbox', { params })
+      // For multi-repo filter, do client-side filtering on API results
+      section.data.value = repos.length > 1
+        ? res.items.filter(i => repos.includes(i.repo))
+        : res.items
+      section.totalCount.value = res.totalCount
+    }
+    catch {
+      section.error.value = true
+    }
+    finally {
+      section.loading.value = false
+    }
+  }
+
+  async function markInboxSeen() {
+    try {
+      await apiFetch('/api/focus/inbox-seen', { method: 'PUT' })
+    }
+    catch {
+      // Non-critical
+    }
+  }
+
+  async function dismissInboxItem(repo: string, number: number) {
+    const itemKey = `${repo}#${number}`
+    // Optimistic UI: mark as dismissed locally
+    for (const section of [inboxReviewRequests, inboxAssigned, inboxMentions]) {
+      const item = section.data.value.find(i => i.repo === repo && i.number === number)
+      if (item) item.isDismissed = true
+    }
+    try {
+      await apiFetch('/api/focus/inbox-dismiss', { method: 'PUT', body: { itemKey } })
+    }
+    catch {
+      // Rollback on failure
+      for (const section of [inboxReviewRequests, inboxAssigned, inboxMentions]) {
+        const item = section.data.value.find(i => i.repo === repo && i.number === number)
+        if (item) item.isDismissed = false
+      }
+    }
+  }
+
+  async function restoreInboxItem(repo: string, number: number) {
+    const itemKey = `${repo}#${number}`
+    // Optimistic UI: mark as not dismissed
+    for (const section of [inboxReviewRequests, inboxAssigned, inboxMentions]) {
+      const item = section.data.value.find(i => i.repo === repo && i.number === number)
+      if (item) item.isDismissed = false
+    }
+    try {
+      await apiFetch('/api/focus/inbox-restore', { method: 'PUT', body: { itemKey } })
+    }
+    catch {
+      // Rollback on failure
+      for (const section of [inboxReviewRequests, inboxAssigned, inboxMentions]) {
+        const item = section.data.value.find(i => i.repo === repo && i.number === number)
+        if (item) item.isDismissed = true
+      }
+    }
+  }
+
   const watching = ref<{ data: never[], loading: boolean, fetchedAt: number | null }>({
     data: [],
     loading: false,
@@ -249,6 +417,9 @@ export const useFocusStore = defineStore('focus', () => {
     if (key === 'workingOn' && isStale(workingOn.value.fetchedAt)) {
       await fetchWorkingOn()
     }
+    if (key === 'inbox') {
+      await fetchInbox()
+    }
     if (key === 'created' && activeCreated.value.isStale()) {
       await activeCreated.value.fetch()
     }
@@ -267,6 +438,13 @@ export const useFocusStore = defineStore('focus', () => {
       workingOn.value.fetchedAt = null
       await fetchWorkingOn()
     }
+    if (key === 'inbox') {
+      await Promise.all([
+        inboxReviewRequests.refresh(),
+        inboxAssigned.refresh(),
+        inboxMentions.refresh(),
+      ])
+    }
     if (key === 'created') {
       await activeCreated.value.refresh()
     }
@@ -278,6 +456,10 @@ export const useFocusStore = defineStore('focus', () => {
     countsLoading,
     fetchCounts,
     workingOn,
+    inbox,
+    inboxReviewRequests,
+    inboxAssigned,
+    inboxMentions,
     watching,
     recent,
     // Created
@@ -289,6 +471,10 @@ export const useFocusStore = defineStore('focus', () => {
     createdHasMore,
     createdHasPrevious,
     createdPaging,
+    markInboxSeen,
+    dismissInboxItem,
+    restoreInboxItem,
+    filterInbox,
     // Actions
     toggle,
     setCreatedFilter,
