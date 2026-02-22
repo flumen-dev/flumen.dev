@@ -345,6 +345,114 @@
             }
           },
           "additionalProperties": false
+        },
+        "detail": {
+          "type": "object",
+          "properties": {
+            "viewOnGithub": {
+              "type": "string"
+            },
+            "forkedFrom": {
+              "type": "string"
+            },
+            "recentIssues": {
+              "type": "string"
+            },
+            "recentPrs": {
+              "type": "string"
+            },
+            "specialFiles": {
+              "type": "object",
+              "properties": {
+                "readme": {
+                  "type": "string"
+                },
+                "codeOfConduct": {
+                  "type": "string"
+                },
+                "contributing": {
+                  "type": "string"
+                },
+                "license": {
+                  "type": "string"
+                },
+                "security": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false
+            },
+            "codeBrowser": {
+              "type": "object",
+              "properties": {
+                "title": {
+                  "type": "string"
+                },
+                "backToOverview": {
+                  "type": "string"
+                },
+                "viewOnGithub": {
+                  "type": "string"
+                },
+                "fileTooLarge": {
+                  "type": "string"
+                },
+                "emptyDirectory": {
+                  "type": "string"
+                },
+                "preview": {
+                  "type": "string"
+                },
+                "code": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false
+            },
+            "stats": {
+              "type": "object",
+              "properties": {
+                "stars": {
+                  "type": "string"
+                },
+                "forks": {
+                  "type": "string"
+                },
+                "watchers": {
+                  "type": "string"
+                },
+                "openIssues": {
+                  "type": "string"
+                },
+                "openPrs": {
+                  "type": "string"
+                },
+                "contributors": {
+                  "type": "string"
+                },
+                "topContributors": {
+                  "type": "string"
+                },
+                "lastCommit": {
+                  "type": "string"
+                },
+                "lastRelease": {
+                  "type": "string"
+                },
+                "noRelease": {
+                  "type": "string"
+                },
+                "license": {
+                  "type": "string"
+                },
+                "commitActivity": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
         }
       },
       "additionalProperties": false

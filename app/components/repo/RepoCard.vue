@@ -58,12 +58,13 @@ function toggleSection(section: 'issues' | 'prs' | 'notifications') {
       <div class="min-w-0 flex-1">
         <!-- Row 1: Name + badges + time -->
         <div class="flex items-center gap-2">
-          <button
+          <NuxtLink
+            :to="localePath(`/repos/${repo.owner.login}/${repo.name}`)"
             class="font-semibold text-highlighted truncate hover:underline cursor-pointer text-left"
-            @click="navigateToIssues"
+            @click.stop
           >
             {{ repo.name }}
-          </button>
+          </NuxtLink>
 
           <UBadge
             v-if="repo.archived"

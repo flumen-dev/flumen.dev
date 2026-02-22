@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { renderMarkdown } from '../../app/utils/markdownRenderer'
+import { renderMarkdown, rewriteRelativeUrls } from '../../app/utils/markdownRenderer'
 
 describe('renderMarkdown', () => {
   it('renders bold and italic', () => {
@@ -102,5 +102,26 @@ describe('renderMarkdown', () => {
     expect(html).toContain('<table>')
     expect(html).toContain('<th>')
     expect(html).toContain('<td>')
+  })
+})
+
+describe('rewriteRelativeUrls', () => {
+  it('rewrites markdown image paths to raw proxy URLs', () => {
+    const source = '![logo](./assets/logo.svg)'
+    const output = rewriteRelativeUrls(source, '/api/repository/acme/demo/raw')
+    expect(output).toContain('![logo](/api/repository/acme/demo/raw?path=assets%2Flogo.svg)')
+  })
+
+  it('rewrites html img src paths to raw proxy URLs', () => {
+    const source = '<img src="images/banner.png" alt="banner">'
+    const output = rewriteRelativeUrls(source, '/api/repository/acme/demo/raw')
+    expect(output).toContain('<img src="/api/repository/acme/demo/raw?path=images%2Fbanner.png"')
+  })
+
+  it('keeps absolute and hash URLs unchanged', () => {
+    const source = '![cdn](https://example.com/a.png) ![anchor](#section)'
+    const output = rewriteRelativeUrls(source, '/api/repository/acme/demo/raw')
+    expect(output).toContain('![cdn](https://example.com/a.png)')
+    expect(output).toContain('![anchor](#section)')
   })
 })

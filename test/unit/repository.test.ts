@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { toRepository, toRepoIssue, toRepoPullRequest, toRepoNotification } from '../../shared/utils/repository'
-import type { GitHubRepo, GitHubIssue, GitHubPullRequest, GitHubNotification, Repository } from '../../shared/types/repository'
+import { toRepository, toRepoIssue, toRepoPullRequest, toRepoNotification, toRepoDetail, toRepoTreeEntry, toRepoFileContent, toRepoRelease, toRepoContributor } from '../../shared/utils/repository'
+import type { GitHubRepo, GitHubIssue, GitHubPullRequest, GitHubNotification, Repository, GitHubRepoDetail, GitHubContent, GitHubRelease, GitHubContributor } from '../../shared/types/repository'
 
 const ghRepo: GitHubRepo = {
   id: 1,
@@ -147,5 +147,92 @@ describe('toRepoNotification', () => {
       subject: { title: 'Discussion', type: 'Discussion', url: null },
     }
     expect(toRepoNotification(ghNotif).subjectUrl).toBeNull()
+  })
+})
+
+describe('repo detail mappers', () => {
+  const ghRepoDetail: GitHubRepoDetail = {
+    ...ghRepo,
+    subscribers_count: 77,
+    network_count: 12,
+    has_wiki: true,
+    has_pages: false,
+    license: { key: 'mit', name: 'MIT License', spdx_id: 'MIT' },
+    parent: {
+      ...ghRepo,
+      full_name: 'upstream/flumen',
+      html_url: 'https://github.com/upstream/flumen',
+    },
+  }
+
+  it('toRepoDetail maps repo detail fields and parent metadata', () => {
+    const result = toRepoDetail(ghRepoDetail)
+    expect(result.subscribersCount).toBe(77)
+    expect(result.networkCount).toBe(12)
+    expect(result.hasWiki).toBe(true)
+    expect(result.hasPages).toBe(false)
+    expect(result.license?.spdxId).toBe('MIT')
+    expect(result.parent?.fullName).toBe('upstream/flumen')
+  })
+
+  it('toRepoTreeEntry maps dir and file types correctly', () => {
+    const dir: GitHubContent = {
+      name: 'src',
+      path: 'src',
+      type: 'dir',
+      size: 0,
+      html_url: 'https://github.com/org/repo/tree/main/src',
+    }
+
+    const file: GitHubContent = {
+      name: 'README.md',
+      path: 'README.md',
+      type: 'file',
+      size: 128,
+      html_url: 'https://github.com/org/repo/blob/main/README.md',
+    }
+
+    expect(toRepoTreeEntry(dir).type).toBe('dir')
+    expect(toRepoTreeEntry(file).type).toBe('file')
+  })
+
+  it('toRepoFileContent decodes base64 content', () => {
+    const content: GitHubContent = {
+      name: 'README.md',
+      path: 'README.md',
+      type: 'file',
+      size: 5,
+      encoding: 'base64',
+      content: 'aGVsbG8=',
+      html_url: 'https://github.com/org/repo/blob/main/README.md',
+    }
+
+    expect(toRepoFileContent(content).content).toBe('hello')
+  })
+
+  it('toRepoRelease maps release fields', () => {
+    const release: GitHubRelease = {
+      tag_name: 'v1.2.3',
+      name: null,
+      published_at: '2025-06-01T00:00:00Z',
+      html_url: 'https://github.com/org/repo/releases/tag/v1.2.3',
+    }
+
+    const result = toRepoRelease(release)
+    expect(result.tagName).toBe('v1.2.3')
+    expect(result.name).toBe('v1.2.3')
+  })
+
+  it('toRepoContributor maps contributor avatar and contributions', () => {
+    const contributor: GitHubContributor = {
+      login: 'alice',
+      avatar_url: 'https://a.com/alice.png',
+      contributions: 42,
+    }
+
+    const result = toRepoContributor(contributor)
+    expect(result.login).toBe('alice')
+    expect(result.avatarUrl).toBe('https://a.com/alice.png')
+    expect(result.contributions).toBe(42)
   })
 })

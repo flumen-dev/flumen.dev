@@ -4,6 +4,8 @@ const props = withDefaults(defineProps<{
   source: string
   /** Repository context for GitHub issue references (owner/repo) */
   repoContext?: string
+  /** Base URL for proxying raw files, rewrites relative image URLs */
+  rawProxyBase?: string
   /** Auto-convert @mentions to GitHub profile links */
   linkifyMentions?: boolean
   /** Make task checkboxes clickable */
@@ -23,9 +25,14 @@ const emit = defineEmits<{
 const container = useTemplateRef<HTMLDivElement>('container')
 
 const html = computed(() => {
-  const md = props.linkifyMentions
+  let md = props.linkifyMentions
     ? linkifyMentions(props.source)
     : props.source
+
+  if (props.rawProxyBase) {
+    md = rewriteRelativeUrls(md, props.rawProxyBase)
+  }
+
   return renderMarkdown(md, props.breaks)
 })
 

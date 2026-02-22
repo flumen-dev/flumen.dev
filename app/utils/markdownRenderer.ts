@@ -79,6 +79,25 @@ const SERVER_SANITIZE_CONFIG: SanitizeHtmlOptions = {
   allowProtocolRelative: false,
 }
 
+/**
+ * Rewrite relative image/asset URLs in markdown source to point to a raw file proxy.
+ * Handles both markdown image syntax `![alt](./path)` and HTML `<img src="./path">`.
+ * Absolute URLs (http://, https://, //) are left untouched.
+ */
+export function rewriteRelativeUrls(source: string, rawProxyBase: string): string {
+  return source
+    // Markdown image syntax: ![alt](./path) or ![alt](path)
+    .replace(/!\[([^\]]*)\]\((?!https?:\/\/|\/\/|#)([^)]+)\)/g, (_match, alt: string, path: string) => {
+      const cleanPath = path.replace(/^\.\//, '')
+      return `![${alt}](${rawProxyBase}?path=${encodeURIComponent(cleanPath)})`
+    })
+    // HTML img src attributes
+    .replace(/<img([^>]*?)src=["'](?!https?:\/\/|\/\/|#)([^"']+)["']/g, (_match, prefix: string, path: string) => {
+      const cleanPath = path.replace(/^\.\//, '')
+      return `<img${prefix}src="${rawProxyBase}?path=${encodeURIComponent(cleanPath)}"`
+    })
+}
+
 export function renderMarkdown(source: string, breaks = true): string {
   const instance = breaks ? markedBreaks : markedNoBreaks
   const raw = instance.parse(source) as string

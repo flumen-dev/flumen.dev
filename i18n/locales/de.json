@@ -112,6 +112,42 @@
       "hasIssues": "Issues",
       "hasPrs": "PRs",
       "hasNotifications": "Benachrichtigungen"
+    },
+    "detail": {
+      "viewOnGithub": "Auf GitHub ansehen",
+      "forkedFrom": "Geforkt von",
+      "recentIssues": "Aktuelle Issues",
+      "recentPrs": "Aktuelle Pull Requests",
+      "specialFiles": {
+        "readme": "README",
+        "codeOfConduct": "Verhaltensregeln",
+        "contributing": "Mitwirken",
+        "license": "Lizenz",
+        "security": "Sicherheit"
+      },
+      "codeBrowser": {
+        "title": "Dateien",
+        "backToOverview": "Zurück zur Übersicht",
+        "viewOnGithub": "Auf GitHub ansehen",
+        "fileTooLarge": "Diese Datei ist zu groß zum Anzeigen.",
+        "emptyDirectory": "Dieses Verzeichnis ist leer.",
+        "preview": "Vorschau",
+        "code": "Code"
+      },
+      "stats": {
+        "stars": "Sterne",
+        "forks": "Forks",
+        "watchers": "Beobachter",
+        "openIssues": "Offene Issues",
+        "openPrs": "Offene PRs",
+        "contributors": "Mitwirkende",
+        "topContributors": "Top-Mitwirkende",
+        "lastCommit": "Letzter Commit",
+        "lastRelease": "Letztes Release",
+        "noRelease": "Keine Releases",
+        "license": "Lizenz",
+        "commitActivity": "Commit-Aktivität (12 Wochen)"
+      }
     }
   },
   "profile": {

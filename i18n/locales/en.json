@@ -112,6 +112,42 @@
       "hasIssues": "Issues",
       "hasPrs": "PRs",
       "hasNotifications": "Notifications"
+    },
+    "detail": {
+      "viewOnGithub": "View on GitHub",
+      "forkedFrom": "Forked from",
+      "recentIssues": "Recent Issues",
+      "recentPrs": "Recent Pull Requests",
+      "specialFiles": {
+        "readme": "README",
+        "codeOfConduct": "Code of Conduct",
+        "contributing": "Contributing",
+        "license": "License",
+        "security": "Security"
+      },
+      "codeBrowser": {
+        "title": "Files",
+        "backToOverview": "Back to overview",
+        "viewOnGithub": "View on GitHub",
+        "fileTooLarge": "This file is too large to display.",
+        "emptyDirectory": "This directory is empty.",
+        "preview": "Preview",
+        "code": "Code"
+      },
+      "stats": {
+        "stars": "Stars",
+        "forks": "Forks",
+        "watchers": "Watchers",
+        "openIssues": "Open Issues",
+        "openPrs": "Open PRs",
+        "contributors": "Contributors",
+        "topContributors": "Top contributors",
+        "lastCommit": "Last commit",
+        "lastRelease": "Latest release",
+        "noRelease": "No releases",
+        "license": "License",
+        "commitActivity": "Commit activity (12 weeks)"
+      }
     }
   },
   "profile": {

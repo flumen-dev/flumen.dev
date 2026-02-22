@@ -156,3 +156,87 @@ export interface SearchResponse {
   total_count: number
   items: Array<{ repository_url: string }>
 }
+
+// #region Repo detail types
+export interface GitHubRepoDetail extends GitHubRepo {
+  license: { key: string, name: string, spdx_id: string } | null
+  subscribers_count: number
+  network_count: number
+  has_wiki: boolean
+  has_pages: boolean
+  parent?: GitHubRepo
+}
+
+export interface RepoDetail extends Repository {
+  license: { key: string, name: string, spdxId: string } | null
+  subscribersCount: number
+  networkCount: number
+  hasWiki: boolean
+  hasPages: boolean
+  parent?: { fullName: string, htmlUrl: string }
+}
+
+export interface GitHubContent {
+  name: string
+  path: string
+  type: 'file' | 'dir' | 'symlink' | 'submodule'
+  size: number
+  content?: string
+  encoding?: string
+  html_url: string
+}
+
+export interface RepoTreeEntry {
+  name: string
+  path: string
+  type: 'file' | 'dir'
+  size: number
+}
+
+export interface RepoFileContent {
+  name: string
+  path: string
+  content: string
+  size: number
+}
+
+export interface GitHubRelease {
+  tag_name: string
+  name: string | null
+  published_at: string
+  html_url: string
+}
+
+export interface RepoRelease {
+  tagName: string
+  name: string
+  publishedAt: string
+  htmlUrl: string
+}
+
+export interface GitHubContributor {
+  login: string
+  avatar_url: string
+  contributions: number
+}
+
+export interface RepoContributor {
+  login: string
+  avatarUrl: string
+  contributions: number
+}
+
+export interface RepoHealthStats {
+  stars: number
+  forks: number
+  watchers: number
+  openIssues: number
+  openPrs: number
+  lastCommitDate: string | null
+  lastRelease: RepoRelease | null
+  license: string | null
+  contributorsCount: number
+  topContributors: RepoContributor[]
+  weeklyCommitActivity: number[]
+}
+// #endregion
