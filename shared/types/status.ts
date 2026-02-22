@@ -49,7 +49,7 @@ export interface GitHubStatusFields {
 /** Map raw GraphQL status fields to our UserStatus shape. */
 export function mapGitHubStatus(s: GitHubStatusFields | null): UserStatus {
   return {
-    emoji: shortcodeToUnicode(s?.emoji ?? null),
+    emoji: s?.emoji ?? null,
     message: s?.message ?? null,
     limitedAvailability: s?.indicatesLimitedAvailability ?? false,
     expiresAt: s?.expiresAt ?? null,

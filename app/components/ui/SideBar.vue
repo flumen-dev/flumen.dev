@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { NavigationMenuItem } from '@nuxt/ui'
+import { shortcodeToUnicode } from '~~/shared/types/status'
 
 interface PinnedDragItem {
   id: string
@@ -21,7 +22,7 @@ const statusDialogOpen = ref(false)
 const statusLabel = computed(() => {
   const s = profileStore.status
   if (s?.emoji || s?.message) {
-    return `${s.emoji ?? ''} ${s.message ?? ''}`.trim()
+    return `${shortcodeToUnicode(s.emoji) ?? ''} ${s.message ?? ''}`.trim()
   }
   return t('status.setStatus')
 })

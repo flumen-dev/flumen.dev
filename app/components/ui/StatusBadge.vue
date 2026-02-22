@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { shortcodeToUnicode } from '~~/shared/types/status'
+
 withDefaults(defineProps<{
   compact?: boolean
 }>(), {
@@ -9,6 +11,7 @@ const { t } = useI18n()
 const profileStore = useProfileStore()
 
 const status = computed(() => profileStore.status)
+const emojiDisplay = computed(() => shortcodeToUnicode(status.value?.emoji ?? null))
 const hasStatus = computed(() => status.value?.emoji || status.value?.message)
 
 const now = ref(new Date())
@@ -41,10 +44,10 @@ const remaining = computed(() => {
     :class="compact ? 'text-xs' : 'text-sm'"
   >
     <span
-      v-if="status?.emoji"
+      v-if="emojiDisplay"
       class="shrink-0"
     >
-      {{ status.emoji }}
+      {{ emojiDisplay }}
     </span>
     <span class="truncate text-muted">
       {{ status?.message }}

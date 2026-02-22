@@ -1324,9 +1324,6 @@
         "clearAfter": {
           "type": "string"
         },
-        "emojiPlaceholder": {
-          "type": "string"
-        },
         "messagePlaceholder": {
           "type": "string"
         },
