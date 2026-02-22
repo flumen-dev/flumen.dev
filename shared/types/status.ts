@@ -11,8 +11,10 @@ export interface StatusPreset {
   emojiUnicode: string
   messageKey: string
   busy: boolean
-  expiresIn: string | null
+  expiresIn: ExpiryOption | null
 }
+
+export type ExpiryOption = '30m' | '1h' | '4h' | 'today' | 'week' | 'never'
 
 export const STATUS_PRESETS: StatusPreset[] = [
   { key: 'fluming', emoji: ':ocean:', emojiUnicode: '🌊', messageKey: 'status.presets.fluming', busy: false, expiresIn: null },
@@ -36,7 +38,23 @@ export function shortcodeToUnicode(shortcode: string | null): string | null {
   return SHORTCODE_MAP[shortcode] ?? shortcode
 }
 
-export type ExpiryOption = '30m' | '1h' | '4h' | 'today' | 'week' | 'never'
+/** Raw status fields as returned by the GitHub GraphQL API. */
+export interface GitHubStatusFields {
+  emoji: string | null
+  message: string | null
+  indicatesLimitedAvailability: boolean
+  expiresAt: string | null
+}
+
+/** Map raw GraphQL status fields to our UserStatus shape. */
+export function mapGitHubStatus(s: GitHubStatusFields | null): UserStatus {
+  return {
+    emoji: shortcodeToUnicode(s?.emoji ?? null),
+    message: s?.message ?? null,
+    limitedAvailability: s?.indicatesLimitedAvailability ?? false,
+    expiresAt: s?.expiresAt ?? null,
+  }
+}
 
 export function expiryToDate(option: ExpiryOption): string | null {
   const now = new Date()

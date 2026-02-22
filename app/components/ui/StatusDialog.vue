@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { VuemojiPicker } from 'vuemoji-picker'
 import githubEmojiDataUrl from 'emoji-picker-element-data/en/github/data.json?url'
-import { STATUS_PRESETS, expiryToDate, shortcodeToUnicode } from '~~/shared/types/status'
-import type { ExpiryOption } from '~~/shared/types/status'
+import { STATUS_PRESETS, expiryToDate, shortcodeToUnicode, type ExpiryOption } from '~~/shared/types/status'
 
 const open = defineModel<boolean>('open', { default: false })
 
@@ -12,7 +11,7 @@ const profileStore = useProfileStore()
 
 // Internal state — shortcode for API, unicode for display
 const emojiShortcode = ref('')
-const emojiDisplay = computed(() => shortcodeToUnicode(emojiShortcode.value) ?? emojiShortcode.value)
+const emojiDisplay = computed(() => shortcodeToUnicode(emojiShortcode.value) || '')
 const message = ref('')
 const busy = ref(false)
 const expiry = ref<ExpiryOption>('never')
@@ -50,7 +49,7 @@ function applyPreset(preset: typeof STATUS_PRESETS[number]) {
   emojiShortcode.value = preset.emoji
   message.value = t(preset.messageKey)
   busy.value = preset.busy
-  expiry.value = (preset.expiresIn as ExpiryOption) ?? 'never'
+  expiry.value = preset.expiresIn ?? 'never'
 }
 
 async function save() {

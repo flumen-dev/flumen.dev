@@ -1,5 +1,4 @@
-import type { UserStatus } from '~~/shared/types/status'
-import { shortcodeToUnicode } from '~~/shared/types/status'
+import { mapGitHubStatus, type GitHubStatusFields } from '~~/shared/types/status'
 
 const CHANGE_STATUS_MUTATION = `
 mutation($input: ChangeUserStatusInput!) {
@@ -24,14 +23,7 @@ export default defineEventHandler(async (event) => {
   }>(event)
 
   const data = await githubGraphQL<{
-    changeUserStatus: {
-      status: {
-        emoji: string | null
-        message: string | null
-        indicatesLimitedAvailability: boolean
-        expiresAt: string | null
-      }
-    }
+    changeUserStatus: { status: GitHubStatusFields }
   }>(token, CHANGE_STATUS_MUTATION, {
     input: {
       emoji: body.emoji ?? null,
@@ -41,12 +33,5 @@ export default defineEventHandler(async (event) => {
     },
   })
 
-  const s = data.changeUserStatus.status
-
-  return <UserStatus>{
-    emoji: shortcodeToUnicode(s.emoji),
-    message: s.message,
-    limitedAvailability: s.indicatesLimitedAvailability,
-    expiresAt: s.expiresAt,
-  }
+  return mapGitHubStatus(data.changeUserStatus.status)
 })
