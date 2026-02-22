@@ -1,7 +1,10 @@
 <script setup lang="ts">
-import { VuemojiPicker } from 'vuemoji-picker'
 import githubEmojiDataUrl from 'emoji-picker-element-data/en/github/data.json?url'
 import { STATUS_PRESETS, expiryToDate, shortcodeToUnicode, type ExpiryOption } from '~~/shared/types/status'
+
+const VuemojiPicker = defineAsyncComponent(async () => {
+  return (await import('vuemoji-picker')).VuemojiPicker
+})
 
 const open = defineModel<boolean>('open', { default: false })
 
