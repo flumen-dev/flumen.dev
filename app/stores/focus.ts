@@ -25,6 +25,7 @@ interface PaginatedSection<T> {
   nextPage: () => Promise<void>
   prevPage: () => Promise<void>
   refresh: () => Promise<void>
+  resetPagination: () => void
   isStale: () => boolean
 }
 
@@ -114,6 +115,13 @@ function usePaginatedSection<T>(
     }
   }
 
+  function resetPagination() {
+    paging.value = null
+    cursorHistory.value = []
+    _hasMore.value = false
+    endCursor.value = null
+  }
+
   return {
     data,
     loading,
@@ -129,6 +137,7 @@ function usePaginatedSection<T>(
     nextPage,
     prevPage,
     refresh,
+    resetPagination,
     isStale,
   }
 }
@@ -235,10 +244,6 @@ export const useFocusStore = defineStore('focus', () => {
     }
   }
 
-  function resetPagination(section: PaginatedSection<InboxItem>) {
-    section.paging.value = null
-  }
-
   async function filterInbox(category: InboxCategory, search: string, repos: string[]) {
     const section = inboxSections[category]
     const hasFilter = search.length > 0 || repos.length > 0
@@ -252,7 +257,7 @@ export const useFocusStore = defineStore('focus', () => {
       if (cached) {
         section.data.value = cached.data
         section.totalCount.value = cached.totalCount
-        resetPagination(section)
+        section.resetPagination()
       }
       return
     }
@@ -269,7 +274,7 @@ export const useFocusStore = defineStore('focus', () => {
         return true
       })
       section.totalCount.value = section.data.value.length
-      resetPagination(section)
+      section.resetPagination()
       return
     }
 
@@ -286,7 +291,7 @@ export const useFocusStore = defineStore('focus', () => {
         ? res.items.filter(i => repos.includes(i.repo))
         : res.items
       section.totalCount.value = res.totalCount
-      resetPagination(section)
+      section.resetPagination()
     }
     catch {
       section.error.value = true
