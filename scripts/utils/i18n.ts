@@ -12,7 +12,8 @@ export const createI18nReport = async () => {
     exclude: ['$schema'],
   })
 
-  const dynamicKeysWithoutTranslation = new Array(...maybeDynamicKeys)
+  const uniqueDynamicKeys = maybeDynamicKeys.filter((key, i, arr) => arr.findIndex(k => k.path === key.path) === i)
+  const dynamicKeysWithoutTranslation = new Array(...uniqueDynamicKeys)
 
   const escapeRegex = (value: string): string => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
