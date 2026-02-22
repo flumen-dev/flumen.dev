@@ -115,12 +115,14 @@ describe('expiryToDate', () => {
     expect(date.getSeconds()).toBe(59)
   })
 
-  it('returns ~7 days from now for "week"', () => {
-    const before = Date.now()
+  it('returns end of Sunday for "week"', () => {
     const result = expiryToDate('week')!
-    const ts = new Date(result).getTime()
+    const date = new Date(result)
 
-    expect(ts).toBeGreaterThanOrEqual(before + 7 * 24 * 60 * 60 * 1000)
+    expect(date.getDay()).toBe(0) // Sunday
+    expect(date.getHours()).toBe(23)
+    expect(date.getMinutes()).toBe(59)
+    expect(date.getTime()).toBeGreaterThan(Date.now())
   })
 })
 

@@ -66,7 +66,13 @@ export function expiryToDate(option: ExpiryOption): string | null {
       end.setHours(23, 59, 59, 999)
       return end.toISOString()
     }
-    case 'week': return new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString()
+    case 'week': {
+      const end = new Date(now)
+      const daysUntilSunday = (7 - end.getDay()) % 7 || 7
+      end.setDate(end.getDate() + daysUntilSunday)
+      end.setHours(23, 59, 59, 999)
+      return end.toISOString()
+    }
     case 'never': return null
   }
 }
