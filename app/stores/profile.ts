@@ -1,4 +1,5 @@
 import type { GitHubProfile, GitHubEmail } from '~~/shared/types/profile'
+import type { UserStatus } from '~~/shared/types/status'
 import { socialProviders, detectProvider } from '~~/shared/socialProviders'
 
 interface SocialAccount {
@@ -25,6 +26,8 @@ export const useProfileStore = defineStore('profile', () => {
   const readmeSha = ref<string | null>(null)
   const readmeLoading = ref(false)
   const savingReadme = ref(false)
+  const status = ref<UserStatus | null>(null)
+  const savingStatus = ref(false)
 
   // --- Computed ---
   const primaryEmail = computed(() => emails.value.find(e => e.primary))
@@ -79,6 +82,48 @@ export const useProfileStore = defineStore('profile', () => {
     }
   }
 
+  async function fetchStatus() {
+    try {
+      status.value = await apiFetch<UserStatus>('/api/user/status')
+    }
+    catch (err) {
+      handleError('loadFailed', err)
+    }
+  }
+
+  async function updateStatus(patch: { emoji?: string | null, message?: string | null, limitedAvailability?: boolean, expiresAt?: string | null }) {
+    savingStatus.value = true
+    try {
+      status.value = await apiFetch<UserStatus>('/api/user/status', { method: 'PATCH', body: patch })
+      showSuccess('statusUpdated')
+      return true
+    }
+    catch (err) {
+      handleError('statusFailed', err)
+      return false
+    }
+    finally {
+      savingStatus.value = false
+    }
+  }
+
+  async function clearStatus() {
+    savingStatus.value = true
+    try {
+      await apiFetch('/api/user/status', { method: 'DELETE' })
+      status.value = { emoji: null, message: null, limitedAvailability: false, expiresAt: null }
+      showSuccess('statusCleared')
+      return true
+    }
+    catch (err) {
+      handleError('statusFailed', err)
+      return false
+    }
+    finally {
+      savingStatus.value = false
+    }
+  }
+
   async function fetchAll() {
     if (loaded.value) return
     loading.value = true
@@ -88,6 +133,7 @@ export const useProfileStore = defineStore('profile', () => {
         apiFetch<GitHubEmail[]>('/api/user/emails'),
         apiFetch<SocialAccount[]>('/api/user/social-accounts'),
         fetchReadme(),
+        fetchStatus(),
       ])
       profile.value = p as GitHubProfile
       emails.value = e
@@ -221,6 +267,8 @@ export const useProfileStore = defineStore('profile', () => {
     readmeSha,
     readmeLoading,
     savingReadme,
+    status,
+    savingStatus,
     // Computed
     primaryEmail,
     emailIsPublic,
@@ -235,5 +283,8 @@ export const useProfileStore = defineStore('profile', () => {
     addSocialAccount,
     removeSocialAccount,
     saveReadme,
+    fetchStatus,
+    updateStatus,
+    clearStatus,
   }
 })

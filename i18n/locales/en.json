@@ -150,7 +150,9 @@
       "hireableToggled": "Availability updated.",
       "socialAdded": "Social account added.",
       "socialRemoved": "Social account removed.",
-      "readmeSaved": "Profile README saved."
+      "readmeSaved": "Profile README saved.",
+      "statusUpdated": "Status updated.",
+      "statusCleared": "Status cleared."
     },
     "error": {
       "saveFailed": "Could not save profile. Please try again.",
@@ -161,7 +163,8 @@
       "sessionExpired": "Your session has expired. Please log in again.",
       "rateLimited": "Too many requests. Please wait a moment.",
       "loadFailed": "Could not load profile data.",
-      "readmeSaveFailed": "Could not save profile README."
+      "readmeSaveFailed": "Could not save profile README.",
+      "statusFailed": "Could not update status."
     }
   },
   "issues": {
@@ -426,6 +429,39 @@
     "recent": {
       "title": "Recent",
       "empty": "No recent activity yet. Your latest interactions will show up here."
+    }
+  },
+  "status": {
+    "title": "Set status",
+    "setStatus": "Set status",
+    "save": "Save status",
+    "clear": "Clear status",
+    "busy": "Busy",
+    "busyHint": "Others will see a \"busy\" badge on your profile.",
+    "clearAfter": "Clear after",
+    "emojiPlaceholder": "😀",
+    "messagePlaceholder": "What's happening?",
+    "expiry": {
+      "30m": "30 min",
+      "1h": "1 hour",
+      "4h": "4 hours",
+      "today": "Today",
+      "week": "This week",
+      "never": "Never"
+    },
+    "remaining": {
+      "minutes": "{count} min left",
+      "hours": "{count}h left"
+    },
+    "presets": {
+      "fluming": "Fluming",
+      "coding": "Pushing commits",
+      "reviewing": "Reviewing PRs",
+      "focused": "Do not disturb",
+      "wfh": "Working from home",
+      "mobile": "Only on mobile",
+      "break": "On a break",
+      "away": "Away"
     }
   },
   "settings": {

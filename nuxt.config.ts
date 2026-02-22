@@ -19,6 +19,12 @@ export default defineNuxtConfig({
 
   css: ['~/assets/css/main.css'],
 
+  vue: {
+    compilerOptions: {
+      isCustomElement: tag => tag === 'emoji-picker',
+    },
+  },
+
   runtimeConfig: {
     oauth: {
       github: {
@@ -42,7 +48,6 @@ export default defineNuxtConfig({
       },
     },
   },
-
   vite: {
     optimizeDeps: {
       include: [

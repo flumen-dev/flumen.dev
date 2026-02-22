@@ -150,7 +150,9 @@
       "hireableToggled": "Verfügbarkeit aktualisiert.",
       "socialAdded": "Soziales Konto hinzugefügt.",
       "socialRemoved": "Soziales Konto entfernt.",
-      "readmeSaved": "Profil-README gespeichert."
+      "readmeSaved": "Profil-README gespeichert.",
+      "statusUpdated": "Status aktualisiert.",
+      "statusCleared": "Status gelöscht."
     },
     "error": {
       "saveFailed": "Profil konnte nicht gespeichert werden. Bitte versuche es erneut.",
@@ -161,7 +163,8 @@
       "sessionExpired": "Deine Sitzung ist abgelaufen. Bitte melde dich erneut an.",
       "rateLimited": "Zu viele Anfragen. Bitte warte einen Moment.",
       "loadFailed": "Profildaten konnten nicht geladen werden.",
-      "readmeSaveFailed": "Profil-README konnte nicht gespeichert werden."
+      "readmeSaveFailed": "Profil-README konnte nicht gespeichert werden.",
+      "statusFailed": "Status konnte nicht aktualisiert werden."
     }
   },
   "issues": {
@@ -426,6 +429,39 @@
     "recent": {
       "title": "Kürzlich",
       "empty": "Noch keine Aktivität. Deine letzten Interaktionen erscheinen hier."
+    }
+  },
+  "status": {
+    "title": "Status setzen",
+    "setStatus": "Status setzen",
+    "save": "Status speichern",
+    "clear": "Status löschen",
+    "busy": "Beschäftigt",
+    "busyHint": "Andere sehen ein Beschäftigt-Badge auf deinem Profil.",
+    "clearAfter": "Löschen nach",
+    "emojiPlaceholder": "😀",
+    "messagePlaceholder": "Was machst du gerade?",
+    "expiry": {
+      "30m": "30 Min.",
+      "1h": "1 Stunde",
+      "4h": "4 Stunden",
+      "today": "Heute",
+      "week": "Diese Woche",
+      "never": "Nie"
+    },
+    "remaining": {
+      "minutes": "{count} Min. verbleibend",
+      "hours": "{count} Std. verbleibend"
+    },
+    "presets": {
+      "fluming": "Am Flumen",
+      "coding": "Commits pushen",
+      "reviewing": "PRs reviewen",
+      "focused": "Bitte nicht stören",
+      "wfh": "Im Homeoffice",
+      "mobile": "Nur am Handy",
+      "break": "Kurze Pause",
+      "away": "Abwesend"
     }
   },
   "settings": {

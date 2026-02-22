@@ -66,6 +66,9 @@ importers:
       emoji-blast:
         specifier: ^0.11.0
         version: 0.11.0
+      emoji-picker-element-data:
+        specifier: ^1.8.0
+        version: 1.8.0
       lowlight:
         specifier: ^3.3.0
         version: 3.3.0
@@ -105,6 +108,9 @@ importers:
       vue-router:
         specifier: ^4.6.4
         version: 4.6.4(vue@3.5.28(typescript@5.9.3))
+      vuemoji-picker:
+        specifier: ^0.3.2
+        version: 0.3.2(vue@3.5.28(typescript@5.9.3))
       yaml:
         specifier: ^2.8.2
         version: 2.8.2
@@ -3857,6 +3863,12 @@ packages:
     resolution: {integrity: sha512-RYy1ZjHqYQLjOkficpqzvAzGfE1GUcn1Bp7Ec1wq0lVIoRgNLMx4lRZWo9p0HsEawrI9Zmh0mloLXcf8ewIzfQ==}
     engines: {node: '>=18'}
 
+  emoji-picker-element-data@1.8.0:
+    resolution: {integrity: sha512-VfRuRJNEDLS1JKlNS4olaqhjX5S1nnZ+ZHG73b/dV8QeZyi0yPruTPEE72EmF6XO3k/9hj3lybMIYMOYXb/57A==}
+
+  emoji-picker-element@1.29.0:
+    resolution: {integrity: sha512-lQm8YayfwIP5j+Xe1O2Fjul7hv2b4spPS16X99O4qKQdzDQaEeiAqqYaRONHncewcpisUf6qGFJkhM2G3riEdA==}
+
   emoji-regex@8.0.0:
     resolution: {integrity: sha512-MSjYzcWNOA0ewAHpz0MxpYFvwg6yjy1NG3xteoqz644VCo/RPgnr1/GGt+ic3iJTzQ8Eu3TdM14SawnVUmGE6A==}
 
@@ -6518,6 +6530,15 @@ packages:
       typescript: '*'
     peerDependenciesMeta:
       typescript:
+        optional: true
+
+  vuemoji-picker@0.3.2:
+    resolution: {integrity: sha512-yjNUSlth1HHxrqvSReG/JRFd1RiKP4CMdkhGiehy/IcajtVTrmzJtZ7zyXS4gFDX2YZDY43zw+LQzypkWWO6Lw==}
+    peerDependencies:
+      '@vue/composition-api': ^1.7.0
+      vue: ^2.6.14 || ^3.2.0
+    peerDependenciesMeta:
+      '@vue/composition-api':
         optional: true
 
   w3c-keyname@2.2.8:
@@ -10320,6 +10341,10 @@ snapshots:
 
   emoji-blast@0.11.0: {}
 
+  emoji-picker-element-data@1.8.0: {}
+
+  emoji-picker-element@1.29.0: {}
+
   emoji-regex@8.0.0: {}
 
   emoji-regex@9.2.2: {}
@@ -13479,6 +13504,12 @@ snapshots:
       '@vue/shared': 3.5.28
     optionalDependencies:
       typescript: 5.9.3
+
+  vuemoji-picker@0.3.2(vue@3.5.28(typescript@5.9.3)):
+    dependencies:
+      emoji-picker-element: 1.29.0
+      vue: 3.5.28(typescript@5.9.3)
+      vue-demi: 0.14.10(vue@3.5.28(typescript@5.9.3))
 
   w3c-keyname@2.2.8: {}
 

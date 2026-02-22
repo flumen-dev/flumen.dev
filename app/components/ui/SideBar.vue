@@ -10,12 +10,28 @@ const { t } = useI18n()
 const localePath = useLocalePath()
 const { loggedIn, user, clear } = useUserSession()
 const profileStore = useProfileStore()
+if (loggedIn.value) profileStore.fetchStatus()
 const colorMode = useColorMode()
 
 const displayName = computed(() => profileStore.profile?.name || user.value?.name || user.value?.login)
 const displayAvatar = computed(() => profileStore.profile?.avatarUrl || user.value?.avatarUrl)
 
+const statusDialogOpen = ref(false)
+
+const statusLabel = computed(() => {
+  const s = profileStore.status
+  if (s?.emoji || s?.message) {
+    return `${s.emoji ?? ''} ${s.message ?? ''}`.trim()
+  }
+  return t('status.setStatus')
+})
+
 const userMenuItems = computed(() => [
+  [{
+    label: statusLabel.value,
+    icon: 'i-lucide-smile',
+    onSelect: () => { statusDialogOpen.value = true },
+  }],
   [{
     label: t('nav.profile'),
     icon: 'i-lucide-user',
@@ -307,13 +323,24 @@ const mainItems = computed<NavigationMenuItem[]>(() => [
           :content="{ align: 'start', side: 'top' }"
         >
           <UButton
-            :avatar="{ src: displayAvatar, alt: user?.login }"
-            :label="collapsed ? undefined : displayName"
             color="neutral"
             variant="ghost"
             :square="collapsed"
-            class="shrink-0"
-          />
+            class="flex-1 min-w-0 items-start"
+          >
+            <UAvatar
+              :src="displayAvatar"
+              :alt="user?.login"
+              size="2xs"
+            />
+            <div
+              v-if="!collapsed"
+              class="flex flex-col items-start min-w-0"
+            >
+              <span class="text-sm font-medium truncate">{{ displayName }}</span>
+              <UiStatusBadge compact />
+            </div>
+          </UButton>
         </UDropdownMenu>
 
         <ClientOnly>
@@ -329,6 +356,7 @@ const mainItems = computed<NavigationMenuItem[]>(() => [
       </div>
     </template>
   </UDashboardSidebar>
+  <UiStatusDialog v-model:open="statusDialogOpen" />
 </template>
 
 <style scoped>
