@@ -47,7 +47,7 @@ function onEmojiClick(event: { emoji: { shortcodes?: string[], unicode: string }
 
 function applyPreset(preset: typeof STATUS_PRESETS[number]) {
   emojiShortcode.value = preset.emoji
-  message.value = t(preset.messageKey)
+  message.value = t(`status.presets.${preset.key}`)
   busy.value = preset.busy
   expiry.value = preset.expiresIn ?? 'never'
 }
@@ -94,7 +94,7 @@ async function clear() {
             color="neutral"
             @click="applyPreset(preset)"
           >
-            {{ preset.emojiUnicode }} {{ t(preset.messageKey) }}
+            {{ preset.emojiUnicode }} {{ t(`status.presets.${preset.key}`) }}
           </UButton>
         </div>
 

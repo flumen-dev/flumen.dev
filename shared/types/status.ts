@@ -9,7 +9,6 @@ export interface StatusPreset {
   key: string
   emoji: string
   emojiUnicode: string
-  messageKey: string
   busy: boolean
   expiresIn: ExpiryOption | null
 }
@@ -17,14 +16,14 @@ export interface StatusPreset {
 export type ExpiryOption = '30m' | '1h' | '4h' | 'today' | 'week' | 'never'
 
 export const STATUS_PRESETS: StatusPreset[] = [
-  { key: 'fluming', emoji: ':ocean:', emojiUnicode: '🌊', messageKey: 'status.presets.fluming', busy: false, expiresIn: null },
-  { key: 'coding', emoji: ':hammer:', emojiUnicode: '🔨', messageKey: 'status.presets.coding', busy: false, expiresIn: null },
-  { key: 'reviewing', emoji: ':eyes:', emojiUnicode: '👀', messageKey: 'status.presets.reviewing', busy: false, expiresIn: null },
-  { key: 'focused', emoji: ':dart:', emojiUnicode: '🎯', messageKey: 'status.presets.focused', busy: true, expiresIn: '4h' },
-  { key: 'wfh', emoji: ':house:', emojiUnicode: '🏠', messageKey: 'status.presets.wfh', busy: false, expiresIn: 'today' },
-  { key: 'mobile', emoji: ':iphone:', emojiUnicode: '📱', messageKey: 'status.presets.mobile', busy: false, expiresIn: null },
-  { key: 'break', emoji: ':coffee:', emojiUnicode: '☕', messageKey: 'status.presets.break', busy: false, expiresIn: '30m' },
-  { key: 'away', emoji: ':palm_tree:', emojiUnicode: '🌴', messageKey: 'status.presets.away', busy: false, expiresIn: 'week' },
+  { key: 'fluming', emoji: ':ocean:', emojiUnicode: '🌊', busy: false, expiresIn: null },
+  { key: 'coding', emoji: ':hammer:', emojiUnicode: '🔨', busy: false, expiresIn: null },
+  { key: 'reviewing', emoji: ':eyes:', emojiUnicode: '👀', busy: false, expiresIn: null },
+  { key: 'focused', emoji: ':dart:', emojiUnicode: '🎯', busy: true, expiresIn: '4h' },
+  { key: 'wfh', emoji: ':house:', emojiUnicode: '🏠', busy: false, expiresIn: 'today' },
+  { key: 'mobile', emoji: ':iphone:', emojiUnicode: '📱', busy: false, expiresIn: null },
+  { key: 'break', emoji: ':coffee:', emojiUnicode: '☕', busy: false, expiresIn: '30m' },
+  { key: 'away', emoji: ':palm_tree:', emojiUnicode: '🌴', busy: false, expiresIn: 'week' },
 ]
 
 /** Map of GitHub shortcodes used in presets to Unicode. */
