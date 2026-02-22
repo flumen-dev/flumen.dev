@@ -60,8 +60,11 @@ export default defineEventHandler(async (event) => {
   }>(token, mutation, { id: repository.id })
 
   const result = data.addStar?.starrable ?? data.removeStar?.starrable
+  if (!result) {
+    throw createError({ statusCode: 502, message: 'GitHub mutation returned no starrable data' })
+  }
   return {
-    viewerHasStarred: result!.viewerHasStarred,
-    stargazerCount: result!.stargazerCount,
+    viewerHasStarred: result.viewerHasStarred,
+    stargazerCount: result.stargazerCount,
   }
 })

@@ -25,6 +25,9 @@ export const useStarStore = defineStore('star', () => {
     // If persisted data expired, treat all entries as stale
     if (isExpired() && Object.keys(entries.value).length) {
       entries.value = {}
+      pending.value = {}
+      loading.value = {}
+      failed.value = {}
       persistedAt.value = 0
     }
 
@@ -56,6 +59,10 @@ export const useStarStore = defineStore('star', () => {
       )
       entries.value = { ...entries.value, ...data }
       persistedAt.value = Date.now()
+      // Clear any previous failure flags for successfully fetched repos
+      const failedClear: Record<string, boolean> = {}
+      for (const r of missing) failedClear[r] = false
+      failed.value = { ...failed.value, ...failedClear }
     }
     catch {
       // Mark failed repos so the button doesn't spin forever

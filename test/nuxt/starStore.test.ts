@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 import { mountSuspended, registerEndpoint } from '@nuxt/test-utils/runtime'
 import { defineComponent, h } from 'vue'
+import { readBody as h3ReadBody } from 'h3'
 
 // --- Mock endpoints ---
 
@@ -29,8 +30,8 @@ let starPutHandler = (_body: { repo: string, starred: boolean }) => ({
 
 registerEndpoint('/api/repository/star', {
   method: 'PUT',
-  handler: async (event: { _body?: unknown, request?: { json: () => Promise<unknown> } }) => {
-    const body = event._body as { repo: string, starred: boolean }
+  handler: async (event) => {
+    const body = await h3ReadBody(event)
     return starPutHandler(body)
   },
 })
