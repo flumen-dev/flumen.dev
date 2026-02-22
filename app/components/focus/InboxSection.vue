@@ -3,9 +3,13 @@ const { t } = useI18n()
 const store = useFocusStore()
 
 // Mark inbox as seen after data loads (delayed so user sees "new" state first)
+let seenTimer: ReturnType<typeof setTimeout> | undefined
 watch(() => store.inbox.fetchedAt, (fetchedAt) => {
+  clearTimeout(seenTimer)
   if (fetchedAt && store.expanded === 'inbox') {
-    setTimeout(() => store.markInboxSeen(), 3000)
+    seenTimer = setTimeout(() => {
+      if (store.expanded === 'inbox') store.markInboxSeen()
+    }, 3000)
   }
 })
 
@@ -21,9 +25,16 @@ const mentionsSearch = ref('')
 const mentionsRepos = ref<string[]>([])
 
 // Debounced filter calls to store
-let reviewDebounce: ReturnType<typeof setTimeout>
-let assignedDebounce: ReturnType<typeof setTimeout>
-let mentionsDebounce: ReturnType<typeof setTimeout>
+let reviewDebounce: ReturnType<typeof setTimeout> | undefined
+let assignedDebounce: ReturnType<typeof setTimeout> | undefined
+let mentionsDebounce: ReturnType<typeof setTimeout> | undefined
+
+onBeforeUnmount(() => {
+  clearTimeout(seenTimer)
+  clearTimeout(reviewDebounce)
+  clearTimeout(assignedDebounce)
+  clearTimeout(mentionsDebounce)
+})
 
 watch([reviewSearch, reviewRepos], ([search, repos]) => {
   clearTimeout(reviewDebounce)

@@ -77,9 +77,9 @@ export default defineEventHandler(async (event): Promise<FocusCounts> => {
       createdOpen: `is:issue is:open author:${login}`,
       createdClosed: `is:issue is:closed author:${login}`,
       openPrs: `type:pr is:open author:${login}`,
-      reviewRequests: `is:pr is:open review-requested:${login}`,
-      assigned: `is:open assignee:${login} -author:${login}`,
-      mentions: `mentions:${login} is:open -author:${login}`,
+      reviewRequests: `is:pr is:open review-requested:${login} sort:updated-desc`,
+      assigned: `is:open assignee:${login} -author:${login} sort:updated-desc`,
+      mentions: `mentions:${login} is:open -author:${login} sort:updated-desc`,
     }),
     storage.getItem<string>(`users:${userId}:inbox-last-opened`),
   ])

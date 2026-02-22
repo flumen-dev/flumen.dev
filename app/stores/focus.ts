@@ -235,6 +235,10 @@ export const useFocusStore = defineStore('focus', () => {
     }
   }
 
+  function resetPagination(section: PaginatedSection<InboxItem>) {
+    section.paging.value = null
+  }
+
   async function filterInbox(category: InboxCategory, search: string, repos: string[]) {
     const section = inboxSections[category]
     const hasFilter = search.length > 0 || repos.length > 0
@@ -248,6 +252,7 @@ export const useFocusStore = defineStore('focus', () => {
       if (cached) {
         section.data.value = cached.data
         section.totalCount.value = cached.totalCount
+        resetPagination(section)
       }
       return
     }
@@ -264,6 +269,7 @@ export const useFocusStore = defineStore('focus', () => {
         return true
       })
       section.totalCount.value = section.data.value.length
+      resetPagination(section)
       return
     }
 
@@ -280,6 +286,7 @@ export const useFocusStore = defineStore('focus', () => {
         ? res.items.filter(i => repos.includes(i.repo))
         : res.items
       section.totalCount.value = res.totalCount
+      resetPagination(section)
     }
     catch {
       section.error.value = true
@@ -298,6 +305,13 @@ export const useFocusStore = defineStore('focus', () => {
     }
   }
 
+  function updateCacheDismissed(repo: string, number: number, isDismissed: boolean) {
+    for (const [, cached] of inboxUnfilteredCache) {
+      const item = cached.data.find(i => i.repo === repo && i.number === number)
+      if (item) item.isDismissed = isDismissed
+    }
+  }
+
   async function dismissInboxItem(repo: string, number: number) {
     const itemKey = `${repo}#${number}`
     // Optimistic UI: mark as dismissed locally
@@ -305,6 +319,7 @@ export const useFocusStore = defineStore('focus', () => {
       const item = section.data.value.find(i => i.repo === repo && i.number === number)
       if (item) item.isDismissed = true
     }
+    updateCacheDismissed(repo, number, true)
     try {
       await apiFetch('/api/focus/inbox-dismiss', { method: 'PUT', body: { itemKey } })
     }
@@ -314,6 +329,7 @@ export const useFocusStore = defineStore('focus', () => {
         const item = section.data.value.find(i => i.repo === repo && i.number === number)
         if (item) item.isDismissed = false
       }
+      updateCacheDismissed(repo, number, false)
     }
   }
 
@@ -324,6 +340,7 @@ export const useFocusStore = defineStore('focus', () => {
       const item = section.data.value.find(i => i.repo === repo && i.number === number)
       if (item) item.isDismissed = false
     }
+    updateCacheDismissed(repo, number, false)
     try {
       await apiFetch('/api/focus/inbox-restore', { method: 'PUT', body: { itemKey } })
     }
@@ -333,6 +350,7 @@ export const useFocusStore = defineStore('focus', () => {
         const item = section.data.value.find(i => i.repo === repo && i.number === number)
         if (item) item.isDismissed = true
       }
+      updateCacheDismissed(repo, number, true)
     }
   }
 

@@ -97,11 +97,11 @@ export default defineEventHandler(async (event): Promise<PaginatedResponse<Inbox
 
   // Read tracking state
   const storage = useStorage('data')
-  const [lastOpened, dismissed] = await Promise.all([
+  const [lastOpened, dismissedRaw] = await Promise.all([
     storage.getItem<string>(`users:${userId}:inbox-last-opened`),
-    storage.getItem<Record<string, string>>(`users:${userId}:inbox-dismissed`) || {},
+    storage.getItem<Record<string, string>>(`users:${userId}:inbox-dismissed`),
   ])
-  const dismissedSet = new Set(Object.keys(dismissed ?? {}))
+  const dismissedSet = new Set(Object.keys(dismissedRaw ?? {}))
 
   const data = await githubGraphQL<{
     search: {
