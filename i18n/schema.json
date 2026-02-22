@@ -1141,6 +1141,75 @@
           },
           "additionalProperties": false
         },
+        "inbox": {
+          "type": "object",
+          "properties": {
+            "title": {
+              "type": "string"
+            },
+            "empty": {
+              "type": "string"
+            },
+            "new": {
+              "type": "string"
+            },
+            "reviewRequests": {
+              "type": "string"
+            },
+            "assigned": {
+              "type": "string"
+            },
+            "mentions": {
+              "type": "string"
+            },
+            "approved": {
+              "type": "string"
+            },
+            "changesRequested": {
+              "type": "string"
+            },
+            "reviewRequired": {
+              "type": "string"
+            },
+            "reasonReview": {
+              "type": "string"
+            },
+            "reasonAssigned": {
+              "type": "string"
+            },
+            "reasonMentioned": {
+              "type": "string"
+            },
+            "waitingDays": {
+              "type": "string"
+            },
+            "waitingSince": {
+              "type": "string"
+            },
+            "dismiss": {
+              "type": "string"
+            },
+            "restore": {
+              "type": "string"
+            },
+            "active": {
+              "type": "string"
+            },
+            "dismissed": {
+              "type": "string"
+            },
+            "noDismissed": {
+              "type": "string"
+            },
+            "searchPlaceholder": {
+              "type": "string"
+            },
+            "allRepos": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
         "created": {
           "type": "object",
           "properties": {
