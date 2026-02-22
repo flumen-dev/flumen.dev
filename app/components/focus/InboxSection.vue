@@ -197,7 +197,7 @@ defineExpose({
         class="size-8 text-dimmed mx-auto mb-2"
       />
       <p class="text-sm text-muted">
-        {{ t(inboxFilter === 'dismissed' ? 'focus.inbox.noDismissed' : 'focus.inbox.empty') }}
+        {{ inboxFilter === 'dismissed' ? t('focus.inbox.noDismissed') : t('focus.inbox.empty') }}
       </p>
     </div>
 

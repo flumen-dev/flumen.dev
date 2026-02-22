@@ -201,9 +201,9 @@ const ciIcon = computed(() => {
     </div>
 
     <!-- Dismiss / Restore button -->
-    <UTooltip :text="t(item.isDismissed ? 'focus.inbox.restore' : 'focus.inbox.dismiss')">
+    <UTooltip :text="item.isDismissed ? t('focus.inbox.restore') : t('focus.inbox.dismiss')">
       <UButton
-        :aria-label="t(item.isDismissed ? 'focus.inbox.restore' : 'focus.inbox.dismiss')"
+        :aria-label="item.isDismissed ? t('focus.inbox.restore') : t('focus.inbox.dismiss')"
         :icon="item.isDismissed ? 'i-lucide-eye' : 'i-lucide-eye-off'"
         color="neutral"
         variant="ghost"
