@@ -30,7 +30,14 @@ async function setFilter(state: 'open' | 'closed') {
 <template>
   <div class="p-4 space-y-4">
     <!-- Repo selector -->
-    <IssueRepoSelect />
+    <div class="flex items-center gap-2">
+      <IssueRepoSelect />
+      <RepoStarButton
+        v-if="store.selectedRepo"
+        :repo="store.selectedRepo"
+        show-count
+      />
+    </div>
 
     <!-- Content: only show after repo selected -->
     <template v-if="store.selectedRepo">
