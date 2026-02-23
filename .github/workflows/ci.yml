@@ -129,6 +129,8 @@ jobs:
 
       - name: 🧪 Integration tests
         run: pnpm test:integration
+        env:
+          NUXT_SESSION_PASSWORD: "ci-integration-session-password-32-characters-min"
 
   knip:
     name: 🧹 Unused code check
