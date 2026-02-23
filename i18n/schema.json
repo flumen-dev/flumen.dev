@@ -136,6 +136,15 @@
         "search": {
           "type": "string"
         },
+        "searchStartTyping": {
+          "type": "string"
+        },
+        "searchMinChars": {
+          "type": "string"
+        },
+        "searchNoMatches": {
+          "type": "string"
+        },
         "count": {
           "type": "string"
         },

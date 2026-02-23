@@ -1,10 +1,24 @@
 <script setup lang="ts">
-import type { NavigationMenuItem } from '@nuxt/ui'
+import type { CommandPaletteGroup, CommandPaletteItem, NavigationMenuItem } from '@nuxt/ui'
 import { shortcodeToUnicode } from '~~/shared/types/status'
 
 interface PinnedDragItem {
   id: string
   pinType: PinnedItemType
+}
+
+interface SearchRepo {
+  id: number
+  fullName: string
+  name: string
+  owner: string
+  ownerAvatarUrl?: string
+  description: string | null
+  language: string | null
+  visibility: string
+  openIssues: number
+  stars: number
+  fork: boolean
 }
 
 const { t } = useI18n()
@@ -13,6 +27,7 @@ const { loggedIn, user, clear } = useUserSession()
 const profileStore = useProfileStore()
 if (loggedIn.value) profileStore.fetchStatus()
 const colorMode = useColorMode()
+const apiFetch = useRequestFetch()
 
 const displayName = computed(() => profileStore.profile?.name || user.value?.name || user.value?.login)
 const displayAvatar = computed(() => profileStore.profile?.avatarUrl || user.value?.avatarUrl)
@@ -62,10 +77,144 @@ const { update: updateSettings } = useUserSettings()
 
 const issueStore = useIssueStore()
 
+const sidebarSearchOpen = ref(false)
+const sidebarSearchTerm = ref('')
+const sidebarSearchResults = ref<SearchRepo[]>([])
+const sidebarSearching = ref(false)
+let sidebarSearchDebounce: ReturnType<typeof setTimeout> | null = null
+let sidebarSearchRequestId = 0
+
 function selectPinnedRepo(repo: string) {
   issueStore.selectRepo(repo)
   updateSettings({ selectedRepo: repo })
 }
+
+function resetSidebarSearch() {
+  if (sidebarSearchDebounce) clearTimeout(sidebarSearchDebounce)
+  sidebarSearchTerm.value = ''
+  sidebarSearchResults.value = []
+  sidebarSearching.value = false
+}
+
+watch(sidebarSearchOpen, (isOpen) => {
+  if (!isOpen) resetSidebarSearch()
+})
+
+watch(sidebarSearchTerm, (q) => {
+  if (sidebarSearchDebounce) clearTimeout(sidebarSearchDebounce)
+  const trimmed = q?.trim()
+
+  if (!trimmed || trimmed.length < 2) {
+    sidebarSearchResults.value = []
+    sidebarSearching.value = false
+    return
+  }
+
+  sidebarSearching.value = true
+  const requestId = ++sidebarSearchRequestId
+
+  sidebarSearchDebounce = setTimeout(async () => {
+    try {
+      const results = await apiFetch<SearchRepo[]>('/api/repository/search', {
+        params: { q: trimmed },
+      })
+
+      if (requestId !== sidebarSearchRequestId) return
+      sidebarSearchResults.value = results
+    }
+    catch {
+      if (requestId !== sidebarSearchRequestId) return
+      sidebarSearchResults.value = []
+    }
+    finally {
+      if (requestId === sidebarSearchRequestId) {
+        sidebarSearching.value = false
+      }
+    }
+  }, 250)
+})
+
+function openSidebarSearch() {
+  if (!loggedIn.value) return
+  sidebarSearchOpen.value = true
+}
+
+function selectSearchRepo(repo: SearchRepo) {
+  sidebarSearchOpen.value = false
+  navigateTo(localePath(`/repos/${repo.owner}/${repo.name}`))
+}
+
+const sidebarSearchGroups = computed<CommandPaletteGroup<CommandPaletteItem>[]>(() => {
+  const term = sidebarSearchTerm.value.trim()
+
+  if (!term) {
+    return [{
+      id: 'hint',
+      items: [{
+        label: t('repos.searchStartTyping'),
+        icon: 'i-lucide-search',
+        disabled: true,
+      }],
+      ignoreFilter: true,
+    }]
+  }
+
+  if (term.length < 2) {
+    return [{
+      id: 'minimum',
+      items: [{
+        label: t('repos.searchMinChars'),
+        icon: 'i-lucide-text-cursor-input',
+        disabled: true,
+      }],
+      ignoreFilter: true,
+    }]
+  }
+
+  if (sidebarSearching.value && !sidebarSearchResults.value.length) {
+    return [{
+      id: 'loading',
+      items: [{
+        label: t('common.loading'),
+        icon: 'i-lucide-loader-circle',
+        disabled: true,
+      }],
+      ignoreFilter: true,
+    }]
+  }
+
+  if (!sidebarSearchResults.value.length) {
+    return [{
+      id: 'empty',
+      items: [{
+        label: t('repos.searchNoMatches'),
+        icon: 'i-lucide-circle-off',
+        disabled: true,
+      }],
+      ignoreFilter: true,
+    }]
+  }
+
+  return [{
+    id: 'repositories',
+    label: t('nav.repos'),
+    items: sidebarSearchResults.value.map(repo => ({
+      id: `repo-${repo.id}`,
+      label: repo.fullName,
+      icon: repo.fork ? 'i-lucide-git-fork' : 'i-lucide-book-marked',
+      disabled: false,
+      suffix: repo.visibility,
+      avatar: repo.ownerAvatarUrl
+        ? {
+            src: repo.ownerAvatarUrl,
+            alt: repo.owner,
+          }
+        : undefined,
+      onSelect: () => selectSearchRepo(repo),
+    })),
+    ignoreFilter: true,
+  }]
+})
 
 // Drag & drop: map PinnedItem[] ↔ FreeformItemData[]
 const pinnedDragItems = computed({
@@ -174,6 +323,8 @@ const mainItems = computed<NavigationMenuItem[]>(() => [
         variant="outline"
         block
         :square="collapsed"
+        :disabled="!loggedIn"
+        @click="openSidebarSearch"
       >
         <template
           v-if="!collapsed"
@@ -357,6 +508,17 @@ const mainItems = computed<NavigationMenuItem[]>(() => [
       </div>
     </template>
   </UDashboardSidebar>
+  <ClientOnly>
+    <UDashboardSearch
+      v-model:open="sidebarSearchOpen"
+      v-model:search-term="sidebarSearchTerm"
+      shortcut="meta_k"
+      :groups="sidebarSearchGroups"
+      :placeholder="$t('repos.search')"
+      :title="$t('repos.search')"
+      :close="{ color: 'neutral', variant: 'ghost' }"
+    />
+  </ClientOnly>
   <UiStatusDialog v-model:open="statusDialogOpen" />
 </template>
 

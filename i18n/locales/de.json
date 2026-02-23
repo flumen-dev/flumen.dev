@@ -43,6 +43,9 @@
   },
   "repos": {
     "search": "Repositories durchsuchen...",
+    "searchStartTyping": "Tippe, um Repositories zu suchen",
+    "searchMinChars": "Mindestens 2 Zeichen eingeben",
+    "searchNoMatches": "Keine Repositories gefunden",
     "count": "Keine Repositories | {count} Repository | {count} Repositories",
     "noResults": "Keine Repositories gefunden.",
     "error": {
