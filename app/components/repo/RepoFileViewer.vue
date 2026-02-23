@@ -11,7 +11,7 @@ const props = defineProps<{
 const MAX_SIZE = 500 * 1024 // 500KB
 
 const isTooLarge = computed(() => props.file.size > MAX_SIZE)
-const isMarkdown = computed(() => props.file.name.endsWith('.md'))
+const isMarkdown = computed(() => props.file.name.toLowerCase().endsWith('.md'))
 const showRendered = ref(true)
 const githubBranch = computed(() => props.branch || 'HEAD')
 const rawProxyBase = computed(() => {

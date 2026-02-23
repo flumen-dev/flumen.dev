@@ -144,6 +144,11 @@ export function useRepoDetail(owner: Ref<string>, repo: Ref<string>) {
     await fetchSpecialFileContent(tab)
   })
 
+  watch([owner, repo], async ([nextOwner, nextRepo], [prevOwner, prevRepo]) => {
+    if (nextOwner === prevOwner && nextRepo === prevRepo) return
+    await loadAll()
+  })
+
   async function loadAll() {
     loading.value = true
     error.value = null

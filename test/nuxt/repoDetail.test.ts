@@ -51,7 +51,22 @@ registerEndpoint('/api/repository/acme/demo', {
   handler: () => mockRepoDetail,
 })
 
+registerEndpoint('/api/repository/acme/other', {
+  method: 'GET',
+  handler: () => ({
+    ...mockRepoDetail,
+    name: 'other',
+    fullName: 'acme/other',
+    htmlUrl: 'https://github.com/acme/other',
+  }),
+})
+
 registerEndpoint('/api/repository/acme/demo/stats', {
+  method: 'GET',
+  handler: () => mockStats,
+})
+
+registerEndpoint('/api/repository/acme/other/stats', {
   method: 'GET',
   handler: () => mockStats,
 })
@@ -102,6 +117,53 @@ registerEndpoint('/api/repository/acme/demo/contents', {
           path: 'src/index.ts',
           content: 'console.log("demo")',
           size: 19,
+        },
+      }
+    }
+
+    return {
+      type: 'directory',
+      entries: [],
+    }
+  },
+})
+
+registerEndpoint('/api/repository/acme/other/contents', {
+  method: 'GET',
+  handler: (event: H3Event) => {
+    const url = new URL(event.path, 'http://localhost')
+    const path = url.searchParams.get('path') ?? ''
+
+    if (!path) {
+      return {
+        type: 'directory',
+        entries: [
+          { name: 'README.md', path: 'README.md', type: 'file', size: 120 },
+          { name: 'SECURITY.md', path: 'SECURITY.md', type: 'file', size: 60 },
+        ],
+      }
+    }
+
+    if (path === 'README.md') {
+      return {
+        type: 'file',
+        file: {
+          name: 'README.md',
+          path: 'README.md',
+          content: '# Other Repo',
+          size: 12,
+        },
+      }
+    }
+
+    if (path === 'SECURITY.md') {
+      return {
+        type: 'file',
+        file: {
+          name: 'SECURITY.md',
+          path: 'SECURITY.md',
+          content: 'Security policy',
+          size: 15,
         },
       }
     }
@@ -200,5 +262,33 @@ describe('useRepoDetail', () => {
       expect(detail.activeTab.value).toBe('README.md')
       expect(replaceSpy).toHaveBeenCalledWith({ query: { path: undefined } })
     })
+  })
+
+  it('reloads data when owner/repo refs change', async () => {
+    const Wrapper = defineComponent({
+      async setup() {
+        clearNuxtData()
+        const owner = ref('acme')
+        const repo = ref('demo')
+        const detail = useRepoDetail(owner, repo)
+
+        await detail.loadAll()
+        expect(detail.repoDetail.value?.fullName).toBe('acme/demo')
+
+        repo.value = 'other'
+
+        for (let i = 0; i < 20 && detail.repoDetail.value?.fullName !== 'acme/other'; i++) {
+          await nextTick()
+          await new Promise(resolve => setTimeout(resolve, 0))
+        }
+
+        expect(detail.repoDetail.value?.fullName).toBe('acme/other')
+        expect(detail.specialFiles.value.map(file => file.name)).toEqual(['README.md', 'SECURITY.md'])
+
+        return () => h('div')
+      },
+    })
+
+    await mountSuspended(Wrapper)
   })
 })
