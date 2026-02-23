@@ -45,7 +45,7 @@
     "lowlight": "^3.3.0",
     "marked": "^17.0.2",
     "nuxt": "^4.3.1",
-    "nuxt-auth-utils": "0.5.28",
+    "nuxt-auth-utils": "0.5.29",
     "nuxt-freeform": "0.1.0-alpha.6",
     "pinia": "^3.0.4",
     "pinia-plugin-persistedstate": "^4.7.1",
