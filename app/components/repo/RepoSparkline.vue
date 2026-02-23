@@ -11,11 +11,11 @@ const props = withDefaults(defineProps<{
   height: 20,
 })
 
-const initOptions: EChartsInitOpts = {
+const initOptions = computed<EChartsInitOpts>(() => ({
   renderer: 'svg' as const,
   height: props.height,
   width: props.compact ? 80 : undefined,
-}
+}))
 
 const option = computed<ECBasicOption>(() => ({
   grid: { top: 0, right: 0, bottom: 0, left: 0 },

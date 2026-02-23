@@ -53,7 +53,7 @@ const { isPinned, toggle: togglePin } = usePinnedRepos()
         variant="subtle"
         size="xs"
       >
-        template
+        {{ $t('repos.badge.template') }}
       </UBadge>
     </div>
 

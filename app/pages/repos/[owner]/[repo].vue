@@ -1,7 +1,9 @@
 <script lang="ts" setup>
+const { t } = useI18n()
+
 definePageMeta({
   middleware: 'auth',
-  titleKey: 'repos.detail.title',
+  title: t('repos.detail.title'),
 })
 
 const route = useRoute()
@@ -87,6 +89,7 @@ const githubUrl = computed(() => repoDetail.value?.htmlUrl ?? `https://github.co
         :browsing-file="browsingFile"
         :repo-context="repoContext"
         :github-url="githubUrl"
+        :branch="repoDetail.defaultBranch"
         @navigate="navigateToPath"
         @navigate-up="navigateUp"
         @exit="exitCodeBrowser"

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const { t, locale } = useI18n()
+const { locale } = useI18n()
 const route = useRoute()
 
 useHead({
@@ -12,11 +12,7 @@ await loadSettings()
 const hasTeleportContent = useState('has-page-title-teleport', () => false)
 
 const pageTitle = computed(() => {
-  const key = route.meta.titleKey as string | undefined
-  if (!key) {
-    console.warn(`[Layout] No titleKey defined for route ${route.path}`)
-  }
-  return key ? t(key) : ''
+  return route.meta.title as string | undefined
 })
 
 useHead({

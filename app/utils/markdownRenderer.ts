@@ -86,10 +86,11 @@ const SERVER_SANITIZE_CONFIG: SanitizeHtmlOptions = {
  */
 export function rewriteRelativeUrls(source: string, rawProxyBase: string): string {
   return source
-    // Markdown image syntax: ![alt](./path) or ![alt](path)
-    .replace(/!\[([^\]]*)\]\((?!https?:\/\/|\/\/|#)([^)]+)\)/g, (_match, alt: string, path: string) => {
+    // Markdown image syntax: ![alt](./path) or ![alt](path "title")
+    .replace(/!\[([^\]]*)\]\(\s*(?!https?:\/\/|\/\/|#)([^\s)]+)(\s+(?:"[^"]*"|'[^']*'))?\s*\)/g, (_match, alt: string, path: string, titlePart?: string) => {
       const cleanPath = path.replace(/^\.\//, '')
-      return `![${alt}](${rawProxyBase}?path=${encodeURIComponent(cleanPath)})`
+      const preservedTitle = titlePart ?? ''
+      return `![${alt}](${rawProxyBase}?path=${encodeURIComponent(cleanPath)}${preservedTitle})`
     })
     // HTML img src attributes
     .replace(/<img([^>]*?)src=["'](?!https?:\/\/|\/\/|#)([^"']+)["']/g, (_match, prefix: string, path: string) => {

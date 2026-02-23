@@ -247,6 +247,9 @@
             "private": {
               "type": "string"
             },
+            "template": {
+              "type": "string"
+            },
             "draft": {
               "type": "string"
             }
@@ -349,6 +352,9 @@
         "detail": {
           "type": "object",
           "properties": {
+            "title": {
+              "type": "string"
+            },
             "viewOnGithub": {
               "type": "string"
             },

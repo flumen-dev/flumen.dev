@@ -99,10 +99,26 @@ export function toRepoTreeEntry(c: GitHubContent): RepoTreeEntry {
   }
 }
 
+function decodeBase64Utf8(base64: string): string {
+  const normalized = base64.replace(/\n/g, '')
+
+  if (typeof Buffer !== 'undefined') {
+    return Buffer.from(normalized, 'base64').toString('utf-8')
+  }
+
+  if (typeof atob !== 'undefined') {
+    const binary = atob(normalized)
+    const bytes = Uint8Array.from(binary, char => char.charCodeAt(0))
+    return new TextDecoder().decode(bytes)
+  }
+
+  return normalized
+}
+
 export function toRepoFileContent(c: GitHubContent): RepoFileContent {
   const raw = c.content ?? ''
   const decoded = c.encoding === 'base64'
-    ? Buffer.from(raw.replace(/\n/g, ''), 'base64').toString('utf-8')
+    ? decodeBase64Utf8(raw)
     : raw
   return {
     name: c.name,

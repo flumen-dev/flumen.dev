@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { RepoTreeEntry } from '~~/shared/types/repository'
 
-defineProps<{
+const props = defineProps<{
   entries: RepoTreeEntry[]
 }>()
 
@@ -22,12 +22,14 @@ function sortEntries(entries: RepoTreeEntry[]): RepoTreeEntry[] {
     return a.name.localeCompare(b.name)
   })
 }
+
+const sortedEntries = computed(() => sortEntries(props.entries))
 </script>
 
 <template>
   <div class="divide-y divide-default">
     <button
-      v-for="entry in sortEntries(entries)"
+      v-for="entry in sortedEntries"
       :key="entry.path"
       class="flex items-center gap-3 px-3 py-2 w-full text-left hover:bg-elevated transition-colors cursor-pointer"
       @click="emit('navigate', entry.path)"

@@ -8,6 +8,7 @@ const props = defineProps<{
   browsingFile: boolean
   repoContext: string
   githubUrl: string
+  branch?: string
 }>()
 
 const emit = defineEmits<{
@@ -107,6 +108,7 @@ const pathSegments = computed(() => props.currentPath.split('/').filter(Boolean)
       :file="file"
       :repo-context="repoContext"
       :github-url="githubUrl"
+      :branch="branch"
     />
   </UCard>
 </template>

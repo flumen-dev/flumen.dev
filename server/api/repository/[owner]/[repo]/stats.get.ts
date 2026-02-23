@@ -1,4 +1,4 @@
-import type { GitHubContributor, GitHubRelease, RepoHealthStats } from '~~/shared/types/repository'
+import type { GitHubContributor, GitHubRelease, GitHubRepoDetail, RepoHealthStats } from '~~/shared/types/repository'
 
 interface CommitActivity {
   total: number
@@ -7,7 +7,7 @@ interface CommitActivity {
 }
 
 const fetchRepoStats = defineCachedFunction(
-  async (_login: string, token: string, owner: string, repo: string): Promise<RepoHealthStats> => {
+  async (token: string, owner: string, repo: string): Promise<RepoHealthStats> => {
     const [repoRes, releaseRes, contributorsRes, activityRes, prCountRes] = await Promise.allSettled([
       githubFetchWithToken<GitHubRepoDetail>(token, `/repos/${owner}/${repo}`),
       githubFetchWithToken<GitHubRelease>(token, `/repos/${owner}/${repo}/releases/latest`),
@@ -27,8 +27,30 @@ const fetchRepoStats = defineCachedFunction(
     if (contributors) {
       const linkHeader = contributors.headers.get('link')
       if (linkHeader) {
-        const lastMatch = linkHeader.match(/<[^>]+[?&]page=(\d+)[^>]*>;\s*rel="last"/)
-        contributorsCount = lastMatch ? Number(lastMatch[1]) * 10 : contributors.data.length
+        const lastMatch = linkHeader.match(/<([^>]+)>;\s*rel="last"/)
+        if (lastMatch?.[1]) {
+          try {
+            const lastUrl = new URL(lastMatch[1])
+            const lastPageNum = Number(lastUrl.searchParams.get('page') ?? '1')
+            const perPage = Number(lastUrl.searchParams.get('per_page') ?? '10')
+
+            if (lastPageNum > 1 && Number.isFinite(lastPageNum) && Number.isFinite(perPage) && perPage > 0) {
+              const lastPage = await githubFetchWithToken<GitHubContributor[]>(token, `/repos/${owner}/${repo}/contributors`, {
+                params: { page: lastPageNum, per_page: perPage },
+              })
+              contributorsCount = (lastPageNum - 1) * perPage + lastPage.data.length
+            }
+            else {
+              contributorsCount = contributors.data.length
+            }
+          }
+          catch {
+            contributorsCount = contributors.data.length
+          }
+        }
+        else {
+          contributorsCount = contributors.data.length
+        }
       }
       else {
         contributorsCount = contributors.data.length
@@ -54,11 +76,11 @@ const fetchRepoStats = defineCachedFunction(
         : [],
     }
   },
-  { maxAge: 600, name: 'repo-stats', getKey: (_login: string, _token: string, owner: string, repo: string) => `${_login}/${owner}/${repo}` },
+  { maxAge: 600, name: 'repo-stats', getKey: (_token: string, owner: string, repo: string) => `${owner}/${repo}` },
 )
 
 export default defineEventHandler(async (event) => {
-  const { token, login } = await getSessionToken(event)
+  const { token } = await getSessionToken(event)
   const { owner, repo } = getRepoParams(event)
-  return fetchRepoStats(login, token, owner, repo)
+  return fetchRepoStats(token, owner, repo)
 })

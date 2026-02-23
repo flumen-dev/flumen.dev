@@ -80,6 +80,7 @@
       "archived": "archived",
       "fork": "fork",
       "private": "private",
+      "template": "template",
       "draft": "draft"
     },
     "reason": {
@@ -114,6 +115,7 @@
       "hasNotifications": "Notifications"
     },
     "detail": {
+      "title": "Repository Details",
       "viewOnGithub": "View on GitHub",
       "forkedFrom": "Forked from",
       "recentIssues": "Recent Issues",

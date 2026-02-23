@@ -74,6 +74,7 @@
       "archived": "archiviert",
       "fork": "Fork",
       "private": "privat",
+      "template": "Template",
       "draft": "Entwurf"
     },
     "reason": {
@@ -114,6 +115,7 @@
       "hasNotifications": "Benachrichtigungen"
     },
     "detail": {
+      "title": "Repository-Details",
       "viewOnGithub": "Auf GitHub ansehen",
       "forkedFrom": "Geforkt von",
       "recentIssues": "Aktuelle Issues",

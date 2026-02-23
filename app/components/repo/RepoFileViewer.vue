@@ -5,6 +5,7 @@ const props = defineProps<{
   file: RepoFileContent
   repoContext: string
   githubUrl: string
+  branch?: string
 }>()
 
 const MAX_SIZE = 500 * 1024 // 500KB
@@ -12,6 +13,14 @@ const MAX_SIZE = 500 * 1024 // 500KB
 const isTooLarge = computed(() => props.file.size > MAX_SIZE)
 const isMarkdown = computed(() => props.file.name.endsWith('.md'))
 const showRendered = ref(true)
+const githubBranch = computed(() => props.branch || 'HEAD')
+const rawProxyBase = computed(() => {
+  const [owner, repo] = props.repoContext.split('/')
+  if (!owner || !repo) {
+    return `/api/repository/${props.repoContext}/raw`
+  }
+  return `/api/repository/${owner}/${repo}/raw`
+})
 
 const lines = computed(() => {
   if (isTooLarge.value) return []
@@ -34,7 +43,7 @@ const lines = computed(() => {
         {{ $t('repos.detail.codeBrowser.fileTooLarge') }}
       </p>
       <UButton
-        :to="`${githubUrl}/blob/HEAD/${file.path}`"
+        :to="`${githubUrl}/blob/${githubBranch}/${file.path}`"
         target="_blank"
         icon="i-lucide-external-link"
         size="sm"
@@ -77,6 +86,7 @@ const lines = computed(() => {
         <UiMarkdownRenderer
           :source="file.content"
           :repo-context="repoContext"
+          :raw-proxy-base="rawProxyBase"
           :breaks="false"
           :linkify-mentions="true"
         />

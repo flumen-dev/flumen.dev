@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 import { mountSuspended, registerEndpoint } from '@nuxt/test-utils/runtime'
 import { defineComponent, h, nextTick, ref } from 'vue'
+import type { H3Event } from 'h3'
 import type { RepoDetail, RepoHealthStats } from '../../shared/types/repository'
 
 const mockRepoDetail: RepoDetail = {
@@ -57,7 +58,7 @@ registerEndpoint('/api/repository/acme/demo/stats', {
 
 registerEndpoint('/api/repository/acme/demo/contents', {
   method: 'GET',
-  handler: (event: { path: string }) => {
+  handler: (event: H3Event) => {
     const url = new URL(event.path, 'http://localhost')
     const path = url.searchParams.get('path') ?? ''
 

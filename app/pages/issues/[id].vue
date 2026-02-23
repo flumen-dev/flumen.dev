@@ -4,7 +4,7 @@ const { loggedIn } = useUserSession()
 
 definePageMeta({
   middleware: 'auth',
-  titleKey: 'nav.issues',
+  title: t('nav.issues'),
 })
 
 const route = useRoute()

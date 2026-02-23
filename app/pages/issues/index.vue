@@ -1,10 +1,11 @@
 <script lang="ts" setup>
+const { t } = useI18n()
+
 definePageMeta({
   middleware: 'auth',
-  titleKey: 'nav.issues',
+  title: 'nav.issues',
 })
 
-const { t } = useI18n()
 const localePath = useLocalePath()
 const store = useIssueStore()
 

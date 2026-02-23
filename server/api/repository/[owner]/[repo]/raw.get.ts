@@ -18,10 +18,12 @@ const MIME_TYPES: Record<string, string> = {
   '.json': 'application/json',
   '.xml': 'application/xml',
   '.txt': 'text/plain',
-  '.html': 'text/html',
+  '.html': 'application/octet-stream',
+  '.htm': 'application/octet-stream',
   '.css': 'text/css',
-  '.js': 'text/javascript',
-  '.md': 'text/markdown',
+  '.js': 'application/octet-stream',
+  '.mjs': 'application/octet-stream',
+  '.md': 'application/octet-stream',
   '.woff': 'font/woff',
   '.woff2': 'font/woff2',
   '.ttf': 'font/ttf',
@@ -30,8 +32,15 @@ const MIME_TYPES: Record<string, string> = {
   '.webm': 'video/webm',
 }
 
+const UNSAFE_EXTENSIONS = new Set(['.html', '.htm', '.js', '.mjs', '.md'])
+
+function getFileExtension(path: string): string {
+  const dotIndex = path.lastIndexOf('.')
+  return dotIndex >= 0 ? path.slice(dotIndex).toLowerCase() : ''
+}
+
 function getMimeType(path: string): string {
-  const ext = path.slice(path.lastIndexOf('.')).toLowerCase()
+  const ext = getFileExtension(path)
   return MIME_TYPES[ext] ?? 'application/octet-stream'
 }
 
@@ -44,7 +53,12 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'Missing path parameter' })
   }
 
-  const url = `https://api.github.com/repos/${owner}/${repo}/contents/${encodeURI(path)}`
+  const encodedPath = path
+    .split('/')
+    .map(segment => encodeURIComponent(segment))
+    .join('/')
+
+  const url = `https://api.github.com/repos/${owner}/${repo}/contents/${encodedPath}`
   const response = await fetch(url, {
     headers: {
       'Authorization': `token ${token}`,
@@ -58,8 +72,15 @@ export default defineEventHandler(async (event) => {
   }
 
   const contentType = getMimeType(path)
+  const ext = getFileExtension(path)
+  const filename = path.split('/').pop() || 'download'
   setResponseHeader(event, 'content-type', contentType)
   setResponseHeader(event, 'cache-control', 'public, max-age=300')
+  setResponseHeader(event, 'x-content-type-options', 'nosniff')
+
+  if (UNSAFE_EXTENSIONS.has(ext)) {
+    setResponseHeader(event, 'content-disposition', `attachment; filename="${filename.replace(/["\\]/g, '_')}"`)
+  }
 
   const body = await response.arrayBuffer()
   return send(event, Buffer.from(body), contentType)

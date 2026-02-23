@@ -6,9 +6,8 @@ const props = defineProps<{
 }>()
 
 const lastCommitAgo = useTimeAgo(computed(() => props.stats.lastCommitDate ?? new Date().toISOString()))
-const releaseAgo = props.stats.lastRelease
-  ? useTimeAgo(computed(() => props.stats.lastRelease!.publishedAt))
-  : null
+const releaseDate = computed(() => props.stats.lastRelease?.publishedAt ?? new Date().toISOString())
+const releaseAgo = useTimeAgo(releaseDate)
 </script>
 
 <template>

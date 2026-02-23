@@ -1,6 +1,8 @@
 <script setup lang="ts">
+const { t } = useI18n()
+
 definePageMeta({
-  titleKey: 'nav.settings',
+  title: t('nav.settings'),
   middleware: 'auth',
 })
 </script>

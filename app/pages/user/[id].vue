@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import type { SocialProvider } from '~~/shared/socialProviders'
 
+const { t } = useI18n()
+
 definePageMeta({
-  titleKey: 'nav.profile',
+  title: t('nav.profile'),
   middleware: 'auth',
 })
 
-const { t } = useI18n()
 const store = useProfileStore()
 
 await store.fetchAll()

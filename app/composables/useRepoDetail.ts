@@ -46,34 +46,26 @@ export function useRepoDetail(owner: Ref<string>, repo: Ref<string>) {
   const isViewingFile = computed(() => isCodeTab.value && browsingFile.value)
 
   async function fetchRepo() {
-    const { data } = await useFetch<RepoDetail>(`/api/repository/${owner.value}/${repo.value}`)
-    if (data.value) {
-      repoDetail.value = data.value
-    }
+    repoDetail.value = await $fetch<RepoDetail>(`/api/repository/${owner.value}/${repo.value}`)
   }
 
   async function fetchStats() {
-    const { data } = await useFetch<RepoHealthStats>(`/api/repository/${owner.value}/${repo.value}/stats`)
-    if (data.value) {
-      stats.value = data.value
-    }
+    stats.value = await $fetch<RepoHealthStats>(`/api/repository/${owner.value}/${repo.value}/stats`)
   }
 
   async function fetchContents(path = '') {
     currentPath.value = path
-    const { data } = await useFetch<ContentsResponse>(`/api/repository/${owner.value}/${repo.value}/contents`, {
+    const data = await $fetch<ContentsResponse>(`/api/repository/${owner.value}/${repo.value}/contents`, {
       params: { path },
     })
-    if (data.value) {
-      if (data.value.type === 'directory') {
-        browsingFile.value = false
-        directoryEntries.value = data.value.entries
-        fileContent.value = null
-      }
-      else {
-        browsingFile.value = true
-        fileContent.value = data.value.file
-      }
+    if (data.type === 'directory') {
+      browsingFile.value = false
+      directoryEntries.value = data.entries
+      fileContent.value = null
+    }
+    else {
+      browsingFile.value = true
+      fileContent.value = data.file
     }
   }
 
@@ -85,23 +77,23 @@ export function useRepoDetail(owner: Ref<string>, repo: Ref<string>) {
       return
     }
 
-    const { data } = await useFetch<ContentsResponse>(`/api/repository/${owner.value}/${repo.value}/contents`)
-    if (!data.value || data.value.type !== 'directory') {
+    const data = await $fetch<ContentsResponse>(`/api/repository/${owner.value}/${repo.value}/contents`)
+    if (data.type !== 'directory') {
       specialFiles.value = []
       return
     }
 
-    specialFiles.value = data.value.entries.filter(
+    specialFiles.value = data.entries.filter(
       entry => entry.type === 'file' && SPECIAL_FILE_NAMES.has(entry.name),
     )
   }
 
   async function fetchSpecialFileContent(path: string) {
-    const { data } = await useFetch<ContentsResponse>(`/api/repository/${owner.value}/${repo.value}/contents`, {
+    const data = await $fetch<ContentsResponse>(`/api/repository/${owner.value}/${repo.value}/contents`, {
       params: { path },
     })
-    if (data.value?.type === 'file') {
-      specialFileContent.value = data.value.file.content
+    if (data.type === 'file') {
+      specialFileContent.value = data.file.content
       return
     }
     specialFileContent.value = ''
@@ -125,7 +117,7 @@ export function useRepoDetail(owner: Ref<string>, repo: Ref<string>) {
   function exitCodeBrowser() {
     // Return to first special file tab (README) or first available
     const readme = specialFiles.value.find(f => f.name.toLowerCase().startsWith('readme'))
-    activeTab.value = readme?.name ?? specialFiles.value[0]?.name ?? ''
+    activeTab.value = readme?.path ?? specialFiles.value[0]?.path ?? ''
     router.replace({ query: { ...route.query, path: undefined } })
   }
 
@@ -139,8 +131,8 @@ export function useRepoDetail(owner: Ref<string>, repo: Ref<string>) {
     }
     else {
       // Default to README if available
-      const readme = specialFiles.value.find(f => f.name.toLowerCase().startsWith('readme'))
-      activeTab.value = readme?.name ?? specialFiles.value[0]?.name ?? CODE_TAB_VALUE
+      const readme = specialFiles.value.find(f => f.path.toLowerCase().startsWith('readme'))
+      activeTab.value = readme?.path ?? specialFiles.value[0]?.path ?? CODE_TAB_VALUE
     }
   }
 

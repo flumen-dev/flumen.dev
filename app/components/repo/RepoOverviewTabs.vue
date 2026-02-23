@@ -20,14 +20,14 @@ const activeTab = defineModel<string>('activeTab', { default: '' })
 
 const { t } = useI18n()
 
-const TAB_LABELS: Record<string, string> = {
+const TAB_LABELS = computed<Record<string, string>>(() => ({
   'README.md': t('repos.detail.specialFiles.readme'),
   'CODE_OF_CONDUCT.md': t('repos.detail.specialFiles.codeOfConduct'),
   'CONTRIBUTING.md': t('repos.detail.specialFiles.contributing'),
   'LICENSE': t('repos.detail.specialFiles.license'),
   'LICENSE.md': t('repos.detail.specialFiles.license'),
   'SECURITY.md': t('repos.detail.specialFiles.security'),
-}
+}))
 
 const TAB_ICONS: Record<string, string> = {
   'README.md': 'i-lucide-book-open',
@@ -46,14 +46,14 @@ const tabs = computed(() => {
 
   const readmeTab = readmeEntry
     ? [{
-        label: TAB_LABELS[readmeEntry.name] ?? readmeEntry.name,
+        label: TAB_LABELS.value[readmeEntry.name] ?? readmeEntry.name,
         icon: TAB_ICONS[readmeEntry.name] ?? 'i-lucide-file-text',
         value: readmeEntry.path,
       }]
     : []
 
   const otherTabs = otherEntries.map(f => ({
-    label: TAB_LABELS[f.name] ?? f.name,
+    label: TAB_LABELS.value[f.name] ?? f.name,
     icon: TAB_ICONS[f.name] ?? 'i-lucide-file-text',
     value: f.path,
   }))
