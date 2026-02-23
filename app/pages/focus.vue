@@ -1,11 +1,10 @@
 <script setup lang="ts">
-const { t } = useI18n()
-
 definePageMeta({
-  title: t('nav.focus'),
+  titleKey: 'nav.focus',
   middleware: 'auth',
 })
 
+const { t } = useI18n()
 const store = useFocusStore()
 
 // Load counts on mount (lightweight, single API call)

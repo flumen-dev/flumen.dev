@@ -1,9 +1,7 @@
 <script lang="ts" setup>
-const { t } = useI18n()
-
 definePageMeta({
   middleware: 'auth',
-  title: t('repos.detail.title'),
+  titleKey: 'repos.detail.title',
 })
 
 const route = useRoute()

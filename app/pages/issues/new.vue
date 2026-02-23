@@ -2,13 +2,12 @@
 import type { IssueTemplate, IssueFormTemplate } from '~~/server/api/issues/templates.get'
 import { normalizeMarkdownMentions } from '~/utils/normalizeMarkdownMentions'
 
-const { t } = useI18n()
-
 definePageMeta({
   middleware: 'auth',
-  title: t('issues.create.title'),
+  titleKey: 'issues.create.title',
 })
 
+const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
 const localePath = useLocalePath()

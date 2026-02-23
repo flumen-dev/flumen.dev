@@ -4,7 +4,7 @@ import type { SocialProvider } from '~~/shared/socialProviders'
 const { t } = useI18n()
 
 definePageMeta({
-  title: t('nav.profile'),
+  titleKey: 'nav.profile',
   middleware: 'auth',
 })
 
