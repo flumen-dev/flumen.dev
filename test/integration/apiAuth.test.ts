@@ -17,9 +17,9 @@ async function fetchStatus(url: string): Promise<number | undefined> {
   }
 }
 
-describe('API auth middleware', async () => {
-  await setup({})
+await setup({ dev: true })
 
+describe('API auth middleware', async () => {
   it('rejects unauthenticated requests to /api/user/profile', async () => {
     expect(await fetchStatus('/api/user/profile')).toBe(401)
   })

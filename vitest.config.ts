@@ -42,6 +42,7 @@ export default defineConfig({
           name: 'integration',
           include: ['test/integration/**/*.{test,spec}.ts'],
           testTimeout: 60000,
+          environment: 'node',
           environmentOptions: {
             nuxt: {
               rootDir: fileURLToPath(new URL('.', import.meta.url)),
