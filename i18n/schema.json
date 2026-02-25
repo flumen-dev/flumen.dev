@@ -1023,6 +1023,57 @@
             }
           },
           "additionalProperties": false
+        },
+        "profile": {
+          "type": "object",
+          "properties": {
+            "followers": {
+              "type": "string"
+            },
+            "following": {
+              "type": "string"
+            },
+            "repositories": {
+              "type": "string"
+            },
+            "memberSince": {
+              "type": "string"
+            },
+            "location": {
+              "type": "string"
+            },
+            "company": {
+              "type": "string"
+            },
+            "website": {
+              "type": "string"
+            },
+            "openOnGitHub": {
+              "type": "string"
+            },
+            "errorLoading": {
+              "type": "string"
+            },
+            "topRepos": {
+              "type": "string"
+            },
+            "noRepos": {
+              "type": "string"
+            },
+            "fork": {
+              "type": "string"
+            },
+            "contributions": {
+              "type": "string"
+            },
+            "contributionsTotal": {
+              "type": "string"
+            },
+            "contributionDay": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
         }
       },
       "additionalProperties": false
@@ -1589,6 +1640,18 @@
               "type": "string"
             },
             "language": {
+              "type": "string"
+            },
+            "contributionSkin": {
+              "type": "string"
+            },
+            "skinDefault": {
+              "type": "string"
+            },
+            "skinGrass": {
+              "type": "string"
+            },
+            "skinFire": {
               "type": "string"
             }
           },

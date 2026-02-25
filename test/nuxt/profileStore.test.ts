@@ -15,6 +15,10 @@ const mockProfile: GitHubProfile = {
   twitterUsername: null,
   email: 'test@example.com',
   hireable: false,
+  followers: 42,
+  following: 10,
+  publicRepos: 15,
+  createdAt: '2020-01-01T00:00:00Z',
 }
 
 const mockEmails: GitHubEmail[] = [
