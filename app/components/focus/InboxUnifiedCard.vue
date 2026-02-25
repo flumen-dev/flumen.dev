@@ -1,15 +1,13 @@
 <script setup lang="ts">
-import type { UnifiedInboxItem } from '~~/shared/types/inbox'
+import type { UnifiedInboxItem, InboxPreviewPR, InboxPreviewIssue } from '~~/shared/types/inbox'
 
 const props = defineProps<{
   item: UnifiedInboxItem
 }>()
 
-const emit = defineEmits<{
-  dismiss: [repo: string, number: number]
-}>()
-
 const { t } = useI18n()
+const toast = useToast()
+const store = useFocusStore()
 const timeAgo = useTimeAgo(computed(() => props.item.updatedAt))
 
 const stateIcon = computed(() => {
@@ -50,6 +48,16 @@ const reviewBadge = computed(() => {
   return map[props.item.reviewDecision] ?? null
 })
 
+const ciTooltip = computed(() => {
+  if (props.item.type !== 'pr' || !props.item.ciStatus) return ''
+  const map: Record<string, string> = {
+    SUCCESS: t('focus.inbox.ciSuccess'),
+    FAILURE: t('focus.inbox.ciFailed'),
+    PENDING: t('focus.inbox.ciPending'),
+  }
+  return map[props.item.ciStatus] ?? ''
+})
+
 const ciIcon = computed(() => {
   if (props.item.type !== 'pr' || !props.item.ciStatus) return null
   const map: Record<string, { name: string, color: string, spin?: boolean }> = {
@@ -86,183 +94,400 @@ const prSizeColor = computed(() => {
   if (total <= 500) return 'warning'
   return 'error'
 })
+
+// GitHub profile/repo URLs
+const authorUrl = computed(() => `https://github.com/${props.item.author.login}`)
+const repoUrl = computed(() => `https://github.com/${props.item.repo}`)
+
+function copyBranch() {
+  if (!props.item.headRefName) return
+  navigator.clipboard.writeText(props.item.headRefName)
+  toast.add({ title: t('focus.inbox.branchCopied'), color: 'success' })
+}
+
+// --- Inline expandable preview ---
+const expanded = ref(false)
+const preview = computed(() => store.getPreview(props.item))
+const previewLoading = computed(() => store.isPreviewLoading(props.item))
+
+function toggleExpand() {
+  expanded.value = !expanded.value
+  if (expanded.value && !preview.value && !previewLoading.value) {
+    store.fetchPreview(props.item)
+  }
+}
+
+const prPreview = computed(() =>
+  props.item.type === 'pr' ? preview.value as InboxPreviewPR | null : null,
+)
+const issuePreview = computed(() =>
+  props.item.type === 'issue' ? preview.value as InboxPreviewIssue | null : null,
+)
 </script>
 
 <template>
   <div class="group border-b border-default last:border-b-0">
-    <div class="relative flex items-start gap-3 px-4 py-3 hover:bg-elevated transition-colors">
-      <UIcon
-        :name="stateIcon"
-        class="size-4 mt-0.5 shrink-0"
-        :class="stateColor"
-      />
+    <!-- Clickable card area -->
+    <div
+      class="relative px-4 py-3 hover:bg-elevated transition-colors"
+      @click="toggleExpand"
+    >
+      <div class="flex items-start gap-3">
+        <UTooltip :text="item.type === 'pr' ? 'Pull Request' : 'Issue'">
+          <UIcon
+            :name="stateIcon"
+            class="size-4 mt-0.5 shrink-0"
+            :class="stateColor"
+          />
+        </UTooltip>
 
-      <div class="min-w-0 flex-1">
-        <!-- Row 1: Title + number + waiting badge -->
-        <div class="flex items-center gap-2">
+        <div class="min-w-0 flex-1">
+          <!-- Title line -->
+          <div class="flex items-center gap-2 min-w-0">
+            <a
+              :href="item.url"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="text-sm font-medium text-highlighted truncate hover:underline"
+              @click.stop
+            >
+              {{ item.title }}
+            </a>
+            <span class="text-xs text-dimmed shrink-0">#{{ item.number }}</span>
+            <UTooltip
+              v-if="waitingDays"
+              :text="t('focus.inbox.waitingSince', { days: waitingDays })"
+            >
+              <UBadge
+                :label="t('focus.inbox.waitingDays', { days: waitingDays })"
+                :color="waitingColor as any"
+                variant="subtle"
+                size="xs"
+                class="shrink-0"
+              />
+            </UTooltip>
+          </div>
+
+          <!-- Status row -->
+          <div class="flex items-center gap-1.5 mt-1.5 flex-wrap">
+            <UBadge
+              v-if="item.isDraft"
+              :label="$t('repos.badge.draft')"
+              color="neutral"
+              variant="subtle"
+              size="xs"
+            />
+            <UTooltip
+              v-if="hasConflict"
+              :text="t('focus.inbox.conflictTooltip')"
+            >
+              <UBadge
+                :label="t('focus.inbox.conflict')"
+                color="error"
+                variant="subtle"
+                size="xs"
+                icon="i-lucide-git-merge"
+              />
+            </UTooltip>
+            <UBadge
+              v-if="reviewBadge"
+              :label="reviewBadge.label"
+              :color="reviewBadge.color as any"
+              variant="subtle"
+              size="xs"
+            />
+            <UTooltip
+              v-if="ciIcon"
+              :text="ciTooltip"
+            >
+              <UIcon
+                :name="ciIcon.name"
+                class="size-3.5"
+                :class="[ciIcon.color, ciIcon.spin ? 'animate-spin' : '']"
+              />
+            </UTooltip>
+            <UTooltip
+              v-if="prSize"
+              :text="`+${prSize.additions} / -${prSize.deletions} · ${item.changedFiles ?? 0} ${t('focus.inbox.files')}`"
+            >
+              <UBadge
+                :label="prSizeLabel"
+                :color="prSizeColor as any"
+                variant="subtle"
+                size="xs"
+              />
+            </UTooltip>
+            <UBadge
+              v-for="label in item.labels.slice(0, 3)"
+              :key="label.name"
+              :label="label.name"
+              :style="{ backgroundColor: `#${label.color}20`, color: `#${label.color}` }"
+              variant="subtle"
+              size="xs"
+            />
+          </div>
+        </div>
+
+        <!-- Expand indicator -->
+        <UIcon
+          :name="expanded ? 'i-lucide-chevron-up' : 'i-lucide-chevron-down'"
+          class="size-4 mt-0.5 shrink-0 text-dimmed"
+        />
+      </div>
+
+      <!-- Meta row -->
+      <div class="mt-2 ml-7 flex flex-col sm:flex-row sm:items-start gap-2">
+        <div class="flex items-center gap-2 flex-wrap min-w-0 flex-1 text-xs text-muted">
           <a
-            :href="item.url"
+            :href="repoUrl"
             target="_blank"
             rel="noopener noreferrer"
-            class="text-sm font-medium text-highlighted truncate hover:underline"
+            class="font-medium hover:text-highlighted hover:underline"
+            @click.stop
           >
-            {{ item.title }}
-          </a>
-          <span class="text-xs text-dimmed shrink-0">
-            #{{ item.number }}
-          </span>
-
-          <UTooltip
-            v-if="waitingDays"
-            :text="t('focus.inbox.waitingSince', { days: waitingDays })"
-          >
-            <UBadge
-              :label="t('focus.inbox.waitingDays', { days: waitingDays })"
-              :color="waitingColor as any"
-              variant="subtle"
-              size="xs"
-              class="shrink-0"
-            />
-          </UTooltip>
-        </div>
-
-        <!-- Row 2: Status badges -->
-        <div class="flex items-center gap-1.5 mt-1 flex-wrap">
-          <UBadge
-            v-if="item.isDraft"
-            :label="$t('repos.badge.draft')"
-            color="neutral"
-            variant="subtle"
-            size="xs"
-          />
-
-          <UBadge
-            v-if="hasConflict"
-            :label="t('focus.inbox.conflict')"
-            color="error"
-            variant="subtle"
-            size="xs"
-            icon="i-lucide-git-merge"
-          />
-
-          <UBadge
-            v-if="reviewBadge"
-            :label="reviewBadge.label"
-            :color="reviewBadge.color as any"
-            variant="subtle"
-            size="xs"
-          />
-
-          <UIcon
-            v-if="ciIcon"
-            :name="ciIcon.name"
-            class="size-3.5"
-            :class="[ciIcon.color, ciIcon.spin ? 'animate-spin' : '']"
-          />
-
-          <UTooltip
-            v-if="prSize"
-            :text="`+${prSize.additions} / -${prSize.deletions}`"
-          >
-            <UBadge
-              :label="prSizeLabel"
-              :color="prSizeColor as any"
-              variant="subtle"
-              size="xs"
-            />
-          </UTooltip>
-
-          <UBadge
-            v-for="label in item.labels.slice(0, 3)"
-            :key="label.name"
-            :label="label.name"
-            :style="{ backgroundColor: `#${label.color}20`, color: `#${label.color}` }"
-            variant="subtle"
-            size="xs"
-          />
-        </div>
-
-        <!-- Row 3: Meta info -->
-        <div class="flex items-center gap-2.5 mt-1">
-          <span class="text-xs text-muted">
             {{ item.repo }}
-          </span>
+          </a>
 
-          <span class="inline-flex items-center gap-1 text-xs text-muted">
+          <UTooltip
+            v-if="item.headRefName"
+            :text="t('focus.inbox.copyBranch')"
+          >
+            <button
+              class="inline-flex items-center gap-0.5 font-mono bg-muted/50 rounded px-1.5 py-0.5 truncate max-w-40 hover:bg-muted cursor-pointer transition-colors"
+              @click.stop="copyBranch"
+            >
+              <UIcon
+                name="i-lucide-git-branch"
+                class="size-3 shrink-0"
+              />
+              {{ item.headRefName }}
+            </button>
+          </UTooltip>
+
+          <a
+            :href="authorUrl"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="inline-flex items-center gap-1.5 bg-muted/50 rounded-full px-2 py-0.5 hover:bg-muted transition-colors"
+            @click.stop
+          >
             <UAvatar
               :src="item.author.avatarUrl"
               :alt="item.author.login"
               size="3xs"
             />
-            {{ item.author.login }}
+            <span class="font-medium">{{ item.author.login }}</span>
+          </a>
+
+          <UTooltip
+            v-if="item.commentCount > 0"
+            :text="t('focus.inbox.commentsTooltip', { count: item.commentCount })"
+          >
+            <span class="inline-flex items-center gap-0.5">
+              <UIcon
+                name="i-lucide-message-square"
+                class="size-3"
+              />
+              {{ item.commentCount }}
+            </span>
+          </UTooltip>
+
+          <span class="text-dimmed">{{ timeAgo }}</span>
+        </div>
+
+        <!-- Reviewers / Assignees -->
+        <div
+          v-if="item.requestedReviewers?.length || item.assignees?.length"
+          class="flex items-center gap-1.5 flex-wrap shrink-0"
+        >
+          <span
+            v-if="item.requestedReviewers?.length"
+            class="text-[10px] uppercase tracking-wider text-dimmed font-semibold"
+          >
+            {{ t('focus.inbox.reviewers') }}
           </span>
+          <a
+            v-for="reviewer in item.requestedReviewers"
+            :key="reviewer.login"
+            :href="`https://github.com/${reviewer.login}`"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="inline-flex items-center gap-1 text-xs bg-muted/50 rounded-full px-2 py-0.5 hover:bg-muted transition-colors"
+            @click.stop
+          >
+            <UAvatar
+              :src="reviewer.avatarUrl"
+              :alt="reviewer.login"
+              size="3xs"
+            />
+            <span class="text-muted">{{ reviewer.login }}</span>
+          </a>
 
           <span
-            v-if="item.commentCount > 0"
-            class="inline-flex items-center gap-0.5 text-xs text-muted"
-          >
-            <UIcon
-              name="i-lucide-message-square"
-              class="size-3"
-            />
-            {{ item.commentCount }}
-          </span>
-
-          <!-- Requested reviewers (PR) -->
-          <div
-            v-if="item.requestedReviewers?.length"
-            class="inline-flex items-center -space-x-1.5"
-          >
-            <UTooltip
-              v-for="reviewer in item.requestedReviewers"
-              :key="reviewer.login"
-              :text="reviewer.login"
-            >
-              <UAvatar
-                :src="reviewer.avatarUrl"
-                :alt="reviewer.login"
-                size="3xs"
-                class="ring-1 ring-default"
-              />
-            </UTooltip>
-          </div>
-
-          <!-- Assignees (Issue) -->
-          <div
             v-if="item.assignees?.length"
-            class="inline-flex items-center -space-x-1.5"
+            class="text-[10px] uppercase tracking-wider text-dimmed font-semibold"
           >
-            <UTooltip
-              v-for="assignee in item.assignees"
-              :key="assignee.login"
-              :text="assignee.login"
-            >
-              <UAvatar
-                :src="assignee.avatarUrl"
-                :alt="assignee.login"
-                size="3xs"
-                class="ring-1 ring-default"
-              />
-            </UTooltip>
-          </div>
-
-          <span class="ml-auto text-xs text-muted shrink-0">
-            {{ timeAgo }}
+            {{ t('focus.inbox.assigneesLabel') }}
           </span>
+          <a
+            v-for="assignee in item.assignees"
+            :key="assignee.login"
+            :href="`https://github.com/${assignee.login}`"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="inline-flex items-center gap-1 text-xs bg-muted/50 rounded-full px-2 py-0.5 hover:bg-muted transition-colors"
+            @click.stop
+          >
+            <UAvatar
+              :src="assignee.avatarUrl"
+              :alt="assignee.login"
+              size="3xs"
+            />
+            <span class="text-muted">{{ assignee.login }}</span>
+          </a>
         </div>
       </div>
-
-      <UTooltip :text="item.isDismissed ? t('focus.inbox.restore') : t('focus.inbox.dismiss')">
-        <UButton
-          :aria-label="item.isDismissed ? t('focus.inbox.restore') : t('focus.inbox.dismiss')"
-          :icon="item.isDismissed ? 'i-lucide-eye' : 'i-lucide-eye-off'"
-          color="neutral"
-          variant="ghost"
-          size="xs"
-          class="shrink-0 mt-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
-          @click="emit('dismiss', item.repo, item.number)"
-        />
-      </UTooltip>
     </div>
+
+    <!-- Expandable preview section -->
+    <Transition
+      enter-active-class="transition-all duration-200 ease-out overflow-hidden"
+      leave-active-class="transition-all duration-150 ease-in overflow-hidden"
+      enter-from-class="max-h-0 opacity-0"
+      enter-to-class="max-h-96 opacity-100"
+      leave-from-class="max-h-96 opacity-100"
+      leave-to-class="max-h-0 opacity-0"
+    >
+      <div
+        v-if="expanded"
+        class="px-4 pb-3 ml-7 border-t border-default/50"
+      >
+        <!-- Loading -->
+        <div
+          v-if="previewLoading"
+          class="flex items-center gap-2 py-3 text-xs text-muted"
+        >
+          <UIcon
+            name="i-lucide-loader-2"
+            class="size-3.5 animate-spin"
+          />
+          {{ t('focus.inbox.loadingPreview') }}
+        </div>
+
+        <!-- PR preview -->
+        <div
+          v-else-if="prPreview"
+          class="py-3 space-y-3"
+        >
+          <div
+            v-if="prPreview.lastCommitMessage"
+            class="flex items-start gap-2 bg-muted/30 rounded-md px-3 py-2"
+          >
+            <UIcon
+              name="i-lucide-git-commit-horizontal"
+              class="size-3.5 mt-0.5 shrink-0 text-muted"
+            />
+            <p class="text-xs text-muted font-mono">
+              {{ prPreview.lastCommitMessage }}
+            </p>
+          </div>
+          <div
+            v-if="prPreview.body"
+            class="prose prose-xs prose-neutral dark:prose-invert max-w-none"
+          >
+            <UiMarkdownRenderer
+              :source="prPreview.body"
+              :repo-context="item.repo"
+              :breaks="true"
+            />
+          </div>
+          <p
+            v-if="!prPreview.body && !prPreview.lastCommitMessage"
+            class="text-xs text-dimmed italic py-1"
+          >
+            {{ t('focus.inbox.noPreview') }}
+          </p>
+          <a
+            :href="item.url"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="inline-flex items-center gap-1 text-xs text-primary hover:underline"
+          >
+            {{ t('focus.inbox.openOnGithub') }}
+            <UIcon
+              name="i-lucide-external-link"
+              class="size-3"
+            />
+          </a>
+        </div>
+
+        <!-- Issue preview -->
+        <div
+          v-else-if="issuePreview"
+          class="py-3 space-y-3"
+        >
+          <div
+            v-if="issuePreview.milestone"
+            class="inline-flex items-center gap-1.5 bg-muted/30 rounded-full px-2.5 py-1"
+          >
+            <UIcon
+              name="i-lucide-milestone"
+              class="size-3.5 shrink-0 text-muted"
+            />
+            <span class="text-xs font-medium text-muted">{{ issuePreview.milestone }}</span>
+          </div>
+          <div
+            v-if="issuePreview.body"
+            class="prose prose-xs prose-neutral dark:prose-invert max-w-none"
+          >
+            <UiMarkdownRenderer
+              :source="issuePreview.body"
+              :repo-context="item.repo"
+              :breaks="true"
+            />
+          </div>
+          <div
+            v-if="issuePreview.linkedPRs"
+            class="space-y-1"
+          >
+            <p class="text-[10px] uppercase tracking-wider text-dimmed font-semibold">
+              {{ t('focus.inbox.linkedPRs') }}
+            </p>
+            <a
+              v-for="pr in issuePreview.linkedPRs"
+              :key="pr.number"
+              :href="pr.url"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="flex items-center gap-1.5 text-xs text-muted hover:text-highlighted py-0.5"
+            >
+              <UIcon
+                name="i-lucide-git-pull-request"
+                class="size-3 text-blue-500"
+              />
+              #{{ pr.number }} {{ pr.title }}
+            </a>
+          </div>
+          <p
+            v-if="!issuePreview.body && !issuePreview.milestone && !issuePreview.linkedPRs"
+            class="text-xs text-dimmed italic py-1"
+          >
+            {{ t('focus.inbox.noPreview') }}
+          </p>
+          <a
+            :href="item.url"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="inline-flex items-center gap-1 text-xs text-primary hover:underline"
+          >
+            {{ t('focus.inbox.openOnGithub') }}
+            <UIcon
+              name="i-lucide-external-link"
+              class="size-3"
+            />
+          </a>
+        </div>
+      </div>
+    </Transition>
   </div>
 </template>

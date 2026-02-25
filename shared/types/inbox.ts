@@ -14,8 +14,22 @@ export interface UnifiedInboxItem {
   ciStatus?: 'SUCCESS' | 'FAILURE' | 'PENDING' | null
   additions?: number
   deletions?: number
+  changedFiles?: number
   mergeable?: 'MERGEABLE' | 'CONFLICTING' | 'UNKNOWN'
+  headRefName?: string
   requestedReviewers?: Array<{ login: string, avatarUrl: string }>
   assignees?: Array<{ login: string, avatarUrl: string }>
-  isDismissed: boolean
 }
+
+export interface InboxPreviewPR {
+  body: string | null
+  lastCommitMessage: string | null
+}
+
+export interface InboxPreviewIssue {
+  body: string | null
+  milestone: string | null
+  linkedPRs: Array<{ number: number, title: string, state: string, url: string }> | null
+}
+
+export type InboxPreview = InboxPreviewPR | InboxPreviewIssue

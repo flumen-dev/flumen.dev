@@ -1,7 +1,7 @@
 import type { UnifiedInboxItem } from '~~/shared/types/inbox'
 import { mapCiStatus } from './focus-created'
 
-type BaseInboxItem = Omit<UnifiedInboxItem, 'reasons' | 'isDismissed'>
+type BaseInboxItem = UnifiedInboxItem
 
 export interface GQLInboxPR {
   __typename?: string
@@ -17,7 +17,9 @@ export interface GQLInboxPR {
   reviewDecision: 'APPROVED' | 'CHANGES_REQUESTED' | 'REVIEW_REQUIRED' | null
   additions: number
   deletions: number
+  changedFiles: number
   mergeable: 'MERGEABLE' | 'CONFLICTING' | 'UNKNOWN'
+  headRefName: string
   comments: { totalCount: number }
   reviewRequests: { nodes: Array<{ requestedReviewer: { login: string, avatarUrl: string } | null }> }
   commits?: {
@@ -62,7 +64,9 @@ export function mapPRNode(node: GQLInboxPR): BaseInboxItem {
     ciStatus: mapCiStatus(node.commits?.nodes?.[0]?.commit?.statusCheckRollup?.state),
     additions: node.additions,
     deletions: node.deletions,
+    changedFiles: node.changedFiles,
     mergeable: node.mergeable,
+    headRefName: node.headRefName,
     requestedReviewers: (node.reviewRequests?.nodes ?? [])
       .map(n => n.requestedReviewer)
       .filter((r): r is { login: string, avatarUrl: string } => r !== null),

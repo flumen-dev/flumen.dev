@@ -9,8 +9,9 @@ const PR_FIELDS = /* GraphQL */ `
   labels(first: 5) { nodes { name color } }
   repository { nameWithOwner }
   reviewDecision
-  additions deletions
+  additions deletions changedFiles
   mergeable
+  headRefName
   comments { totalCount }
   reviewRequests(first: 5) {
     nodes {
@@ -54,7 +55,7 @@ function buildPageQuery(category: 'pr' | 'issue'): string {
 }
 
 export default defineEventHandler(async (event) => {
-  const { token, login, userId } = await getSessionToken(event)
+  const { token, login } = await getSessionToken(event)
 
   const query = getQuery(event)
   const category = (query.category as string) === 'issue' ? 'issue' : 'pr'
@@ -74,13 +75,6 @@ export default defineEventHandler(async (event) => {
   parts.push('sort:updated-desc')
   const searchQ = parts.join(' ')
 
-  // Load dismissed set
-  const storage = useStorage('data')
-  const dismissedRaw = await storage.getItem<Record<string, string>>(
-    `users:${userId}:inbox-dismissed`,
-  )
-  const dismissedSet = new Set(Object.keys(dismissedRaw ?? {}))
-
   // Fetch one page
   const pageQuery = buildPageQuery(category)
   const data = await githubGraphQL<{
@@ -97,16 +91,10 @@ export default defineEventHandler(async (event) => {
 
   const items: UnifiedInboxItem[] = data.search.nodes
     .filter(Boolean)
-    .map((n) => {
-      const base = category === 'pr'
-        ? mapPRNode(n as GQLInboxPR)
-        : mapIssueNode(n as GQLInboxIssue)
-      const key = `${base.repo}#${base.number}`
-      return {
-        ...base,
-        isDismissed: dismissedSet.has(key),
-      }
-    })
+    .map(n => category === 'pr'
+      ? mapPRNode(n as GQLInboxPR)
+      : mapIssueNode(n as GQLInboxIssue),
+    )
 
   const pageInfo: PageInfo = {
     hasNextPage: data.search.pageInfo.hasNextPage,

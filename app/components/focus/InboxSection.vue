@@ -73,10 +73,6 @@ onUnmounted(() => {
   }
 })
 
-function handleDismiss(repo: string, number: number) {
-  store.dismissInboxItem(repo, number)
-}
-
 // Track last known item counts to avoid layout shift on reload
 const lastPRCount = ref(3)
 const lastIssueCount = ref(3)
@@ -171,7 +167,6 @@ watch(() => store.inboxIssues.data, (items) => {
           v-for="item in store.inboxPRs.data"
           :key="`${item.repo}#${item.number}`"
           :item="item"
-          @dismiss="handleDismiss"
         />
       </div>
 
@@ -227,7 +222,6 @@ watch(() => store.inboxIssues.data, (items) => {
           v-for="item in store.inboxIssues.data"
           :key="`${item.repo}#${item.number}`"
           :item="item"
-          @dismiss="handleDismiss"
         />
       </div>
 

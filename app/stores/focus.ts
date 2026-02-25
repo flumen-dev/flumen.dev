@@ -2,7 +2,7 @@ import type { FocusItem } from '~~/server/api/focus/working-on.get'
 import type { CreatedIssueItem } from '~~/server/api/focus/created.get'
 import type { FocusCounts } from '~~/server/api/focus/counts.get'
 import type { PaginatedResponse } from '~~/shared/types/pagination'
-import type { UnifiedInboxItem } from '~~/shared/types/inbox'
+import type { UnifiedInboxItem, InboxPreview } from '~~/shared/types/inbox'
 
 type SectionKey = 'workingOn' | 'inbox' | 'created' | 'watching' | 'recent'
 
@@ -306,30 +306,37 @@ export const useFocusStore = defineStore('focus', () => {
     await reloadInbox()
   }
 
-  async function dismissInboxItem(repo: string, number: number) {
-    const itemKey = `${repo}#${number}`
-    const item = inboxPRs.data.value.find(i => i.repo === repo && i.number === number)
-      ?? inboxIssues.data.value.find(i => i.repo === repo && i.number === number)
-    if (item) item.isDismissed = true
+  // --- Preview cache (click-to-load, cached per key) ---
+  const previewCache = ref<Record<string, InboxPreview>>({})
+  const previewLoading = ref<Record<string, boolean>>({})
+
+  async function fetchPreview(item: UnifiedInboxItem) {
+    const key = `${item.repo}#${item.number}`
+    if (previewCache.value[key]) return previewCache.value[key]
+    if (previewLoading.value[key]) return null
+
+    previewLoading.value[key] = true
     try {
-      await apiFetch('/api/focus/inbox-dismiss', { method: 'PUT', body: { itemKey } })
+      const res = await apiFetch<InboxPreview>('/api/focus/inbox-preview', {
+        params: { repo: item.repo, number: item.number, type: item.type },
+      })
+      previewCache.value[key] = res
+      return res
     }
     catch {
-      if (item) item.isDismissed = false
+      return null
+    }
+    finally {
+      previewLoading.value[key] = false
     }
   }
 
-  async function restoreInboxItem(repo: string, number: number) {
-    const itemKey = `${repo}#${number}`
-    const item = inboxPRs.data.value.find(i => i.repo === repo && i.number === number)
-      ?? inboxIssues.data.value.find(i => i.repo === repo && i.number === number)
-    if (item) item.isDismissed = false
-    try {
-      await apiFetch('/api/focus/inbox-restore', { method: 'PUT', body: { itemKey } })
-    }
-    catch {
-      if (item) item.isDismissed = true
-    }
+  function getPreview(item: UnifiedInboxItem): InboxPreview | null {
+    return previewCache.value[`${item.repo}#${item.number}`] ?? null
+  }
+
+  function isPreviewLoading(item: UnifiedInboxItem): boolean {
+    return !!previewLoading.value[`${item.repo}#${item.number}`]
   }
 
   const watching = ref<{ data: never[], loading: boolean, fetchedAt: number | null }>({
@@ -520,8 +527,9 @@ export const useFocusStore = defineStore('focus', () => {
     })),
     inboxIssuesNextPage: () => inboxIssues.nextPage(),
     inboxIssuesPrevPage: () => inboxIssues.prevPage(),
-    dismissInboxItem,
-    restoreInboxItem,
+    fetchPreview,
+    getPreview,
+    isPreviewLoading,
     watching,
     recent,
     // Created
