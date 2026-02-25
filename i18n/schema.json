@@ -1377,6 +1377,21 @@
             },
             "merged": {
               "type": "string"
+            },
+            "pullRequest": {
+              "type": "string"
+            },
+            "mergedPullRequest": {
+              "type": "string"
+            },
+            "closedPullRequest": {
+              "type": "string"
+            },
+            "issue": {
+              "type": "string"
+            },
+            "closedIssue": {
+              "type": "string"
             }
           },
           "additionalProperties": false
