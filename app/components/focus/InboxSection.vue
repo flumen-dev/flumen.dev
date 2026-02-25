@@ -144,23 +144,29 @@ watch(() => store.inboxIssues.data, (items) => {
           variant="solid"
           size="sm"
         />
-        <div class="flex items-center gap-1 ml-auto">
-          <UBadge
-            :label="t('focus.inbox.open')"
-            :color="store.inboxPRStateFilter === 'open' ? 'primary' : 'neutral'"
-            :variant="store.inboxPRStateFilter === 'open' ? 'solid' : 'subtle'"
-            size="sm"
-            class="cursor-pointer"
+        <div class="flex items-center gap-1 ml-auto" role="group">
+          <button
+            :aria-pressed="store.inboxPRStateFilter === 'open'"
             @click="store.setInboxPRState('open')"
-          />
-          <UBadge
-            :label="t('focus.inbox.merged')"
-            :color="store.inboxPRStateFilter === 'closed' ? 'primary' : 'neutral'"
-            :variant="store.inboxPRStateFilter === 'closed' ? 'solid' : 'subtle'"
-            size="sm"
-            class="cursor-pointer"
+          >
+            <UBadge
+              :label="t('focus.inbox.open')"
+              :color="store.inboxPRStateFilter === 'open' ? 'primary' : 'neutral'"
+              :variant="store.inboxPRStateFilter === 'open' ? 'solid' : 'subtle'"
+              size="sm"
+            />
+          </button>
+          <button
+            :aria-pressed="store.inboxPRStateFilter === 'closed'"
             @click="store.setInboxPRState('closed')"
-          />
+          >
+            <UBadge
+              :label="t('focus.inbox.merged')"
+              :color="store.inboxPRStateFilter === 'closed' ? 'primary' : 'neutral'"
+              :variant="store.inboxPRStateFilter === 'closed' ? 'solid' : 'subtle'"
+              size="sm"
+            />
+          </button>
         </div>
       </div>
 
@@ -217,23 +223,29 @@ watch(() => store.inboxIssues.data, (items) => {
           variant="solid"
           size="sm"
         />
-        <div class="flex items-center gap-1 ml-auto">
-          <UBadge
-            :label="t('focus.inbox.open')"
-            :color="store.inboxIssueStateFilter === 'open' ? 'primary' : 'neutral'"
-            :variant="store.inboxIssueStateFilter === 'open' ? 'solid' : 'subtle'"
-            size="sm"
-            class="cursor-pointer"
+        <div class="flex items-center gap-1 ml-auto" role="group">
+          <button
+            :aria-pressed="store.inboxIssueStateFilter === 'open'"
             @click="store.setInboxIssueState('open')"
-          />
-          <UBadge
-            :label="t('focus.inbox.closed')"
-            :color="store.inboxIssueStateFilter === 'closed' ? 'primary' : 'neutral'"
-            :variant="store.inboxIssueStateFilter === 'closed' ? 'solid' : 'subtle'"
-            size="sm"
-            class="cursor-pointer"
+          >
+            <UBadge
+              :label="t('focus.inbox.open')"
+              :color="store.inboxIssueStateFilter === 'open' ? 'primary' : 'neutral'"
+              :variant="store.inboxIssueStateFilter === 'open' ? 'solid' : 'subtle'"
+              size="sm"
+            />
+          </button>
+          <button
+            :aria-pressed="store.inboxIssueStateFilter === 'closed'"
             @click="store.setInboxIssueState('closed')"
-          />
+          >
+            <UBadge
+              :label="t('focus.inbox.closed')"
+              :color="store.inboxIssueStateFilter === 'closed' ? 'primary' : 'neutral'"
+              :variant="store.inboxIssueStateFilter === 'closed' ? 'solid' : 'subtle'"
+              size="sm"
+            />
+          </button>
         </div>
       </div>
 
