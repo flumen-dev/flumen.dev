@@ -6,6 +6,7 @@
     "retry": "Try again",
     "copied": "Link copied",
     "copyLink": "Copy link",
+    "copyFailed": "Failed to copy",
     "viewOnGithub": "View on GitHub",
     "close": "Close"
   },

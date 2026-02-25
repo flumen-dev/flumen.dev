@@ -21,15 +21,24 @@ export interface UnifiedInboxItem {
   assignees?: Array<{ login: string, avatarUrl: string }>
 }
 
+export interface LinkedPRRef {
+  number: number
+  title: string
+  state: string
+  url: string
+}
+
 export interface InboxPreviewPR {
+  type: 'pr'
   body: string | null
   lastCommitMessage: string | null
 }
 
 export interface InboxPreviewIssue {
+  type: 'issue'
   body: string | null
   milestone: string | null
-  linkedPRs: Array<{ number: number, title: string, state: string, url: string }> | null
+  linkedPRs: Array<LinkedPRRef> | null
 }
 
 export type InboxPreview = InboxPreviewPR | InboxPreviewIssue

@@ -56,6 +56,7 @@ export default defineEventHandler(async (event) => {
 
     const raw = pr.body || ''
     return {
+      type: 'pr' as const,
       body: raw.length > BODY_LIMIT ? `${raw.slice(0, BODY_LIMIT)}…` : raw || null,
       lastCommitMessage: pr.commits.nodes[0]?.commit.message || null,
     }
@@ -122,6 +123,7 @@ export default defineEventHandler(async (event) => {
 
   const raw = issue.body || ''
   return {
+    type: 'issue' as const,
     body: raw.length > BODY_LIMIT ? `${raw.slice(0, BODY_LIMIT)}…` : raw || null,
     milestone: issue.milestone?.title || null,
     linkedPRs: linkedPRs.length > 0 ? linkedPRs : null,

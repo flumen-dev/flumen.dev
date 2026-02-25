@@ -6,6 +6,7 @@
     "retry": "Erneut versuchen",
     "copied": "Link kopiert",
     "copyLink": "Link kopieren",
+    "copyFailed": "Kopieren fehlgeschlagen",
     "viewOnGithub": "Auf GitHub ansehen",
     "close": "Schließen"
   },
@@ -444,7 +445,6 @@
       "copyBranch": "Klick um Branch-Name zu kopieren",
       "branchCopied": "Branch-Name kopiert",
       "commentsTooltip": "{count} Kommentar | {count} Kommentare",
-      "preview": "Schnellvorschau",
       "loadingPreview": "Vorschau wird geladen...",
       "noPreview": "Keine Vorschau verfügbar.",
       "openOnGithub": "Auf GitHub öffnen",

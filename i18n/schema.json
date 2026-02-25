@@ -25,6 +25,9 @@
         "copyLink": {
           "type": "string"
         },
+        "copyFailed": {
+          "type": "string"
+        },
         "viewOnGithub": {
           "type": "string"
         },

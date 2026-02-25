@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { UnifiedInboxItem, InboxPreviewPR, InboxPreviewIssue } from '~~/shared/types/inbox'
+import type { UnifiedInboxItem } from '~~/shared/types/inbox'
 
 const props = defineProps<{
   item: UnifiedInboxItem
@@ -99,10 +99,15 @@ const prSizeColor = computed(() => {
 const authorUrl = computed(() => `https://github.com/${props.item.author.login}`)
 const repoUrl = computed(() => `https://github.com/${props.item.repo}`)
 
-function copyBranch() {
+async function copyBranch() {
   if (!props.item.headRefName) return
-  navigator.clipboard.writeText(props.item.headRefName)
-  toast.add({ title: t('focus.inbox.branchCopied'), color: 'success' })
+  try {
+    await navigator.clipboard.writeText(props.item.headRefName)
+    toast.add({ title: t('focus.inbox.branchCopied'), color: 'success' })
+  }
+  catch {
+    toast.add({ title: t('common.copyFailed'), color: 'error' })
+  }
 }
 
 // --- Inline expandable preview ---
@@ -118,10 +123,10 @@ function toggleExpand() {
 }
 
 const prPreview = computed(() =>
-  props.item.type === 'pr' ? preview.value as InboxPreviewPR | null : null,
+  preview.value?.type === 'pr' ? preview.value : null,
 )
 const issuePreview = computed(() =>
-  props.item.type === 'issue' ? preview.value as InboxPreviewIssue | null : null,
+  preview.value?.type === 'issue' ? preview.value : null,
 )
 </script>
 
@@ -354,8 +359,8 @@ const issuePreview = computed(() =>
       enter-active-class="transition-all duration-200 ease-out overflow-hidden"
       leave-active-class="transition-all duration-150 ease-in overflow-hidden"
       enter-from-class="max-h-0 opacity-0"
-      enter-to-class="max-h-96 opacity-100"
-      leave-from-class="max-h-96 opacity-100"
+      enter-to-class="max-h-[800px] opacity-100"
+      leave-from-class="max-h-[800px] opacity-100"
       leave-to-class="max-h-0 opacity-0"
     >
       <div
@@ -377,7 +382,7 @@ const issuePreview = computed(() =>
         <!-- PR preview -->
         <div
           v-else-if="prPreview"
-          class="py-3 space-y-3"
+          class="py-3 space-y-3 overflow-y-auto max-h-96"
         >
           <div
             v-if="prPreview.lastCommitMessage"
@@ -412,6 +417,7 @@ const issuePreview = computed(() =>
             target="_blank"
             rel="noopener noreferrer"
             class="inline-flex items-center gap-1 text-xs text-primary hover:underline"
+            @click.stop
           >
             {{ t('focus.inbox.openOnGithub') }}
             <UIcon
@@ -424,7 +430,7 @@ const issuePreview = computed(() =>
         <!-- Issue preview -->
         <div
           v-else-if="issuePreview"
-          class="py-3 space-y-3"
+          class="py-3 space-y-3 overflow-y-auto max-h-96"
         >
           <div
             v-if="issuePreview.milestone"
@@ -447,7 +453,7 @@ const issuePreview = computed(() =>
             />
           </div>
           <div
-            v-if="issuePreview.linkedPRs"
+            v-if="issuePreview.linkedPRs && issuePreview.linkedPRs.length > 0"
             class="space-y-1"
           >
             <p class="text-[10px] uppercase tracking-wider text-dimmed font-semibold">
@@ -469,7 +475,7 @@ const issuePreview = computed(() =>
             </a>
           </div>
           <p
-            v-if="!issuePreview.body && !issuePreview.milestone && !issuePreview.linkedPRs"
+            v-if="!issuePreview.body && !issuePreview.milestone && (!issuePreview.linkedPRs || issuePreview.linkedPRs.length === 0)"
             class="text-xs text-dimmed italic py-1"
           >
             {{ t('focus.inbox.noPreview') }}
@@ -479,6 +485,7 @@ const issuePreview = computed(() =>
             target="_blank"
             rel="noopener noreferrer"
             class="inline-flex items-center gap-1 text-xs text-primary hover:underline"
+            @click.stop
           >
             {{ t('focus.inbox.openOnGithub') }}
             <UIcon
