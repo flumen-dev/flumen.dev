@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { accentColors, defaultUserSettings } from '~~/shared/types/settings'
+import { accentColors, defaultUserSettings, type ContributionSkin } from '~~/shared/types/settings'
 
-const { locale, locales } = useI18n()
-const { update } = useUserSettings()
+const { t, locale, locales } = useI18n()
+const { settings, update } = useUserSettings()
 const colorMode = useColorMode()
 const appConfig = useAppConfig()
 
@@ -42,6 +42,17 @@ const switchLocalePath = useSwitchLocalePath()
 function selectLocale(code: 'en' | 'de') {
   update({ locale: code })
   navigateTo(switchLocalePath(code))
+}
+
+// Contribution Skin
+const skinItems = computed(() => [
+  { label: t('settings.appearance.skinDefault'), value: 'default' as ContributionSkin },
+  { label: t('settings.appearance.skinGrass'), value: 'grass' as ContributionSkin },
+  { label: t('settings.appearance.skinFire'), value: 'fire' as ContributionSkin },
+])
+
+function selectSkin(skin: ContributionSkin) {
+  update({ contributionSkin: skin })
 }
 </script>
 
@@ -131,6 +142,23 @@ function selectLocale(code: 'en' | 'de') {
           class="max-w-48"
           aria-labelledby="language-label"
           @update:model-value="selectLocale($event as 'en' | 'de')"
+        />
+      </div>
+
+      <!-- Contribution Graph Skin -->
+      <div>
+        <label
+          id="skin-label"
+          class="text-sm font-medium mb-3 block"
+        >
+          {{ $t('settings.appearance.contributionSkin') }}
+        </label>
+        <USelect
+          :model-value="settings.contributionSkin"
+          :items="skinItems"
+          class="max-w-64"
+          aria-labelledby="skin-label"
+          @update:model-value="selectSkin($event as ContributionSkin)"
         />
       </div>
     </div>

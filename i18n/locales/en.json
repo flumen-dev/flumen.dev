@@ -351,7 +351,10 @@
       "errorLoading": "Could not load profile",
       "topRepos": "Top repositories",
       "noRepos": "No public repositories",
-      "fork": "Fork"
+      "fork": "Fork",
+      "contributions": "Contributions",
+      "contributionsTotal": "{count} contributions in the last year",
+      "contributionDay": "{count} contributions on {date}"
     }
   },
   "pinnedRepos": {
@@ -541,7 +544,11 @@
       "theme": "Theme",
       "accentColor": "Accent Color",
       "resetColor": "Reset to default",
-      "language": "Language"
+      "language": "Language",
+      "contributionSkin": "Contribution Graph Style",
+      "skinDefault": "Default",
+      "skinGrass": "Grass",
+      "skinFire": "Fire"
     }
   }
 }

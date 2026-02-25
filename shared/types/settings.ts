@@ -5,6 +5,8 @@ export interface PinnedItem {
   type: PinnedItemType
 }
 
+export type ContributionSkin = 'default' | 'grass' | 'fire'
+
 export interface UserSettings {
   theme: 'light' | 'dark' | 'system'
   primaryColor: string
@@ -13,6 +15,7 @@ export interface UserSettings {
   inboxScope: string | null
   pinnedRepos: PinnedItem[]
   cliToken: string | null
+  contributionSkin: ContributionSkin
 }
 
 export const defaultUserSettings: UserSettings = {
@@ -23,6 +26,7 @@ export const defaultUserSettings: UserSettings = {
   inboxScope: null,
   pinnedRepos: [],
   cliToken: null,
+  contributionSkin: 'default',
 }
 
 export const accentColors = [

@@ -351,7 +351,10 @@
       "errorLoading": "Profil konnte nicht geladen werden",
       "topRepos": "Top Repositories",
       "noRepos": "Keine öffentlichen Repositories",
-      "fork": "Fork"
+      "fork": "Fork",
+      "contributions": "Beiträge",
+      "contributionsTotal": "{count} Beiträge im letzten Jahr",
+      "contributionDay": "{count} Beiträge am {date}"
     }
   },
   "pinnedRepos": {
@@ -541,7 +544,11 @@
       "theme": "Farbschema",
       "accentColor": "Akzentfarbe",
       "resetColor": "Auf Standard zurücksetzen",
-      "language": "Sprache"
+      "language": "Sprache",
+      "contributionSkin": "Beitragsgraph-Stil",
+      "skinDefault": "Standard",
+      "skinGrass": "Gras",
+      "skinFire": "Feuer"
     }
   }
 }

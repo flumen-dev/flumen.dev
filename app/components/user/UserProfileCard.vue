@@ -177,6 +177,9 @@ const links = computed(() => {
       </div>
     </div>
 
+    <!-- Contribution Graph -->
+    <UserContributionGraph :login="profile.login" />
+
     <!-- Footer -->
     <div class="flex items-center justify-between pt-1 border-t border-default">
       <span class="text-xs text-dimmed">
