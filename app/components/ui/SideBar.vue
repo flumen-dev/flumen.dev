@@ -333,7 +333,6 @@ const mainItems = computed<NavigationMenuItem[]>(() => [
         :ui="{ root: 'flex-1', list: 'flex flex-col flex-1 *:last:mt-auto' }"
       />
 
-
       <!-- Pinned repos -->
       <ClientOnly>
         <nav
