@@ -1285,19 +1285,16 @@
             "title": {
               "type": "string"
             },
-            "empty": {
+            "prs": {
               "type": "string"
             },
-            "new": {
+            "issues": {
               "type": "string"
             },
-            "reviewRequests": {
+            "noPRs": {
               "type": "string"
             },
-            "assigned": {
-              "type": "string"
-            },
-            "mentions": {
+            "noIssues": {
               "type": "string"
             },
             "approved": {
@@ -1307,15 +1304,6 @@
               "type": "string"
             },
             "reviewRequired": {
-              "type": "string"
-            },
-            "reasonReview": {
-              "type": "string"
-            },
-            "reasonAssigned": {
-              "type": "string"
-            },
-            "reasonMentioned": {
               "type": "string"
             },
             "waitingDays": {
@@ -1330,13 +1318,10 @@
             "restore": {
               "type": "string"
             },
-            "active": {
+            "conflict": {
               "type": "string"
             },
-            "dismissed": {
-              "type": "string"
-            },
-            "noDismissed": {
+            "new": {
               "type": "string"
             },
             "searchPlaceholder": {
