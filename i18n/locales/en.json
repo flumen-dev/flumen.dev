@@ -453,7 +453,15 @@
       "assigneesLabel": "Assignees",
       "new": "new",
       "searchPlaceholder": "Search...",
-      "allRepos": "All repos"
+      "allRepos": "All repos",
+      "open": "Open",
+      "closed": "Closed",
+      "merged": "Merged",
+      "pullRequest": "Pull Request",
+      "mergedPullRequest": "Merged Pull Request",
+      "closedPullRequest": "Closed Pull Request",
+      "issue": "Issue",
+      "closedIssue": "Closed Issue"
     },
     "created": {
       "title": "Created",

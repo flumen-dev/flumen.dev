@@ -10,18 +10,38 @@ const toast = useToast()
 const store = useFocusStore()
 const timeAgo = useTimeAgo(computed(() => props.item.updatedAt))
 
+const isClosed = computed(() => props.item.state !== 'OPEN')
+
 const stateIcon = computed(() => {
   if (props.item.type === 'pr') {
-    return props.item.isDraft ? 'i-lucide-git-pull-request-draft' : 'i-lucide-git-pull-request'
+    if (props.item.state === 'MERGED') return 'i-lucide-git-merge'
+    if (props.item.isDraft) return 'i-lucide-git-pull-request-draft'
+    if (isClosed.value) return 'i-lucide-git-pull-request-closed'
+    return 'i-lucide-git-pull-request'
   }
+  if (isClosed.value) return 'i-lucide-circle-check'
   return 'i-lucide-circle-dot'
 })
 
 const stateColor = computed(() => {
   if (props.item.type === 'pr') {
-    return props.item.isDraft ? 'text-neutral-400' : 'text-blue-500'
+    if (props.item.state === 'MERGED') return 'text-purple-500'
+    if (props.item.isDraft) return 'text-neutral-400'
+    if (isClosed.value) return 'text-red-500'
+    return 'text-blue-500'
   }
+  if (isClosed.value) return 'text-purple-500'
   return 'text-emerald-500'
+})
+
+const stateTooltip = computed(() => {
+  if (props.item.type === 'pr') {
+    if (props.item.state === 'MERGED') return t('focus.inbox.mergedPullRequest')
+    if (isClosed.value) return t('focus.inbox.closedPullRequest')
+    return t('focus.inbox.pullRequest')
+  }
+  if (isClosed.value) return t('focus.inbox.closedIssue')
+  return t('focus.inbox.issue')
 })
 
 const waitingDays = computed(() => {
@@ -135,10 +155,11 @@ const issuePreview = computed(() =>
     <!-- Clickable card area -->
     <div
       class="relative px-4 py-3 hover:bg-elevated transition-colors"
+      :class="{ 'opacity-70': isClosed }"
       @click="toggleExpand"
     >
       <div class="flex items-start gap-3">
-        <UTooltip :text="item.type === 'pr' ? 'Pull Request' : 'Issue'">
+        <UTooltip :text="stateTooltip">
           <UIcon
             :name="stateIcon"
             class="size-4 mt-0.5 shrink-0"

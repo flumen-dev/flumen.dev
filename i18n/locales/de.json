@@ -453,7 +453,15 @@
       "assigneesLabel": "Zugewiesen",
       "new": "neu",
       "searchPlaceholder": "Suchen...",
-      "allRepos": "Alle Repos"
+      "allRepos": "Alle Repos",
+      "open": "Offen",
+      "closed": "Geschlossen",
+      "merged": "Gemergt",
+      "pullRequest": "Pull Request",
+      "mergedPullRequest": "Gemergter Pull Request",
+      "closedPullRequest": "Geschlossener Pull Request",
+      "issue": "Issue",
+      "closedIssue": "Geschlossenes Issue"
     },
     "created": {
       "title": "Erstellt",

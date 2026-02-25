@@ -201,35 +201,43 @@ export const useFocusStore = defineStore('focus', () => {
   const inboxScope = ref<string>('') // org name or user login
   const inboxRepo = ref<string>('')
   const inboxSearch = ref<string>('')
+  const inboxPRStateFilter = ref<'open' | 'closed'>('open')
+  const inboxIssueStateFilter = ref<'open' | 'closed'>('open')
 
-  function inboxParams(category: 'pr' | 'issue') {
-    const p: Record<string, string> = { category, scope: inboxScope.value }
+  function inboxParams(category: 'pr' | 'issue', state: 'open' | 'closed') {
+    const p: Record<string, string> = { category, state, scope: inboxScope.value }
     if (inboxRepo.value) p.repo = inboxRepo.value
     if (inboxSearch.value) p.search = inboxSearch.value
     return p
   }
 
-  const inboxPRs = usePaginatedSection<UnifiedInboxItem>(
-    apiFetch,
-    '/api/focus/inbox-unified',
-    20,
-    () => inboxParams('pr'),
+  const inboxPRsOpen = usePaginatedSection<UnifiedInboxItem>(
+    apiFetch, '/api/focus/inbox-unified', 20, () => inboxParams('pr', 'open'),
+  )
+  const inboxPRsClosed = usePaginatedSection<UnifiedInboxItem>(
+    apiFetch, '/api/focus/inbox-unified', 20, () => inboxParams('pr', 'closed'),
+  )
+  const inboxIssuesOpen = usePaginatedSection<UnifiedInboxItem>(
+    apiFetch, '/api/focus/inbox-unified', 20, () => inboxParams('issue', 'open'),
+  )
+  const inboxIssuesClosed = usePaginatedSection<UnifiedInboxItem>(
+    apiFetch, '/api/focus/inbox-unified', 20, () => inboxParams('issue', 'closed'),
   )
 
-  const inboxIssues = usePaginatedSection<UnifiedInboxItem>(
-    apiFetch,
-    '/api/focus/inbox-unified',
-    20,
-    () => inboxParams('issue'),
+  const activeInboxPRs = computed(() =>
+    inboxPRStateFilter.value === 'open' ? inboxPRsOpen : inboxPRsClosed,
+  )
+  const activeInboxIssues = computed(() =>
+    inboxIssueStateFilter.value === 'open' ? inboxIssuesOpen : inboxIssuesClosed,
   )
 
   const inbox = computed(() => ({
-    loading: inboxPRs.loading.value || inboxIssues.loading.value,
-    fetchedAt: Math.min(inboxPRs.fetchedAt.value ?? 0, inboxIssues.fetchedAt.value ?? 0) || null,
+    loading: activeInboxPRs.value.loading.value || activeInboxIssues.value.loading.value,
+    fetchedAt: Math.min(activeInboxPRs.value.fetchedAt.value ?? 0, activeInboxIssues.value.fetchedAt.value ?? 0) || null,
   }))
 
   const inboxTotalCount = computed(() =>
-    inboxPRs.totalCount.value + inboxIssues.totalCount.value,
+    activeInboxPRs.value.totalCount.value + activeInboxIssues.value.totalCount.value,
   )
 
   // --- "New" notification tracking ---
@@ -269,17 +277,39 @@ export const useFocusStore = defineStore('focus', () => {
 
   async function fetchInbox() {
     await Promise.all([
-      inboxPRs.fetch(),
-      inboxIssues.fetch(),
+      activeInboxPRs.value.fetch(),
+      activeInboxIssues.value.fetch(),
     ])
     markInboxSeen()
     notifPolling.start()
   }
 
+  function invalidateAllInboxCaches() {
+    for (const s of [inboxPRsOpen, inboxPRsClosed, inboxIssuesOpen, inboxIssuesClosed]) {
+      s.resetPagination()
+      s.fetchedAt.value = null
+    }
+  }
+
   async function reloadInbox() {
-    inboxPRs.resetPagination()
-    inboxIssues.resetPagination()
+    invalidateAllInboxCaches()
     await fetchInbox()
+  }
+
+  async function setInboxPRState(state: 'open' | 'closed') {
+    if (inboxPRStateFilter.value === state) return
+    inboxPRStateFilter.value = state
+    if (activeInboxPRs.value.isStale()) {
+      await activeInboxPRs.value.fetch()
+    }
+  }
+
+  async function setInboxIssueState(state: 'open' | 'closed') {
+    if (inboxIssueStateFilter.value === state) return
+    inboxIssueStateFilter.value = state
+    if (activeInboxIssues.value.isStale()) {
+      await activeInboxIssues.value.fetch()
+    }
   }
 
   async function setInboxScope(scope: string) {
@@ -422,7 +452,7 @@ export const useFocusStore = defineStore('focus', () => {
     if (key === 'workingOn' && isStale(workingOn.value.fetchedAt)) {
       await fetchWorkingOn()
     }
-    if (key === 'inbox' && (inboxPRs.isStale() || inboxIssues.isStale())) {
+    if (key === 'inbox' && (activeInboxPRs.value.isStale() || activeInboxIssues.value.isStale())) {
       await fetchInbox()
     }
     if (key === 'inbox') {
@@ -443,7 +473,8 @@ export const useFocusStore = defineStore('focus', () => {
 
   // --- CI status polling for pending PRs ---
   async function pollCiStatus() {
-    const keys = inboxPRs.data.value
+    const prData = activeInboxPRs.value.data.value
+    const keys = prData
       .filter(pr => pr.ciStatus === 'PENDING')
       .map(pr => `${pr.repo}#${pr.number}`)
     if (keys.length === 0) return
@@ -453,7 +484,7 @@ export const useFocusStore = defineStore('focus', () => {
         params: { prs: keys.join(',') },
       })
 
-      for (const pr of inboxPRs.data.value) {
+      for (const pr of prData) {
         const key = `${pr.repo}#${pr.number}`
         if (key in result && result[key] !== pr.ciStatus) {
           pr.ciStatus = result[key] as typeof pr.ciStatus
@@ -479,7 +510,7 @@ export const useFocusStore = defineStore('focus', () => {
       await fetchWorkingOn()
     }
     if (key === 'inbox') {
-      await Promise.all([inboxPRs.refresh(), inboxIssues.refresh()])
+      await Promise.all([activeInboxPRs.value.refresh(), activeInboxIssues.value.refresh()])
       markInboxSeen()
     }
     if (key === 'created') {
@@ -501,32 +532,42 @@ export const useFocusStore = defineStore('focus', () => {
     setInboxRepo,
     setInboxSearch,
     inboxTotalCount,
-    // Inbox PRs
-    inboxPRs: computed(() => ({
-      data: inboxPRs.data.value,
-      loading: inboxPRs.loading.value,
-      totalCount: inboxPRs.totalCount.value,
-      page: inboxPRs.currentPage.value,
-      totalPages: inboxPRs.totalPages.value,
-      hasMore: inboxPRs.hasMore.value,
-      hasPrevious: inboxPRs.hasPrevious.value,
-      paging: inboxPRs.paging.value,
-    })),
-    inboxPRsNextPage: () => inboxPRs.nextPage(),
-    inboxPRsPrevPage: () => inboxPRs.prevPage(),
-    // Inbox Issues
-    inboxIssues: computed(() => ({
-      data: inboxIssues.data.value,
-      loading: inboxIssues.loading.value,
-      totalCount: inboxIssues.totalCount.value,
-      page: inboxIssues.currentPage.value,
-      totalPages: inboxIssues.totalPages.value,
-      hasMore: inboxIssues.hasMore.value,
-      hasPrevious: inboxIssues.hasPrevious.value,
-      paging: inboxIssues.paging.value,
-    })),
-    inboxIssuesNextPage: () => inboxIssues.nextPage(),
-    inboxIssuesPrevPage: () => inboxIssues.prevPage(),
+    inboxPRStateFilter,
+    inboxIssueStateFilter,
+    setInboxPRState,
+    setInboxIssueState,
+    // Inbox PRs (flattened from active section)
+    inboxPRs: computed(() => {
+      const s = activeInboxPRs.value
+      return {
+        data: s.data.value,
+        loading: s.loading.value,
+        totalCount: s.totalCount.value,
+        page: s.currentPage.value,
+        totalPages: s.totalPages.value,
+        hasMore: s.hasMore.value,
+        hasPrevious: s.hasPrevious.value,
+        paging: s.paging.value,
+      }
+    }),
+    inboxPRsNextPage: () => activeInboxPRs.value.nextPage(),
+    inboxPRsPrevPage: () => activeInboxPRs.value.prevPage(),
+    // Inbox Issues (flattened from active section)
+    inboxIssues: computed(() => {
+      const s = activeInboxIssues.value
+      return {
+        data: s.data.value,
+        loading: s.loading.value,
+        totalCount: s.totalCount.value,
+        page: s.currentPage.value,
+        totalPages: s.totalPages.value,
+        hasMore: s.hasMore.value,
+        hasPrevious: s.hasPrevious.value,
+        paging: s.paging.value,
+      }
+    }),
+    inboxIssuesNextPage: () => activeInboxIssues.value.nextPage(),
+    inboxIssuesPrevPage: () => activeInboxIssues.value.prevPage(),
     fetchPreview,
     getPreview,
     isPreviewLoading,

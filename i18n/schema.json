@@ -1368,6 +1368,15 @@
             },
             "allRepos": {
               "type": "string"
+            },
+            "open": {
+              "type": "string"
+            },
+            "closed": {
+              "type": "string"
+            },
+            "merged": {
+              "type": "string"
             }
           },
           "additionalProperties": false

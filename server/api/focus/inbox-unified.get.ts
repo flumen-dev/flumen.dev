@@ -64,13 +64,18 @@ export default defineEventHandler(async (event) => {
   const scope = (query.scope as string) || login
   const repo = (query.repo as string) || ''
   const search = (query.search as string) || ''
+  const state = (query.state as string) === 'closed' ? 'closed' : 'open'
 
   // Build search query
   const scopeQualifier = repo
     ? `repo:${repo}`
     : scope === login ? `user:${login}` : `org:${scope}`
   const typeQualifier = category === 'pr' ? 'is:pr' : 'is:issue'
-  const parts = [`${typeQualifier} is:open ${scopeQualifier}`]
+  // For PRs, "closed" means merged; for issues, use is:closed
+  const stateQualifier = state === 'closed'
+    ? (category === 'pr' ? 'is:merged' : 'is:closed')
+    : 'is:open'
+  const parts = [`${typeQualifier} ${stateQualifier} ${scopeQualifier}`]
   if (search) parts.push(search)
   parts.push('sort:updated-desc')
   const searchQ = parts.join(' ')

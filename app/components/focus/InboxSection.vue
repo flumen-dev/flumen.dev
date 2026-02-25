@@ -140,10 +140,28 @@ watch(() => store.inboxIssues.data, (items) => {
         <UBadge
           v-if="!store.inboxPRs.loading"
           :label="String(store.inboxPRs.totalCount)"
-          color="neutral"
-          variant="subtle"
-          size="xs"
+          color="primary"
+          variant="solid"
+          size="sm"
         />
+        <div class="flex items-center gap-1 ml-auto">
+          <UBadge
+            :label="t('focus.inbox.open')"
+            :color="store.inboxPRStateFilter === 'open' ? 'primary' : 'neutral'"
+            :variant="store.inboxPRStateFilter === 'open' ? 'solid' : 'subtle'"
+            size="sm"
+            class="cursor-pointer"
+            @click="store.setInboxPRState('open')"
+          />
+          <UBadge
+            :label="t('focus.inbox.merged')"
+            :color="store.inboxPRStateFilter === 'closed' ? 'primary' : 'neutral'"
+            :variant="store.inboxPRStateFilter === 'closed' ? 'solid' : 'subtle'"
+            size="sm"
+            class="cursor-pointer"
+            @click="store.setInboxPRState('closed')"
+          />
+        </div>
       </div>
 
       <div v-if="store.inboxPRs.loading">
@@ -195,10 +213,28 @@ watch(() => store.inboxIssues.data, (items) => {
         <UBadge
           v-if="!store.inboxIssues.loading"
           :label="String(store.inboxIssues.totalCount)"
-          color="neutral"
-          variant="subtle"
-          size="xs"
+          color="primary"
+          variant="solid"
+          size="sm"
         />
+        <div class="flex items-center gap-1 ml-auto">
+          <UBadge
+            :label="t('focus.inbox.open')"
+            :color="store.inboxIssueStateFilter === 'open' ? 'primary' : 'neutral'"
+            :variant="store.inboxIssueStateFilter === 'open' ? 'solid' : 'subtle'"
+            size="sm"
+            class="cursor-pointer"
+            @click="store.setInboxIssueState('open')"
+          />
+          <UBadge
+            :label="t('focus.inbox.closed')"
+            :color="store.inboxIssueStateFilter === 'closed' ? 'primary' : 'neutral'"
+            :variant="store.inboxIssueStateFilter === 'closed' ? 'solid' : 'subtle'"
+            size="sm"
+            class="cursor-pointer"
+            @click="store.setInboxIssueState('closed')"
+          />
+        </div>
       </div>
 
       <div v-if="store.inboxIssues.loading">
