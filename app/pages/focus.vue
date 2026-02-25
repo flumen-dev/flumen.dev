@@ -24,9 +24,6 @@ function sectionState(key: SectionKey) {
   return store[key]
 }
 
-// Ref to InboxSection for header chip state
-const inboxSectionRef = ref<{ inboxFilter: 'active' | 'dismissed', inboxActiveCount: number, inboxDismissedCount: number } | null>(null)
-
 const sectionCounts = computed(() => {
   const result: Record<SectionKey, number | null> = {
     workingOn: null,
@@ -37,12 +34,17 @@ const sectionCounts = computed(() => {
   }
 
   for (const key of ['workingOn', 'inbox', 'created', 'watching', 'recent'] as SectionKey[]) {
-    // Inbox has no total — category counts shown in sub-headers
-    if (key === 'inbox') continue
-
     const state = sectionState(key)
 
-    if (key === 'created' && state.fetchedAt) {
+    if (key === 'inbox') {
+      if (state.fetchedAt) {
+        result[key] = store.inboxTotalCount
+      }
+      else if (store.counts) {
+        result[key] = store.counts.inbox
+      }
+    }
+    else if (key === 'created' && state.fetchedAt) {
       result[key] = store.createdTotalCount
     }
     else if (state.fetchedAt && 'data' in state) {
@@ -112,39 +114,16 @@ const sectionCounts = computed(() => {
           size="sm"
         />
 
-        <!-- Inbox: new indicator (before expanded) -->
-        <span
-          v-if="s.key === 'inbox' && store.counts?.inboxHasNew && store.expanded !== 'inbox'"
-          class="relative flex size-2"
-        >
-          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
-          <span class="relative inline-flex rounded-full size-2 bg-primary" />
-        </span>
-
-        <!-- Inbox: filter chips -->
-        <template v-if="s.key === 'inbox' && store.expanded === 'inbox' && inboxSectionRef">
-          <div
-            class="flex items-center gap-1 ml-2"
-            @click.stop
-          >
-            <UBadge
-              :label="`${t('focus.inbox.active')} (${inboxSectionRef.inboxActiveCount})`"
-              :color="inboxSectionRef.inboxFilter === 'active' ? 'primary' : 'neutral'"
-              :variant="inboxSectionRef.inboxFilter === 'active' ? 'solid' : 'subtle'"
-              size="sm"
-              class="cursor-pointer"
-              @click="inboxSectionRef.inboxFilter = 'active'"
-            />
-            <UBadge
-              :label="`${t('focus.inbox.dismissed')} (${inboxSectionRef.inboxDismissedCount})`"
-              :color="inboxSectionRef.inboxFilter === 'dismissed' ? 'primary' : 'neutral'"
-              :variant="inboxSectionRef.inboxFilter === 'dismissed' ? 'solid' : 'subtle'"
-              size="sm"
-              class="cursor-pointer"
-              @click="inboxSectionRef.inboxFilter = 'dismissed'"
-            />
-          </div>
-        </template>
+        <!-- Inbox: "New" badge -->
+        <UBadge
+          v-if="s.key === 'inbox' && store.inboxNewCount > 0"
+          :label="`+${store.inboxNewCount} ${t('focus.inbox.new')}`"
+          color="primary"
+          variant="solid"
+          size="sm"
+          class="cursor-pointer"
+          @click.stop="store.refreshInboxNew()"
+        />
 
         <!-- Created: state filter chips -->
         <template v-if="s.key === 'created' && store.expanded === 'created'">
@@ -191,10 +170,7 @@ const sectionCounts = computed(() => {
       >
         <FocusWorkingOnSection v-if="s.key === 'workingOn'" />
 
-        <FocusInboxSection
-          v-else-if="s.key === 'inbox'"
-          ref="inboxSectionRef"
-        />
+        <FocusInboxSection v-else-if="s.key === 'inbox'" />
 
         <FocusCreatedSection v-else-if="s.key === 'created'" />
 

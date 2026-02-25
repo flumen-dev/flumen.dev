@@ -10,6 +10,7 @@ export interface UserSettings {
   primaryColor: string
   locale: string
   selectedRepo: string | null
+  inboxScope: string | null
   pinnedRepos: PinnedItem[]
   cliToken: string | null
 }
@@ -19,6 +20,7 @@ export const defaultUserSettings: UserSettings = {
   primaryColor: 'indigo',
   locale: 'en',
   selectedRepo: null,
+  inboxScope: null,
   pinnedRepos: [],
   cliToken: null,
 }

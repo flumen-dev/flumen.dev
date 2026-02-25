@@ -1,5 +1,7 @@
-import type { InboxItem } from '~~/shared/types/inbox'
+import type { UnifiedInboxItem } from '~~/shared/types/inbox'
 import { mapCiStatus } from './focus-created'
+
+type BaseInboxItem = Omit<UnifiedInboxItem, 'reasons' | 'isDismissed'>
 
 export interface GQLInboxPR {
   __typename?: string
@@ -13,6 +15,11 @@ export interface GQLInboxPR {
   labels: { nodes: Array<{ name: string, color: string }> }
   repository: { nameWithOwner: string }
   reviewDecision: 'APPROVED' | 'CHANGES_REQUESTED' | 'REVIEW_REQUIRED' | null
+  additions: number
+  deletions: number
+  mergeable: 'MERGEABLE' | 'CONFLICTING' | 'UNKNOWN'
+  comments: { totalCount: number }
+  reviewRequests: { nodes: Array<{ requestedReviewer: { login: string, avatarUrl: string } | null }> }
   commits?: {
     nodes: Array<{
       commit: {
@@ -32,11 +39,13 @@ export interface GQLInboxIssue {
   author: { login: string, avatarUrl: string } | null
   labels: { nodes: Array<{ name: string, color: string }> }
   repository: { nameWithOwner: string }
+  comments: { totalCount: number }
+  assignees: { nodes: Array<{ login: string, avatarUrl: string }> }
 }
 
 const GHOST_AUTHOR = { login: 'ghost', avatarUrl: '' }
 
-export function mapPRNode(node: GQLInboxPR): InboxItem {
+export function mapPRNode(node: GQLInboxPR): BaseInboxItem {
   return {
     type: 'pr',
     number: node.number,
@@ -47,13 +56,20 @@ export function mapPRNode(node: GQLInboxPR): InboxItem {
     updatedAt: node.updatedAt,
     author: node.author ?? GHOST_AUTHOR,
     labels: node.labels.nodes,
+    commentCount: node.comments.totalCount,
     isDraft: node.isDraft,
     reviewDecision: node.reviewDecision,
     ciStatus: mapCiStatus(node.commits?.nodes?.[0]?.commit?.statusCheckRollup?.state),
+    additions: node.additions,
+    deletions: node.deletions,
+    mergeable: node.mergeable,
+    requestedReviewers: node.reviewRequests.nodes
+      .map(n => n.requestedReviewer)
+      .filter((r): r is { login: string, avatarUrl: string } => r !== null),
   }
 }
 
-export function mapIssueNode(node: GQLInboxIssue): InboxItem {
+export function mapIssueNode(node: GQLInboxIssue): BaseInboxItem {
   return {
     type: 'issue',
     number: node.number,
@@ -64,12 +80,7 @@ export function mapIssueNode(node: GQLInboxIssue): InboxItem {
     updatedAt: node.updatedAt,
     author: node.author ?? GHOST_AUTHOR,
     labels: node.labels.nodes,
+    commentCount: node.comments.totalCount,
+    assignees: node.assignees.nodes,
   }
-}
-
-export function mapMixedNode(node: GQLInboxIssue | GQLInboxPR): InboxItem {
-  if ('isDraft' in node || node.__typename === 'PullRequest') {
-    return mapPRNode(node as GQLInboxPR)
-  }
-  return mapIssueNode(node)
 }

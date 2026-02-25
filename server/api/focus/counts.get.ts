@@ -1,4 +1,5 @@
 import { parseClaimKey } from '~~/shared/utils/claimKey'
+import type { UserSettings } from '~~/shared/types/settings'
 
 interface ClaimEntry {
   login: string
@@ -8,50 +9,28 @@ export interface FocusCounts {
   workingOn: number
   createdOpen: number
   createdClosed: number
-  inboxReviewRequests: number
-  inboxAssigned: number
-  inboxMentions: number
-  inboxHasNew: boolean
+  inbox: number
 }
 
 const COUNTS_QUERY = /* GraphQL */ `
   query FocusCounts(
     $createdOpen: String!, $createdClosed: String!, $openPrs: String!,
-    $reviewRequests: String!, $assigned: String!, $mentions: String!
+    $inboxPrs: String!, $inboxIssues: String!
   ) {
-    createdOpen: search(query: $createdOpen, type: ISSUE, first: 1) { issueCount }
-    createdClosed: search(query: $createdClosed, type: ISSUE, first: 1) { issueCount }
-    openPrs: search(query: $openPrs, type: ISSUE, first: 1) { issueCount }
-    reviewRequests: search(query: $reviewRequests, type: ISSUE, first: 1) {
-      issueCount
-      nodes { ... on PullRequest { updatedAt } }
-    }
-    assigned: search(query: $assigned, type: ISSUE, first: 1) {
-      issueCount
-      nodes {
-        ... on Issue { updatedAt }
-        ... on PullRequest { updatedAt }
-      }
-    }
-    mentions: search(query: $mentions, type: ISSUE, first: 1) {
-      issueCount
-      nodes {
-        ... on Issue { updatedAt }
-        ... on PullRequest { updatedAt }
-      }
-    }
+    createdOpen: search(query: $createdOpen, type: ISSUE, first: 0) { issueCount }
+    createdClosed: search(query: $createdClosed, type: ISSUE, first: 0) { issueCount }
+    openPrs: search(query: $openPrs, type: ISSUE, first: 0) { issueCount }
+    inboxPrs: search(query: $inboxPrs, type: ISSUE, first: 0) { issueCount }
+    inboxIssues: search(query: $inboxIssues, type: ISSUE, first: 0) { issueCount }
   }
 `
-
-interface InboxCountNode {
-  updatedAt?: string
-}
 
 export default defineEventHandler(async (event): Promise<FocusCounts> => {
   const { token, login, userId } = await getSessionToken(event)
 
-  // 1. KV scan for claimed issues (no GitHub API call)
   const storage = useStorage('data')
+
+  // KV scan for claimed issues (no GitHub API call)
   const allKeys = await storage.getKeys('issue-claims')
   let claimedCount = 0
   const loginLower = login.toLowerCase()
@@ -64,44 +43,35 @@ export default defineEventHandler(async (event): Promise<FocusCounts> => {
     }
   }
 
-  // 2. Single GraphQL query for all search counts
-  const [data, lastOpened] = await Promise.all([
-    githubGraphQL<{
-      createdOpen: { issueCount: number }
-      createdClosed: { issueCount: number }
-      openPrs: { issueCount: number }
-      reviewRequests: { issueCount: number, nodes: (InboxCountNode | null)[] }
-      assigned: { issueCount: number, nodes: (InboxCountNode | null)[] }
-      mentions: { issueCount: number, nodes: (InboxCountNode | null)[] }
-    }>(token, COUNTS_QUERY, {
-      createdOpen: `is:issue is:open author:${login}`,
-      createdClosed: `is:issue is:closed author:${login}`,
-      openPrs: `type:pr is:open author:${login}`,
-      reviewRequests: `is:pr is:open review-requested:${login} sort:updated-desc`,
-      assigned: `is:open assignee:${login} -author:${login} sort:updated-desc`,
-      mentions: `mentions:${login} is:open -author:${login} sort:updated-desc`,
-    }),
-    storage.getItem<string>(`users:${userId}:inbox-last-opened`),
-  ])
+  // Inbox count: use same scope logic as inbox-unified endpoint
+  const settings = await storage.getItem<UserSettings>(`users:${userId}:settings`)
+  const inboxScope = settings?.inboxScope || login
 
-  // 3. Check if any inbox category has items newer than last opened
-  const hasNew = (() => {
-    if (!lastOpened) return true // never opened = everything is new
-    const lastOpenedDate = new Date(lastOpened)
-    for (const category of [data.reviewRequests, data.assigned, data.mentions]) {
-      const newest = category.nodes[0]
-      if (newest?.updatedAt && new Date(newest.updatedAt) > lastOpenedDate) return true
-    }
-    return false
-  })()
+  // Build scope qualifier identical to inbox-unified.get.ts
+  const scopeQualifier = inboxScope === login ? `user:${login}` : `org:${inboxScope}`
+
+  const baseVars = {
+    createdOpen: `is:issue is:open author:${login}`,
+    createdClosed: `is:issue is:closed author:${login}`,
+    openPrs: `type:pr is:open author:${login}`,
+  }
+
+  const data = await githubGraphQL<{
+    createdOpen: { issueCount: number }
+    createdClosed: { issueCount: number }
+    openPrs: { issueCount: number }
+    inboxPrs: { issueCount: number }
+    inboxIssues: { issueCount: number }
+  }>(token, COUNTS_QUERY, {
+    ...baseVars,
+    inboxPrs: `is:pr is:open ${scopeQualifier} sort:updated-desc`,
+    inboxIssues: `is:issue is:open ${scopeQualifier} sort:updated-desc`,
+  })
 
   return {
     workingOn: claimedCount + data.openPrs.issueCount,
     createdOpen: data.createdOpen.issueCount,
     createdClosed: data.createdClosed.issueCount,
-    inboxReviewRequests: data.reviewRequests.issueCount,
-    inboxAssigned: data.assigned.issueCount,
-    inboxMentions: data.mentions.issueCount,
-    inboxHasNew: hasNew,
+    inbox: data.inboxPrs.issueCount + data.inboxIssues.issueCount,
   }
 })
