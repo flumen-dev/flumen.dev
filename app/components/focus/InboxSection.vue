@@ -147,7 +147,7 @@ watch(() => store.inboxIssues.data, (items) => {
         <div
           class="flex items-center gap-1 ml-auto"
           role="group"
-          :aria-label="t('focus.inbox.pullRequests')"
+          :aria-label="t('focus.inbox.prs')"
         >
           <button
             type="button"
