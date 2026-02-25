@@ -4,6 +4,7 @@ const config: KnipConfig = {
   workspaces: {
     '.': {
       entry: [
+        'i18n/i18n.config.ts!',
         'app/app.config.ts!',
         'app/app.vue!',
         'app/pages/**/*.vue!',

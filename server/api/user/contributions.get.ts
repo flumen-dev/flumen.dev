@@ -39,6 +39,9 @@ query($login: String!) {
 const fetchContributions = defineCachedFunction(
   async (token: string, login: string) => {
     const data = await githubGraphQL<ContributionsResponse>(token, QUERY, { login })
+    if (!data.user) {
+      throw createError({ statusCode: 404, message: `User '${login}' not found` })
+    }
     const calendar = data.user.contributionsCollection.contributionCalendar
 
     return {

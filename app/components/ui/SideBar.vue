@@ -68,9 +68,6 @@ const isDark = computed({
   set: (v) => { colorMode.preference = v ? 'dark' : 'light' },
 })
 
-// Later use a store e.g.
-const notificationCount = ref(3)
-
 const { pinnedRepos, unpin, reorder } = usePinnedRepos()
 
 const { update: updateSettings } = useUserSettings()
@@ -261,20 +258,6 @@ const mainItems = computed<NavigationMenuItem[]>(() => [
     disabled: !loggedIn.value,
   },
   {
-    label: t('nav.pullRequests'),
-    icon: 'i-lucide-git-pull-request',
-    to: localePath('/pulls'),
-    disabled: !loggedIn.value,
-  },
-  {
-    label: t('nav.notifications'),
-    icon: 'i-lucide-bell',
-    to: localePath('/notifications'),
-    badge: notificationCount.value > 0 ? String(notificationCount.value) : undefined,
-    slot: 'notifications',
-    disabled: !loggedIn.value,
-  },
-  {
     label: t('nav.settings'),
     icon: 'i-lucide-settings',
     to: localePath('/settings'),
@@ -348,22 +331,8 @@ const mainItems = computed<NavigationMenuItem[]>(() => [
         :items="mainItems"
         orientation="vertical"
         :ui="{ root: 'flex-1', list: 'flex flex-col flex-1 *:last:mt-auto' }"
-      >
-        <template #notifications-leading="{ item }: { item: NavigationMenuItem }">
-          <UChip
-            :show="notificationCount > 0 && collapsed"
-            color="error"
-            size="3xs"
-            inset
-          >
-            <UIcon
-              :name="
-                item.icon!"
-              class="size-5 shrink-0"
-            />
-          </UChip>
-        </template>
-      </UNavigationMenu>
+      />
+
 
       <!-- Pinned repos -->
       <ClientOnly>

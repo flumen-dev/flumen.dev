@@ -37,9 +37,12 @@ const fetchOtherProfile = defineCachedFunction(
 
 export default defineEventHandler(async (event) => {
   const { token, userId } = await getSessionToken(event)
-  const login = getQuery(event).login as string | undefined
+  const login = (getQuery(event).login as string | undefined)?.trim()
 
   if (login) {
+    if (!/^[a-z\d](?:[a-z\d]|-(?=[a-z\d])){0,38}$/i.test(login)) {
+      throw createError({ statusCode: 400, message: 'Invalid GitHub username' })
+    }
     return fetchOtherProfile(token, userId, login)
   }
 

@@ -5,7 +5,7 @@ const props = defineProps<{
   login: string
 }>()
 
-const { t, d } = useI18n()
+const { t, d, locale } = useI18n()
 const { settings, update } = useUserSettings()
 
 const skin = computed(() => settings.value.contributionSkin)
@@ -90,7 +90,7 @@ const monthLabels = computed(() => {
       lastMonth = month
       lastCol = w
       labels.push({
-        text: date.toLocaleDateString(undefined, { month: 'short' }),
+        text: date.toLocaleDateString(locale.value, { month: 'short' }),
         col: w,
       })
     }

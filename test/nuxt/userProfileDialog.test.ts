@@ -49,6 +49,7 @@ async function withDialog<T>(fn: (dialog: ReturnType<typeof useUserProfileDialog
     async setup() {
       const dialog = useUserProfileDialog()
       dialog.isOpen.value = false
+      dialog.activeLogin.value = null
       dialog.profile.value = null
       dialog.loading.value = false
       dialog.error.value = false

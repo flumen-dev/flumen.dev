@@ -1039,15 +1039,6 @@
             "memberSince": {
               "type": "string"
             },
-            "location": {
-              "type": "string"
-            },
-            "company": {
-              "type": "string"
-            },
-            "website": {
-              "type": "string"
-            },
             "openOnGitHub": {
               "type": "string"
             },
@@ -1055,9 +1046,6 @@
               "type": "string"
             },
             "topRepos": {
-              "type": "string"
-            },
-            "noRepos": {
               "type": "string"
             },
             "fork": {
