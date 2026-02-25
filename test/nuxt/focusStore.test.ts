@@ -628,12 +628,12 @@ describe('focusStore', () => {
 
   it('scope change invalidates all inbox caches (open + closed)', async () => {
     await withStore(async (store) => {
-      store.setInboxScope('user1')
+      await store.setInboxScope('user1')
       await store.toggle('inbox') // fetches open PRs + Issues
       await store.setInboxPRState('closed') // fetches closed PRs
 
       // Switch scope — all caches should be invalidated
-      store.setInboxScope('org1')
+      await store.setInboxScope('org1')
       inboxCallCount = 0
 
       // Switch back to open — should refetch because cache was invalidated

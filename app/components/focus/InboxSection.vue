@@ -147,8 +147,10 @@ watch(() => store.inboxIssues.data, (items) => {
         <div
           class="flex items-center gap-1 ml-auto"
           role="group"
+          :aria-label="t('focus.inbox.pullRequests')"
         >
           <button
+            type="button"
             :aria-pressed="store.inboxPRStateFilter === 'open'"
             @click="store.setInboxPRState('open')"
           >
@@ -160,6 +162,7 @@ watch(() => store.inboxIssues.data, (items) => {
             />
           </button>
           <button
+            type="button"
             :aria-pressed="store.inboxPRStateFilter === 'closed'"
             @click="store.setInboxPRState('closed')"
           >
@@ -229,8 +232,10 @@ watch(() => store.inboxIssues.data, (items) => {
         <div
           class="flex items-center gap-1 ml-auto"
           role="group"
+          :aria-label="t('focus.inbox.issues')"
         >
           <button
+            type="button"
             :aria-pressed="store.inboxIssueStateFilter === 'open'"
             @click="store.setInboxIssueState('open')"
           >
@@ -242,6 +247,7 @@ watch(() => store.inboxIssues.data, (items) => {
             />
           </button>
           <button
+            type="button"
             :aria-pressed="store.inboxIssueStateFilter === 'closed'"
             @click="store.setInboxIssueState('closed')"
           >
