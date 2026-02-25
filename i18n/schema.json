@@ -1312,13 +1312,49 @@
             "waitingSince": {
               "type": "string"
             },
-            "dismiss": {
-              "type": "string"
-            },
-            "restore": {
-              "type": "string"
-            },
             "conflict": {
+              "type": "string"
+            },
+            "conflictTooltip": {
+              "type": "string"
+            },
+            "ciSuccess": {
+              "type": "string"
+            },
+            "ciFailed": {
+              "type": "string"
+            },
+            "ciPending": {
+              "type": "string"
+            },
+            "files": {
+              "type": "string"
+            },
+            "copyBranch": {
+              "type": "string"
+            },
+            "branchCopied": {
+              "type": "string"
+            },
+            "commentsTooltip": {
+              "type": "string"
+            },
+            "loadingPreview": {
+              "type": "string"
+            },
+            "noPreview": {
+              "type": "string"
+            },
+            "openOnGithub": {
+              "type": "string"
+            },
+            "linkedPRs": {
+              "type": "string"
+            },
+            "reviewers": {
+              "type": "string"
+            },
+            "assigneesLabel": {
               "type": "string"
             },
             "new": {

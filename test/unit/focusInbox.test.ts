@@ -19,7 +19,9 @@ function makePR(overrides: Partial<GQLInboxPR> = {}): GQLInboxPR {
     reviewDecision: 'APPROVED',
     additions: 50,
     deletions: 10,
+    changedFiles: 5,
     mergeable: 'MERGEABLE',
+    headRefName: 'fix/auth-flow',
     comments: { totalCount: 3 },
     reviewRequests: { nodes: [{ requestedReviewer: { login: 'reviewer1', avatarUrl: 'https://avatar/reviewer1' } }] },
     commits: { nodes: [{ commit: { statusCheckRollup: { state: 'SUCCESS' } } }] },
@@ -65,7 +67,9 @@ describe('mapPRNode', () => {
       ciStatus: 'SUCCESS',
       additions: 50,
       deletions: 10,
+      changedFiles: 5,
       mergeable: 'MERGEABLE',
+      headRefName: 'fix/auth-flow',
       requestedReviewers: [{ login: 'reviewer1', avatarUrl: 'https://avatar/reviewer1' }],
     })
   })

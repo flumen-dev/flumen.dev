@@ -95,7 +95,6 @@ function makeInboxItem(overrides: Partial<UnifiedInboxItem> = {}): UnifiedInboxI
     author: { login: 'dev', avatarUrl: '' },
     labels: [],
     commentCount: 0,
-    isDismissed: false,
     ...overrides,
   }
 }
@@ -137,8 +136,6 @@ const mockIssueItems: UnifiedInboxItem[] = [
 ]
 
 let inboxCallCount = 0
-let dismissCalls = 0
-let restoreCalls = 0
 
 registerEndpoint('/api/focus/inbox-unified', {
   method: 'GET',
@@ -154,22 +151,6 @@ registerEndpoint('/api/focus/inbox-unified', {
       totalCount: items.length,
       pageInfo: { hasNextPage: false, endCursor: null },
     }
-  },
-})
-
-registerEndpoint('/api/focus/inbox-dismiss', {
-  method: 'PUT',
-  handler: () => {
-    dismissCalls++
-    return { ok: true }
-  },
-})
-
-registerEndpoint('/api/focus/inbox-restore', {
-  method: 'PUT',
-  handler: () => {
-    restoreCalls++
-    return { ok: true }
   },
 })
 
@@ -401,45 +382,6 @@ describe('focusStore', () => {
     await withStore(async (store) => {
       await store.toggle('inbox')
       expect(store.inboxTotalCount).toBe(3) // 2 PRs + 1 Issue
-    })
-  })
-
-  // --- Inbox: dismiss / restore ---
-
-  it('dismissInboxItem marks item as dismissed', async () => {
-    await withStore(async (store) => {
-      dismissCalls = 0
-      await store.toggle('inbox')
-
-      await store.dismissInboxItem('org/repo', 1)
-
-      const item = store.inboxPRs.data.find(i => i.number === 1)
-      expect(item?.isDismissed).toBe(true)
-      expect(dismissCalls).toBe(1)
-    })
-  })
-
-  it('restoreInboxItem marks item as not dismissed', async () => {
-    await withStore(async (store) => {
-      restoreCalls = 0
-      await store.toggle('inbox')
-      await store.dismissInboxItem('org/repo', 1)
-
-      await store.restoreInboxItem('org/repo', 1)
-
-      const item = store.inboxPRs.data.find(i => i.number === 1)
-      expect(item?.isDismissed).toBe(false)
-      expect(restoreCalls).toBe(1)
-    })
-  })
-
-  it('dismissInboxItem does not affect other items', async () => {
-    await withStore(async (store) => {
-      await store.toggle('inbox')
-      await store.dismissInboxItem('org/repo', 1)
-
-      const otherItem = store.inboxPRs.data.find(i => i.number === 2)
-      expect(otherItem?.isDismissed).toBeFalsy()
     })
   })
 
