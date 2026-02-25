@@ -56,14 +56,14 @@ export function mapPRNode(node: GQLInboxPR): BaseInboxItem {
     updatedAt: node.updatedAt,
     author: node.author ?? GHOST_AUTHOR,
     labels: node.labels.nodes,
-    commentCount: node.comments.totalCount,
+    commentCount: node.comments?.totalCount ?? 0,
     isDraft: node.isDraft,
     reviewDecision: node.reviewDecision,
     ciStatus: mapCiStatus(node.commits?.nodes?.[0]?.commit?.statusCheckRollup?.state),
     additions: node.additions,
     deletions: node.deletions,
     mergeable: node.mergeable,
-    requestedReviewers: node.reviewRequests.nodes
+    requestedReviewers: (node.reviewRequests?.nodes ?? [])
       .map(n => n.requestedReviewer)
       .filter((r): r is { login: string, avatarUrl: string } => r !== null),
   }
@@ -80,7 +80,7 @@ export function mapIssueNode(node: GQLInboxIssue): BaseInboxItem {
     updatedAt: node.updatedAt,
     author: node.author ?? GHOST_AUTHOR,
     labels: node.labels.nodes,
-    commentCount: node.comments.totalCount,
-    assignees: node.assignees.nodes,
+    commentCount: node.comments?.totalCount ?? 0,
+    assignees: node.assignees?.nodes ?? [],
   }
 }

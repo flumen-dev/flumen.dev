@@ -66,6 +66,13 @@ function onSearchInput(val: string) {
   }, 400)
 }
 
+onUnmounted(() => {
+  if (searchTimeout) {
+    clearTimeout(searchTimeout)
+    searchTimeout = null
+  }
+})
+
 function handleDismiss(repo: string, number: number) {
   store.dismissInboxItem(repo, number)
 }

@@ -17,11 +17,11 @@ const COUNTS_QUERY = /* GraphQL */ `
     $createdOpen: String!, $createdClosed: String!, $openPrs: String!,
     $inboxPrs: String!, $inboxIssues: String!
   ) {
-    createdOpen: search(query: $createdOpen, type: ISSUE, first: 0) { issueCount }
-    createdClosed: search(query: $createdClosed, type: ISSUE, first: 0) { issueCount }
-    openPrs: search(query: $openPrs, type: ISSUE, first: 0) { issueCount }
-    inboxPrs: search(query: $inboxPrs, type: ISSUE, first: 0) { issueCount }
-    inboxIssues: search(query: $inboxIssues, type: ISSUE, first: 0) { issueCount }
+    createdOpen: search(query: $createdOpen, type: ISSUE, first: 1) { issueCount }
+    createdClosed: search(query: $createdClosed, type: ISSUE, first: 1) { issueCount }
+    openPrs: search(query: $openPrs, type: ISSUE, first: 1) { issueCount }
+    inboxPrs: search(query: $inboxPrs, type: ISSUE, first: 1) { issueCount }
+    inboxIssues: search(query: $inboxIssues, type: ISSUE, first: 1) { issueCount }
   }
 `
 

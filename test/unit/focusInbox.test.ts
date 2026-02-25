@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { mapPRNode, mapIssueNode, mapMixedNode } from '../../server/utils/focus-inbox'
+import { mapPRNode, mapIssueNode } from '../../server/utils/focus-inbox'
 import type { GQLInboxPR, GQLInboxIssue } from '../../server/utils/focus-inbox'
 
 // --- Helpers ---
@@ -17,6 +17,11 @@ function makePR(overrides: Partial<GQLInboxPR> = {}): GQLInboxPR {
     labels: { nodes: [{ name: 'bug', color: 'ff0000' }] },
     repository: { nameWithOwner: 'org/repo' },
     reviewDecision: 'APPROVED',
+    additions: 50,
+    deletions: 10,
+    mergeable: 'MERGEABLE',
+    comments: { totalCount: 3 },
+    reviewRequests: { nodes: [{ requestedReviewer: { login: 'reviewer1', avatarUrl: 'https://avatar/reviewer1' } }] },
     commits: { nodes: [{ commit: { statusCheckRollup: { state: 'SUCCESS' } } }] },
     ...overrides,
   }
@@ -33,6 +38,8 @@ function makeIssue(overrides: Partial<GQLInboxIssue> = {}): GQLInboxIssue {
     author: { login: 'user', avatarUrl: 'https://avatar/user' },
     labels: { nodes: [] },
     repository: { nameWithOwner: 'org/repo' },
+    comments: { totalCount: 2 },
+    assignees: { nodes: [{ login: 'assignee1', avatarUrl: 'https://avatar/assignee1' }] },
     ...overrides,
   }
 }
@@ -52,9 +59,14 @@ describe('mapPRNode', () => {
       updatedAt: '2025-01-10T00:00:00Z',
       author: { login: 'dev', avatarUrl: 'https://avatar/dev' },
       labels: [{ name: 'bug', color: 'ff0000' }],
+      commentCount: 3,
       isDraft: false,
       reviewDecision: 'APPROVED',
       ciStatus: 'SUCCESS',
+      additions: 50,
+      deletions: 10,
+      mergeable: 'MERGEABLE',
+      requestedReviewers: [{ login: 'reviewer1', avatarUrl: 'https://avatar/reviewer1' }],
     })
   })
 
@@ -84,6 +96,21 @@ describe('mapPRNode', () => {
     const result = mapPRNode(makePR({ isDraft: true }))
     expect(result.isDraft).toBe(true)
   })
+
+  it('filters null requested reviewers', () => {
+    const result = mapPRNode(makePR({
+      reviewRequests: { nodes: [
+        { requestedReviewer: { login: 'a', avatarUrl: 'https://avatar/a' } },
+        { requestedReviewer: null },
+      ] },
+    }))
+    expect(result.requestedReviewers).toEqual([{ login: 'a', avatarUrl: 'https://avatar/a' }])
+  })
+
+  it('maps merge conflict status', () => {
+    const result = mapPRNode(makePR({ mergeable: 'CONFLICTING' }))
+    expect(result.mergeable).toBe('CONFLICTING')
+  })
 })
 
 // --- mapIssueNode ---
@@ -101,35 +128,13 @@ describe('mapIssueNode', () => {
       updatedAt: '2025-01-10T00:00:00Z',
       author: { login: 'user', avatarUrl: 'https://avatar/user' },
       labels: [],
+      commentCount: 2,
+      assignees: [{ login: 'assignee1', avatarUrl: 'https://avatar/assignee1' }],
     })
   })
 
   it('uses ghost author when author is null', () => {
     const result = mapIssueNode(makeIssue({ author: null }))
     expect(result.author).toEqual({ login: 'ghost', avatarUrl: '' })
-  })
-})
-
-// --- mapMixedNode ---
-
-describe('mapMixedNode', () => {
-  it('dispatches to mapPRNode when __typename is PullRequest', () => {
-    const result = mapMixedNode(makePR())
-    expect(result.type).toBe('pr')
-    expect(result.ciStatus).toBe('SUCCESS')
-  })
-
-  it('dispatches to mapPRNode when isDraft is present', () => {
-    const node = { ...makeIssue(), isDraft: false } as unknown as GQLInboxPR
-    node.reviewDecision = null
-    const result = mapMixedNode(node)
-    expect(result.type).toBe('pr')
-  })
-
-  it('dispatches to mapIssueNode for plain issues', () => {
-    const result = mapMixedNode(makeIssue())
-    expect(result.type).toBe('issue')
-    expect(result.isDraft).toBeUndefined()
-    expect(result.ciStatus).toBeUndefined()
   })
 })

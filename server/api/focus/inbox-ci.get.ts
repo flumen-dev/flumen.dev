@@ -1,5 +1,7 @@
 import { mapCiStatus } from '~~/server/utils/focus-created'
 
+const PR_KEY_RE = /^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+#(\d+)$/
+
 /**
  * Lightweight CI status polling endpoint.
  * Accepts a comma-separated list of "owner/repo#number" PR identifiers
@@ -16,19 +18,28 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, statusMessage: 'Too many PRs (max 50)' })
   }
 
-  // Parse "owner/repo#number" into structured data
-  const parsed = prs.map((key, i) => {
-    const match = key.match(/^(.+?)\/(.+?)#(\d+)$/)
-    if (!match) return null
-    return { alias: `pr${i}`, owner: match[1]!, name: match[2]!, number: Number(match[3]) }
-  }).filter(Boolean) as Array<{ alias: string, owner: string, name: string, number: number }>
+  // Parse and validate "owner/repo#number"
+  const parsed: Array<{ alias: string, owner: string, name: string, number: number }> = []
+  for (let i = 0; i < prs.length; i++) {
+    const key = prs[i]!
+    if (!PR_KEY_RE.test(key)) {
+      throw createError({ statusCode: 400, statusMessage: `Invalid PR key: ${key}` })
+    }
+    const [ownerName, numStr] = key.split('#')
+    const [owner, name] = ownerName!.split('/')
+    parsed.push({ alias: `pr${i}`, owner: owner!, name: name!, number: Number(numStr) })
+  }
 
   if (parsed.length === 0) return {}
 
-  // Build a single GraphQL query with aliases — one field per PR
+  // Build GraphQL query using variables for owner/name/number
+  const varDefs = parsed.map(p =>
+    `$${p.alias}Owner: String!, $${p.alias}Name: String!, $${p.alias}Number: Int!`,
+  ).join(', ')
+
   const fragments = parsed.map(p =>
-    `${p.alias}: repository(owner: "${p.owner}", name: "${p.name}") {
-      pullRequest(number: ${p.number}) {
+    `${p.alias}: repository(owner: $${p.alias}Owner, name: $${p.alias}Name) {
+      pullRequest(number: $${p.alias}Number) {
         commits(last: 1) {
           nodes {
             commit {
@@ -40,7 +51,14 @@ export default defineEventHandler(async (event) => {
     }`,
   ).join('\n')
 
-  const gqlQuery = `query CIPoll { ${fragments} }`
+  const gqlQuery = `query CIPoll(${varDefs}) { ${fragments} }`
+
+  const variables: Record<string, string | number> = {}
+  for (const p of parsed) {
+    variables[`${p.alias}Owner`] = p.owner
+    variables[`${p.alias}Name`] = p.name
+    variables[`${p.alias}Number`] = p.number
+  }
 
   type PRResult = {
     pullRequest: {
@@ -50,7 +68,7 @@ export default defineEventHandler(async (event) => {
     } | null
   }
 
-  const data = await githubGraphQL<Record<string, PRResult>>(token, gqlQuery)
+  const data = await githubGraphQL<Record<string, PRResult>>(token, gqlQuery, variables)
 
   // Map results back to original keys
   const result: Record<string, 'SUCCESS' | 'FAILURE' | 'PENDING' | null> = {}

@@ -103,6 +103,7 @@ const prSizeColor = computed(() => {
           <a
             :href="item.url"
             target="_blank"
+            rel="noopener noreferrer"
             class="text-sm font-medium text-highlighted truncate hover:underline"
           >
             {{ item.title }}
@@ -205,14 +206,6 @@ const prSizeColor = computed(() => {
               class="size-3"
             />
             {{ item.commentCount }}
-          </span>
-
-          <span
-            v-if="prSize"
-            class="text-xs"
-          >
-            <span class="text-emerald-500">+{{ prSize.additions }}</span>
-            <span class="text-red-500 ml-0.5">-{{ prSize.deletions }}</span>
           </span>
 
           <!-- Requested reviewers (PR) -->

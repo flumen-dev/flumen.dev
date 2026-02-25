@@ -1,3 +1,6 @@
+const REPO_RE = /^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/
+const FETCH_TIMEOUT_MS = 8000
+
 /**
  * Lightweight notification check endpoint.
  * Uses GitHub's Notifications API with If-Modified-Since header
@@ -17,12 +20,19 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, statusMessage: 'Missing "since" parameter' })
   }
 
-  // Build URL: repo-specific or general notifications
-  const baseUrl = repo
+  if (repo && !REPO_RE.test(repo)) {
+    throw createError({ statusCode: 400, statusMessage: 'Invalid repo format' })
+  }
+
+  // Build URL safely using URL + URLSearchParams
+  const base = repo
     ? `https://api.github.com/repos/${repo}/notifications`
     : 'https://api.github.com/notifications'
 
-  const url = `${baseUrl}?since=${encodeURIComponent(since)}&all=false&participating=false`
+  const urlObj = new URL(base)
+  urlObj.searchParams.set('since', since)
+  urlObj.searchParams.set('all', 'false')
+  urlObj.searchParams.set('participating', 'false')
 
   const headers: Record<string, string> = {
     Authorization: `bearer ${token}`,
@@ -33,7 +43,22 @@ export default defineEventHandler(async (event) => {
     headers['If-Modified-Since'] = lastModified
   }
 
-  const response = await fetch(url, { headers })
+  const controller = new AbortController()
+  const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS)
+
+  let response: Response
+  try {
+    response = await fetch(urlObj.toString(), { headers, signal: controller.signal })
+  }
+  catch (err: unknown) {
+    if (err instanceof Error && err.name === 'AbortError') {
+      throw createError({ statusCode: 504, statusMessage: 'GitHub Notifications request timed out' })
+    }
+    throw err
+  }
+  finally {
+    clearTimeout(timer)
+  }
 
   // 304 = nothing new, free call
   if (response.status === 304) {
