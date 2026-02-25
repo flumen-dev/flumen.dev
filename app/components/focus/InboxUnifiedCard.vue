@@ -8,6 +8,7 @@ const props = defineProps<{
 const { t } = useI18n()
 const toast = useToast()
 const store = useFocusStore()
+const { open: openProfile } = useUserProfileDialog()
 const timeAgo = useTimeAgo(computed(() => props.item.updatedAt))
 
 const isClosed = computed(() => props.item.state !== 'OPEN')
@@ -116,7 +117,6 @@ const prSizeColor = computed(() => {
 })
 
 // GitHub profile/repo URLs
-const authorUrl = computed(() => `https://github.com/${props.item.author.login}`)
 const repoUrl = computed(() => `https://github.com/${props.item.repo}`)
 
 async function copyBranch() {
@@ -290,12 +290,10 @@ const issuePreview = computed(() =>
             </button>
           </UTooltip>
 
-          <a
-            :href="authorUrl"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="inline-flex items-center gap-1.5 bg-muted/50 rounded-full px-2 py-0.5 hover:bg-muted transition-colors"
-            @click.stop
+          <button
+            type="button"
+            class="inline-flex items-center gap-1.5 bg-muted/50 rounded-full px-2 py-0.5 hover:bg-muted transition-colors cursor-pointer"
+            @click.stop="openProfile(item.author.login)"
           >
             <UAvatar
               :src="item.author.avatarUrl"
@@ -303,7 +301,7 @@ const issuePreview = computed(() =>
               size="3xs"
             />
             <span class="font-medium">{{ item.author.login }}</span>
-          </a>
+          </button>
 
           <UTooltip
             v-if="item.commentCount > 0"

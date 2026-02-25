@@ -9,6 +9,10 @@ export interface GitHubProfile {
   twitterUsername: string | null
   email: string | null
   hireable: boolean | null
+  followers: number
+  following: number
+  publicRepos: number
+  createdAt: string
 }
 
 export interface GitHubEmail {

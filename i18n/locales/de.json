@@ -338,6 +338,17 @@
       "collaboratorDescription": "Wurde zur Zusammenarbeit eingeladen",
       "contributor": "Beitragender",
       "contributorDescription": "Hat bereits zu diesem Repository beigetragen"
+    },
+    "profile": {
+      "followers": "Follower",
+      "following": "Folgt",
+      "repositories": "Öffentliche Repositories",
+      "memberSince": "Mitglied seit",
+      "location": "Standort",
+      "company": "Unternehmen",
+      "website": "Webseite",
+      "openOnGitHub": "Auf GitHub öffnen",
+      "errorLoading": "Profil konnte nicht geladen werden"
     }
   },
   "pinnedRepos": {

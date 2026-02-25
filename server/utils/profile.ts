@@ -11,6 +11,10 @@ export interface GitHubUser {
   twitter_username: string | null
   email: string | null
   hireable: boolean | null
+  followers: number
+  following: number
+  public_repos: number
+  created_at: string
 }
 
 export function toProfile(user: GitHubUser): GitHubProfile {
@@ -25,5 +29,9 @@ export function toProfile(user: GitHubUser): GitHubProfile {
     twitterUsername: user.twitter_username,
     email: user.email,
     hireable: user.hireable,
+    followers: user.followers,
+    following: user.following,
+    publicRepos: user.public_repos,
+    createdAt: user.created_at,
   }
 }

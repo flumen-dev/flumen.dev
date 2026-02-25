@@ -338,6 +338,17 @@
       "collaboratorDescription": "Has been invited to collaborate",
       "contributor": "Contributor",
       "contributorDescription": "Has previously committed to this repository"
+    },
+    "profile": {
+      "followers": "Followers",
+      "following": "Following",
+      "repositories": "Public repositories",
+      "memberSince": "Member since",
+      "location": "Location",
+      "company": "Company",
+      "website": "Website",
+      "openOnGitHub": "Open on GitHub",
+      "errorLoading": "Could not load profile"
     }
   },
   "pinnedRepos": {

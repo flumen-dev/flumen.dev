@@ -10,5 +10,6 @@ import { SpeedInsights } from '@vercel/speed-insights/nuxt'
     <NuxtLayout>
       <NuxtPage />
     </NuxtLayout>
+    <UserProfileDialog />
   </UApp>
 </template>
