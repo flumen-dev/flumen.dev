@@ -64,6 +64,12 @@ function usePaginatedSection<T>(
   const cursorHistory = ref<string[]>([])
   const paging = ref<'next' | 'prev' | null>(null)
 
+  // Page cache — keyed by cursor (null → '__first__')
+  const pageCache = new Map<string, { items: T[], endCursor: string | null, hasMore: boolean, totalCount: number }>()
+  function cacheKey(cursor?: string | null) {
+    return cursor ?? '__first__'
+  }
+
   const hasMore = computed(() => _hasMore.value)
   const hasPrevious = computed(() => cursorHistory.value.length > 0)
   const currentPage = computed(() => cursorHistory.value.length + 1)
@@ -72,6 +78,16 @@ function usePaginatedSection<T>(
   function isStale(): boolean {
     if (!fetchedAt.value) return true
     return Date.now() - fetchedAt.value > STALE_MS
+  }
+
+  function applyCached(key: string): boolean {
+    const cached = pageCache.get(key)
+    if (!cached) return false
+    data.value = cached.items
+    endCursor.value = cached.endCursor
+    _hasMore.value = cached.hasMore
+    totalCount.value = cached.totalCount
+    return true
   }
 
   async function fetchData(after?: string | null): Promise<boolean> {
@@ -87,6 +103,14 @@ function usePaginatedSection<T>(
       totalCount.value = res.totalCount
       _hasMore.value = res.pageInfo.hasNextPage
       endCursor.value = res.pageInfo.endCursor
+
+      pageCache.set(cacheKey(after), {
+        items: res.items,
+        endCursor: res.pageInfo.endCursor,
+        hasMore: res.pageInfo.hasNextPage,
+        totalCount: res.totalCount,
+      })
+
       return true
     }
     catch {
@@ -103,7 +127,10 @@ function usePaginatedSection<T>(
     const cursor = endCursor.value
     paging.value = 'next'
     try {
-      if (await fetchData(cursor)) {
+      if (applyCached(cacheKey(cursor))) {
+        cursorHistory.value.push(cursor)
+      }
+      else if (await fetchData(cursor)) {
         cursorHistory.value.push(cursor)
       }
     }
@@ -117,7 +144,10 @@ function usePaginatedSection<T>(
     const prevCursor = cursorHistory.value.slice(0, -1).at(-1) ?? null
     paging.value = 'prev'
     try {
-      if (await fetchData(prevCursor)) {
+      if (applyCached(cacheKey(prevCursor))) {
+        cursorHistory.value.pop()
+      }
+      else if (await fetchData(prevCursor)) {
         cursorHistory.value.pop()
       }
     }
@@ -127,6 +157,7 @@ function usePaginatedSection<T>(
   }
 
   async function refresh() {
+    pageCache.clear()
     const prevHistory = cursorHistory.value
     cursorHistory.value = []
     if (!await fetchData()) {
@@ -139,6 +170,7 @@ function usePaginatedSection<T>(
     cursorHistory.value = []
     _hasMore.value = false
     endCursor.value = null
+    pageCache.clear()
   }
 
   return {

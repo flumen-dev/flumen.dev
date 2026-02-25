@@ -144,7 +144,10 @@ watch(() => store.inboxIssues.data, (items) => {
           variant="solid"
           size="sm"
         />
-        <div class="flex items-center gap-1 ml-auto" role="group">
+        <div
+          class="flex items-center gap-1 ml-auto"
+          role="group"
+        >
           <button
             :aria-pressed="store.inboxPRStateFilter === 'open'"
             @click="store.setInboxPRState('open')"
@@ -223,7 +226,10 @@ watch(() => store.inboxIssues.data, (items) => {
           variant="solid"
           size="sm"
         />
-        <div class="flex items-center gap-1 ml-auto" role="group">
+        <div
+          class="flex items-center gap-1 ml-auto"
+          role="group"
+        >
           <button
             :aria-pressed="store.inboxIssueStateFilter === 'open'"
             @click="store.setInboxIssueState('open')"

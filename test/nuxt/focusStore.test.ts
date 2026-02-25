@@ -270,15 +270,17 @@ describe('focusStore', () => {
     })
   })
 
-  it('createdPrevPage goes back', async () => {
+  it('createdPrevPage goes back using page cache (no refetch)', async () => {
     await withStore(async (store) => {
       await store.toggle('created')
       await store.createdNextPage()
       expect(store.createdPage).toBe(2)
 
+      createdCallCount = 0
       await store.createdPrevPage()
       expect(store.createdPage).toBe(1)
       expect(store.created.data[0]!.title).toBe('Created issue')
+      expect(createdCallCount).toBe(0) // served from page cache
     })
   })
 
@@ -294,6 +296,23 @@ describe('focusStore', () => {
       await store.toggle('created')
       await store.createdNextPage()
       expect(store.createdHasPrevious).toBe(true)
+    })
+  })
+
+  it('refreshSection clears page cache (forces refetch on navigate)', async () => {
+    await withStore(async (store) => {
+      await store.toggle('created')
+      await store.createdNextPage()
+
+      await store.refreshSection('created') // clears cache, back to page 1
+      await store.createdNextPage() // page 2 again
+      createdCallCount = 0
+
+      await store.createdPrevPage()
+      // After refresh the old page 1 cache was cleared,
+      // but the fresh page 1 from refresh is now cached
+      expect(createdCallCount).toBe(0)
+      expect(store.created.data[0]!.title).toBe('Created issue')
     })
   })
 
