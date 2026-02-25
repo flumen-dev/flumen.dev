@@ -348,7 +348,10 @@
       "company": "Unternehmen",
       "website": "Webseite",
       "openOnGitHub": "Auf GitHub öffnen",
-      "errorLoading": "Profil konnte nicht geladen werden"
+      "errorLoading": "Profil konnte nicht geladen werden",
+      "topRepos": "Top Repositories",
+      "noRepos": "Keine öffentlichen Repositories",
+      "fork": "Fork"
     }
   },
   "pinnedRepos": {

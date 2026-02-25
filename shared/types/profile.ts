@@ -15,6 +15,15 @@ export interface GitHubProfile {
   createdAt: string
 }
 
+export interface ProfileRepo {
+  name: string
+  fullName: string
+  description: string | null
+  stars: number
+  language: string | null
+  fork: boolean
+}
+
 export interface GitHubEmail {
   email: string
   primary: boolean

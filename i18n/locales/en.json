@@ -348,7 +348,10 @@
       "company": "Company",
       "website": "Website",
       "openOnGitHub": "Open on GitHub",
-      "errorLoading": "Could not load profile"
+      "errorLoading": "Could not load profile",
+      "topRepos": "Top repositories",
+      "noRepos": "No public repositories",
+      "fork": "Fork"
     }
   },
   "pinnedRepos": {

@@ -1,8 +1,12 @@
-import type { GitHubProfile } from '~~/shared/types/profile'
+import type { GitHubProfile, ProfileRepo } from '~~/shared/types/profile'
+
+export interface UserProfileData extends GitHubProfile {
+  topRepos: ProfileRepo[]
+}
 
 const isOpen = ref(false)
 const activeLogin = ref<string | null>(null)
-const profile = ref<GitHubProfile | null>(null)
+const profile = ref<UserProfileData | null>(null)
 const loading = ref(false)
 const error = ref(false)
 
@@ -15,7 +19,7 @@ export function useUserProfileDialog() {
     loading.value = true
 
     try {
-      profile.value = await useRequestFetch()<GitHubProfile>('/api/user/profile', {
+      profile.value = await useRequestFetch()<UserProfileData>('/api/user/profile', {
         params: { login },
       })
     }
