@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { shortcodeToUnicode } from '~~/shared/types/status'
 import type { SharedRepo } from '~~/server/api/user/shared-repos.get'
-import type { ActivityType, UserActivityEvent } from '~~/server/api/user/activity.get'
+import type { ActivityType, UserActivityEvent } from '~~/server/utils/activity'
 
 const props = defineProps<{
   profile: UserProfileData
