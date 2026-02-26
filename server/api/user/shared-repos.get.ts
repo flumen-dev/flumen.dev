@@ -17,10 +17,10 @@ const fetchSharedRepos = defineCachedFunction(
   async (token: string, myLogin: string, otherLogin: string) => {
     const [{ data: myRepos }, { data: theirRepos }] = await Promise.all([
       githubFetchAllWithToken<GitHubRepo>(token, `/users/${myLogin}/repos`, {
-        params: { per_page: 100, type: 'owner' },
+        params: { per_page: 100, type: 'all' },
       }),
       githubFetchAllWithToken<GitHubRepo>(token, `/users/${otherLogin}/repos`, {
-        params: { per_page: 100, type: 'owner' },
+        params: { per_page: 100, type: 'all' },
       }),
     ])
 

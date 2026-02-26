@@ -69,7 +69,7 @@ const activityIcons: Record<ActivityType, string> = {
   fork: 'i-lucide-git-fork',
 }
 
-function activityLabel(ev: UserActivityEvent) {
+function activityLabel(ev: UserActivityEvent): string {
   switch (ev.type) {
     case 'push': return t('user.profile.activity.push', { branch: ev.ref ?? 'main' })
     case 'pr': return t('user.profile.activity.pr', { action: ev.action ?? 'opened', number: ev.number ?? 0 })
@@ -78,6 +78,8 @@ function activityLabel(ev: UserActivityEvent) {
     case 'release': return t('user.profile.activity.release', { tag: ev.tagName ?? '' })
     case 'star': return t('user.profile.activity.starred')
     case 'fork': return t('user.profile.activity.forked')
+    default:
+      return ev.type satisfies never
   }
 }
 </script>
