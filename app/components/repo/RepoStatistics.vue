@@ -5,6 +5,7 @@ const props = defineProps<{
   stats: RepoHealthStats
 }>()
 
+const { open: openProfile } = useUserProfileDialog()
 const lastCommitAgo = useTimeAgo(computed(() => props.stats.lastCommitDate ?? new Date().toISOString()))
 const releaseDate = computed(() => props.stats.lastRelease?.publishedAt ?? new Date().toISOString())
 const releaseAgo = useTimeAgo(releaseDate)
@@ -176,12 +177,18 @@ const releaseAgo = useTimeAgo(releaseDate)
             :key="contributor.login"
             :text="contributor.login"
           >
-            <UAvatar
-              :src="contributor.avatarUrl"
-              :alt="contributor.login"
-              size="xs"
-              class="ring-2 ring-default"
-            />
+            <button
+              type="button"
+              class="cursor-pointer"
+              @click="openProfile(contributor.login)"
+            >
+              <UAvatar
+                :src="contributor.avatarUrl"
+                :alt="contributor.login"
+                size="xs"
+                class="ring-2 ring-default"
+              />
+            </button>
           </UTooltip>
           <span
             v-if="stats.contributorsCount > 8"

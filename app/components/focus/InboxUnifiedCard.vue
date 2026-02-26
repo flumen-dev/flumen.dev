@@ -330,14 +330,12 @@ const issuePreview = computed(() =>
           >
             {{ t('focus.inbox.reviewers') }}
           </span>
-          <a
+          <button
             v-for="reviewer in item.requestedReviewers"
             :key="reviewer.login"
-            :href="`https://github.com/${reviewer.login}`"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="inline-flex items-center gap-1 text-xs bg-muted/50 rounded-full px-2 py-0.5 hover:bg-muted transition-colors"
-            @click.stop
+            type="button"
+            class="inline-flex items-center gap-1 text-xs bg-muted/50 rounded-full px-2 py-0.5 hover:bg-muted transition-colors cursor-pointer"
+            @click.stop="openProfile(reviewer.login)"
           >
             <UAvatar
               :src="reviewer.avatarUrl"
@@ -345,7 +343,7 @@ const issuePreview = computed(() =>
               size="3xs"
             />
             <span class="text-muted">{{ reviewer.login }}</span>
-          </a>
+          </button>
 
           <span
             v-if="item.assignees?.length"
@@ -353,14 +351,12 @@ const issuePreview = computed(() =>
           >
             {{ t('focus.inbox.assigneesLabel') }}
           </span>
-          <a
+          <button
             v-for="assignee in item.assignees"
             :key="assignee.login"
-            :href="`https://github.com/${assignee.login}`"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="inline-flex items-center gap-1 text-xs bg-muted/50 rounded-full px-2 py-0.5 hover:bg-muted transition-colors"
-            @click.stop
+            type="button"
+            class="inline-flex items-center gap-1 text-xs bg-muted/50 rounded-full px-2 py-0.5 hover:bg-muted transition-colors cursor-pointer"
+            @click.stop="openProfile(assignee.login)"
           >
             <UAvatar
               :src="assignee.avatarUrl"
@@ -368,7 +364,7 @@ const issuePreview = computed(() =>
               size="3xs"
             />
             <span class="text-muted">{{ assignee.login }}</span>
-          </a>
+          </button>
         </div>
       </div>
     </div>

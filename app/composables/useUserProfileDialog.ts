@@ -1,6 +1,8 @@
 import type { GitHubProfile, ProfileRepo } from '~~/shared/types/profile'
+import type { UserStatus } from '~~/shared/types/status'
 
 export interface UserProfileData extends GitHubProfile {
+  status: UserStatus | null
   topRepos: ProfileRepo[]
 }
 

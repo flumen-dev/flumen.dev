@@ -4,6 +4,7 @@ export interface GitHubUser {
   login: string
   name: string | null
   avatar_url: string
+  pronouns: string | null
   bio: string | null
   company: string | null
   location: string | null
@@ -22,6 +23,7 @@ export function toProfile(user: GitHubUser): GitHubProfile {
     login: user.login,
     name: user.name,
     avatarUrl: user.avatar_url,
+    pronouns: user.pronouns,
     bio: user.bio,
     company: user.company,
     location: user.location,

@@ -7,6 +7,7 @@ const props = defineProps<{
 
 const { t } = useI18n()
 const localePath = useLocalePath()
+const { open: openProfile } = useUserProfileDialog()
 const createdAgo = useTimeAgo(computed(() => props.issue.createdAt))
 const updatedAgo = useTimeAgo(computed(() => props.issue.updatedAt))
 
@@ -66,14 +67,18 @@ const stateColor = computed(() => {
             />
           </span>
         </UTooltip>
-        <span class="inline-flex items-center gap-1">
+        <button
+          type="button"
+          class="inline-flex items-center gap-1 cursor-pointer hover:underline"
+          @click.stop.prevent="openProfile(issue.author.login)"
+        >
           <UAvatar
             :src="issue.author.avatarUrl"
             :alt="issue.author.login"
             size="3xs"
           />
           {{ issue.author.login }}
-        </span>
+        </button>
         <span>#{{ issue.number }}</span>
         <span>{{ createdAgo }}</span>
         <span>{{ updatedAgo }}</span>
@@ -128,11 +133,17 @@ const stateColor = computed(() => {
         :key="assignee.login"
         :text="assignee.login"
       >
-        <UAvatar
-          :src="assignee.avatarUrl"
-          :alt="assignee.login"
-          size="xs"
-        />
+        <button
+          type="button"
+          class="cursor-pointer"
+          @click.stop.prevent="openProfile(assignee.login)"
+        >
+          <UAvatar
+            :src="assignee.avatarUrl"
+            :alt="assignee.login"
+            size="xs"
+          />
+        </button>
       </UTooltip>
     </div>
   </NuxtLink>

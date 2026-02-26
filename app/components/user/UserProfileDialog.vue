@@ -6,11 +6,11 @@ const { isOpen, profile, loading, error, close } = useUserProfileDialog()
 <template>
   <UModal
     v-model:open="isOpen"
-    :ui="{ content: 'sm:max-w-2xl' }"
+    :ui="{ content: 'sm:max-w-2xl lg:max-w-3xl' }"
     @close="close"
   >
     <template #content>
-      <div class="p-6 max-h-[calc(100dvh-4rem)] overflow-y-auto">
+      <div class="p-4 sm:p-6 max-h-[calc(100dvh-6rem)] overflow-y-auto">
         <!-- Loading -->
         <div
           v-if="loading"

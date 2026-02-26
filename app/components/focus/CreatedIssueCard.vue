@@ -7,6 +7,7 @@ const props = defineProps<{
 
 const { t } = useI18n()
 const localePath = useLocalePath()
+const { open: openProfile } = useUserProfileDialog()
 const timeAgo = useTimeAgo(computed(() => props.item.updatedAt))
 
 // --- State ---
@@ -227,24 +228,32 @@ function ciColor(pr: CreatedIssuePR) {
           </span>
 
           <!-- Assignees -->
-          <UTooltip
+          <span
             v-if="item.assignees.length > 0"
-            :text="item.assignees.map(a => a.login).join(', ')"
+            class="inline-flex items-center gap-1"
           >
-            <span class="inline-flex items-center gap-1">
-              <UIcon
-                name="i-lucide-users"
-                class="size-3.5"
-              />
-              <UAvatar
-                v-for="a in item.assignees.slice(0, 3)"
-                :key="a.login"
-                :src="a.avatarUrl"
-                :alt="a.login"
-                size="3xs"
-              />
-            </span>
-          </UTooltip>
+            <UIcon
+              name="i-lucide-users"
+              class="size-3.5"
+            />
+            <UTooltip
+              v-for="a in item.assignees.slice(0, 3)"
+              :key="a.login"
+              :text="a.login"
+            >
+              <button
+                type="button"
+                class="cursor-pointer"
+                @click.stop.prevent="openProfile(a.login)"
+              >
+                <UAvatar
+                  :src="a.avatarUrl"
+                  :alt="a.login"
+                  size="3xs"
+                />
+              </button>
+            </UTooltip>
+          </span>
 
           <!-- Linked PRs with review + CI status -->
           <UTooltip

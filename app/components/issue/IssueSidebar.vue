@@ -8,6 +8,7 @@ const props = defineProps<{
 
 const { t } = useI18n()
 const { user } = useUserSession()
+const { open: openProfile } = useUserProfileDialog()
 
 const repoOwner = computed(() => props.repo.split('/')[0] ?? '')
 
@@ -234,13 +235,19 @@ const linksOverflow = computed(() =>
           :key="p.login"
           :text="p.login"
         >
-          <UAvatar
-            :src="p.avatarUrl"
-            :alt="p.login"
-            size="2xs"
-            class="ring-1 ring-default"
-            :class="p.login.toLowerCase() === repoOwner.toLowerCase() ? 'ring-primary/50' : ''"
-          />
+          <button
+            type="button"
+            class="cursor-pointer"
+            @click="openProfile(p.login)"
+          >
+            <UAvatar
+              :src="p.avatarUrl"
+              :alt="p.login"
+              size="2xs"
+              class="ring-1 ring-default"
+              :class="p.login.toLowerCase() === repoOwner.toLowerCase() ? 'ring-primary/50' : ''"
+            />
+          </button>
         </UTooltip>
         <button
           v-if="participantsOverflow > 0"

@@ -350,7 +350,19 @@
       "fork": "Fork",
       "contributions": "Beiträge",
       "contributionsTotal": "{count} Beiträge im letzten Jahr",
-      "contributionDay": "{count} Beiträge am {date}"
+      "contributionDay": "{count} Beiträge am {date}",
+      "busy": "Beschäftigt",
+      "sharedRepos": "Gemeinsame Repositories",
+      "recentActivity": "Letzte Aktivität",
+      "activity": {
+        "push": "Push auf {branch}",
+        "pr": "{action} PR #{number}",
+        "issue": "{action} Issue #{number}",
+        "create": "{type} {ref} erstellt",
+        "release": "Release {tag}",
+        "starred": "Markiert",
+        "forked": "Geforkt"
+      }
     }
   },
   "pinnedRepos": {

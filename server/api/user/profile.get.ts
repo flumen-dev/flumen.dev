@@ -1,3 +1,5 @@
+import { mapGitHubStatus, type GitHubStatusFields } from '~~/shared/types/status'
+
 interface GitHubRepo {
   name: string
   full_name: string
@@ -7,17 +9,43 @@ interface GitHubRepo {
   fork: boolean
 }
 
+const PROFILE_GQL = `
+query($login: String!) {
+  user(login: $login) {
+    pronouns
+    status {
+      emoji
+      message
+      indicatesLimitedAvailability
+      expiresAt
+    }
+  }
+}
+`
+
+interface ProfileGQLResponse {
+  user: {
+    pronouns: string | null
+    status: GitHubStatusFields | null
+  } | null
+}
+
 const fetchOtherProfile = defineCachedFunction(
   async (token: string, userId: number, login: string) => {
-    const [{ data: user }, { data: repos }] = await Promise.all([
+    const [{ data: user }, { data: repos }, gql] = await Promise.all([
       githubCachedFetchWithToken<GitHubUser>(token, userId, `/users/${login}`),
       githubCachedFetchWithToken<GitHubRepo[]>(token, userId, `/users/${login}/repos`, {
         params: { sort: 'stars', per_page: 6, type: 'owner' },
       }),
+      githubGraphQL<ProfileGQLResponse>(token, PROFILE_GQL, { login }),
     ])
 
+    const profile = toProfile(user)
+    if (gql.user?.pronouns) profile.pronouns = gql.user.pronouns
+
     return {
-      ...toProfile(user),
+      ...profile,
+      status: mapGitHubStatus(gql.user?.status ?? null),
       topRepos: repos.map(r => ({
         name: r.name,
         fullName: r.full_name,
@@ -37,13 +65,9 @@ const fetchOtherProfile = defineCachedFunction(
 
 export default defineEventHandler(async (event) => {
   const { token, userId } = await getSessionToken(event)
-  const login = (getQuery(event).login as string | undefined)?.trim()
 
-  if (login) {
-    if (!/^[a-z\d](?:[a-z\d]|-(?=[a-z\d])){0,38}$/i.test(login)) {
-      throw createError({ statusCode: 400, message: 'Invalid GitHub username' })
-    }
-    return fetchOtherProfile(token, userId, login)
+  if (getQuery(event).login) {
+    return fetchOtherProfile(token, userId, getLoginQuery(event))
   }
 
   // Own profile — no cache (editable via PATCH)

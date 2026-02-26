@@ -2,6 +2,7 @@ export interface GitHubProfile {
   login: string
   name: string | null
   avatarUrl: string
+  pronouns: string | null
   bio: string | null
   company: string | null
   location: string | null

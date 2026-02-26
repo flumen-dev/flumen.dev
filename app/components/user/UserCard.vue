@@ -9,6 +9,7 @@ const props = defineProps<{
 }>()
 
 const { t } = useI18n()
+const { open: openProfile } = useUserProfileDialog()
 const timeAgo = useTimeAgo(computed(() => props.date ?? ''))
 
 const roleBadge = computed(() => {
@@ -29,12 +30,18 @@ const roleBadge = computed(() => {
 
 <template>
   <div class="flex items-center gap-2">
-    <UAvatar
-      :src="avatarUrl"
-      :alt="login"
-      size="2xs"
-    />
-    <span class="text-sm font-medium text-highlighted">{{ login }}</span>
+    <button
+      type="button"
+      class="inline-flex items-center gap-1.5 cursor-pointer hover:underline"
+      @click.stop="openProfile(login)"
+    >
+      <UAvatar
+        :src="avatarUrl"
+        :alt="login"
+        size="2xs"
+      />
+      <span class="text-sm font-medium text-highlighted">{{ login }}</span>
+    </button>
     <UTooltip
       v-if="roleBadge"
       :text="roleBadge.description"

@@ -17,6 +17,7 @@ const props = defineProps<{
 
 const { t } = useI18n()
 const toast = useToast()
+const { open: openProfile } = useUserProfileDialog()
 
 const createdAgo = useTimeAgo(computed(() => props.issue.createdAt))
 const updatedAgo = useTimeAgo(computed(() => props.issue.updatedAt))
@@ -147,12 +148,18 @@ function prStateColor(state: string) {
           :key="assignee.login"
           class="flex items-center gap-1.5"
         >
-          <UAvatar
-            :src="assignee.avatarUrl"
-            :alt="assignee.login"
-            size="2xs"
-          />
-          <span class="text-sm font-medium text-highlighted hidden sm:inline">{{ assignee.login }}</span>
+          <button
+            type="button"
+            class="inline-flex items-center gap-1.5 cursor-pointer hover:underline"
+            @click="openProfile(assignee.login)"
+          >
+            <UAvatar
+              :src="assignee.avatarUrl"
+              :alt="assignee.login"
+              size="2xs"
+            />
+            <span class="text-sm font-medium text-highlighted hidden sm:inline">{{ assignee.login }}</span>
+          </button>
 
           <a
             v-if="assignee.pr"
