@@ -1059,6 +1059,42 @@
             },
             "contributionDay": {
               "type": "string"
+            },
+            "busy": {
+              "type": "string"
+            },
+            "sharedRepos": {
+              "type": "string"
+            },
+            "recentActivity": {
+              "type": "string"
+            },
+            "activity": {
+              "type": "object",
+              "properties": {
+                "push": {
+                  "type": "string"
+                },
+                "pr": {
+                  "type": "string"
+                },
+                "issue": {
+                  "type": "string"
+                },
+                "create": {
+                  "type": "string"
+                },
+                "release": {
+                  "type": "string"
+                },
+                "starred": {
+                  "type": "string"
+                },
+                "forked": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false
             }
           },
           "additionalProperties": false

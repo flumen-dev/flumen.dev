@@ -8,6 +8,7 @@ const mockProfile: GitHubProfile = {
   login: 'testuser',
   name: 'Test User',
   avatarUrl: 'https://avatars.githubusercontent.com/u/1',
+  pronouns: null,
   bio: 'Hello',
   company: null,
   location: 'Berlin',
