@@ -422,24 +422,24 @@ export const useFocusStore = defineStore('focus', () => {
     const items = flatItems.value
     if (items.length === 0) return
     if (!highlightedKey.value) {
-      highlightedKey.value = `${items[0].repo}#${items[0].number}`
+      highlightedKey.value = `${items[0]!.repo}#${items[0]!.number}`
       return
     }
     const idx = items.findIndex(item => `${item.repo}#${item.number}` === highlightedKey.value)
     const next = idx < items.length - 1 ? idx + 1 : 0
-    highlightedKey.value = `${items[next].repo}#${items[next].number}`
+    highlightedKey.value = `${items[next]!.repo}#${items[next]!.number}`
   }
 
   function highlightPrev() {
     const items = flatItems.value
     if (items.length === 0) return
     if (!highlightedKey.value) {
-      highlightedKey.value = `${items[items.length - 1].repo}#${items[items.length - 1].number}`
+      highlightedKey.value = `${items[items.length - 1]!.repo}#${items[items.length - 1]!.number}`
       return
     }
     const idx = items.findIndex(item => `${item.repo}#${item.number}` === highlightedKey.value)
     const prev = idx > 0 ? idx - 1 : items.length - 1
-    highlightedKey.value = `${items[prev].repo}#${items[prev].number}`
+    highlightedKey.value = `${items[prev]!.repo}#${items[prev]!.number}`
   }
 
   function openHighlighted() {
