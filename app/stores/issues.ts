@@ -52,13 +52,6 @@ export const useIssueStore = defineStore('issues', () => {
     buildParams,
   )
 
-  function handleError(err: unknown) {
-    const status = (err as { statusCode?: number })?.statusCode
-    if (status === 401) errorKey.value = 'sessionExpired'
-    else if (status === 403) errorKey.value = 'rateLimited'
-    else errorKey.value = 'fetchError'
-  }
-
   // --- Derived ---
   const availableLabels = computed(() => {
     const source = search.value ? searchResults.value : section.data.value
@@ -83,12 +76,12 @@ export const useIssueStore = defineStore('issues', () => {
   async function fetchIssues() {
     if (!selectedRepo.value) return
     errorKey.value = null
-    try {
-      await section.refresh()
-      loaded.value = true
+    await section.refresh()
+    if (section.error.value) {
+      errorKey.value = 'fetchError'
     }
-    catch (err) {
-      handleError(err)
+    else {
+      loaded.value = true
     }
   }
 

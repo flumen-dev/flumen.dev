@@ -844,9 +844,6 @@
         "nextPage": {
           "type": "string"
         },
-        "serverSearch": {
-          "type": "string"
-        },
         "filter": {
           "type": "object",
           "properties": {
@@ -854,12 +851,6 @@
               "type": "string"
             },
             "unassigned": {
-              "type": "string"
-            },
-            "hasLinkedPr": {
-              "type": "string"
-            },
-            "noLinkedPr": {
               "type": "string"
             },
             "hasMilestone": {

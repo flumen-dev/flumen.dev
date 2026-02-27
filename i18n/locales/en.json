@@ -279,12 +279,9 @@
     "page": "Page {current} of {total}",
     "previousPage": "Previous",
     "nextPage": "Next",
-    "serverSearch": "Searching...",
     "filter": {
       "assignedToMe": "Assigned to me",
       "unassigned": "Unassigned",
-      "hasLinkedPr": "Has PR",
-      "noLinkedPr": "No PR",
       "hasMilestone": "Milestone"
     },
     "sort": {

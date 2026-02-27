@@ -46,15 +46,32 @@ export default defineEventHandler(async (event): Promise<PaginatedResponse<Issue
     throw createError({ statusCode: 400, message: 'Missing or invalid repo query parameter' })
   }
 
+  const isAssignedToMe = assignedToMe === '1' || assignedToMe === 'true'
+  const isUnassigned = unassigned === '1' || unassigned === 'true'
+
+  if (isAssignedToMe && isUnassigned) {
+    throw createError({ statusCode: 400, message: 'assignedToMe and unassigned are mutually exclusive' })
+  }
+
   const pageSize = Math.min(Math.max(Number(first) || 20, 1), 100)
   const stateQ = state === 'closed' ? 'is:closed' : 'is:open'
   let query = `is:issue ${stateQ} repo:${repo} sort:updated-desc`
-  if (assignedToMe) query += ` assignee:${login}`
-  if (unassigned) query += ` no:assignee`
-  if (milestone) query += ` milestone:"${milestone}"`
+  if (isAssignedToMe) query += ` assignee:${login}`
+  if (isUnassigned) query += ` no:assignee`
+
+  function escapeGitHubQuery(value: string): string {
+    return value.replace(/\\/g, '\\\\').replace(/"/g, '\\"')
+  }
+
+  if (milestone === '*') {
+    query += ` milestone:*`
+  }
+  else if (milestone) {
+    query += ` milestone:"${escapeGitHubQuery(String(milestone))}"`
+  }
   if (label) {
     for (const l of String(label).split(',')) {
-      if (l.trim()) query += ` label:"${l.trim()}"`
+      if (l.trim()) query += ` label:"${escapeGitHubQuery(l.trim())}"`
     }
   }
 

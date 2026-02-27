@@ -279,12 +279,9 @@
     "page": "Seite {current} von {total}",
     "previousPage": "Zurück",
     "nextPage": "Weiter",
-    "serverSearch": "Suche läuft...",
     "filter": {
       "assignedToMe": "Mir zugewiesen",
       "unassigned": "Nicht zugewiesen",
-      "hasLinkedPr": "Hat PR",
-      "noLinkedPr": "Kein PR",
       "hasMilestone": "Meilenstein"
     },
     "sort": {
