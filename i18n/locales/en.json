@@ -39,12 +39,22 @@
       "focus": {
         "badge": "Focus",
         "title": "Your dashboard, your flow",
-        "description": "Everything you care about — issues, pull requests, notifications — in one clean overview. No clutter, no noise."
+        "description": "Everything you care about — issues, pull requests, notifications — in one clean overview. No clutter, no noise.",
+        "mockup": {
+          "merged": "merged",
+          "review": "review",
+          "failing": "failing"
+        }
       },
       "issues": {
         "badge": "Issues & PRs",
         "title": "Browse, filter, act",
-        "description": "Manage issues and pull requests across all your repositories. Fast search, keyboard shortcuts, zero friction."
+        "description": "Manage issues and pull requests across all your repositories. Fast search, keyboard shortcuts, zero friction.",
+        "mockup": {
+          "open": "Open",
+          "closed": "Closed",
+          "assigned": "Assigned"
+        }
       },
       "notifications": {
         "badge": "Notifications",

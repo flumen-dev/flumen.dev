@@ -39,12 +39,22 @@
       "focus": {
         "badge": "Fokus",
         "title": "Dein Dashboard, dein Flow",
-        "description": "Alles, was dir wichtig ist — Issues, Pull Requests, Benachrichtigungen — in einer übersichtlichen Ansicht. Kein Durcheinander."
+        "description": "Alles, was dir wichtig ist — Issues, Pull Requests, Benachrichtigungen — in einer übersichtlichen Ansicht. Kein Durcheinander.",
+        "mockup": {
+          "merged": "Gemergt",
+          "review": "Review",
+          "failing": "Fehlschlag"
+        }
       },
       "issues": {
         "badge": "Issues & PRs",
         "title": "Durchsuchen, filtern, handeln",
-        "description": "Verwalte Issues und Pull Requests über alle Repositories hinweg. Schnelle Suche, Tastenkürzel, kein Umweg."
+        "description": "Verwalte Issues und Pull Requests über alle Repositories hinweg. Schnelle Suche, Tastenkürzel, kein Umweg.",
+        "mockup": {
+          "open": "Offen",
+          "closed": "Geschlossen",
+          "assigned": "Zugewiesen"
+        }
       },
       "notifications": {
         "badge": "Benachrichtigungen",

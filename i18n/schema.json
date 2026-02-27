@@ -126,6 +126,21 @@
                 },
                 "description": {
                   "type": "string"
+                },
+                "mockup": {
+                  "type": "object",
+                  "properties": {
+                    "merged": {
+                      "type": "string"
+                    },
+                    "review": {
+                      "type": "string"
+                    },
+                    "failing": {
+                      "type": "string"
+                    }
+                  },
+                  "additionalProperties": false
                 }
               },
               "additionalProperties": false
@@ -141,6 +156,21 @@
                 },
                 "description": {
                   "type": "string"
+                },
+                "mockup": {
+                  "type": "object",
+                  "properties": {
+                    "open": {
+                      "type": "string"
+                    },
+                    "closed": {
+                      "type": "string"
+                    },
+                    "assigned": {
+                      "type": "string"
+                    }
+                  },
+                  "additionalProperties": false
                 }
               },
               "additionalProperties": false

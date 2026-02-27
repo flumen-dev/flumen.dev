@@ -16,11 +16,16 @@ onMounted(() => {
   const targets = el.querySelectorAll('.reveal')
   if (!targets.length) return
 
+  // Hide initially via JS so content stays visible if JS fails
+  for (const target of targets) {
+    target.classList.add('reveal-hidden')
+  }
+
   const observer = new IntersectionObserver(
     (entries) => {
       for (const entry of entries) {
         if (entry.isIntersecting) {
-          entry.target.classList.add('is-visible')
+          entry.target.classList.remove('reveal-hidden')
           observer.unobserve(entry.target)
         }
       }
@@ -98,7 +103,7 @@ onMounted(() => {
       <button
         class="anim anim-scroll absolute bottom-8 flex flex-col items-center gap-1 text-muted hover:text-default transition-colors cursor-pointer"
         :aria-label="$t('welcome.scrollDiscover')"
-        @click="$el.closest('.min-h-dvh')?.nextElementSibling?.scrollIntoView({ behavior: 'smooth' })"
+        @click="(e: MouseEvent) => (e.currentTarget as HTMLElement)?.closest('.min-h-dvh')?.nextElementSibling?.scrollIntoView({ behavior: 'smooth' })"
       >
         <span class="text-xs tracking-wide">{{ $t('welcome.scrollDiscover') }}</span>
         <UIcon
@@ -184,7 +189,7 @@ onMounted(() => {
                   <div class="h-3 w-32 rounded bg-muted/30" />
                   <div class="ml-auto">
                     <UBadge
-                      label="merged"
+                      :label="$t('welcome.features.focus.mockup.merged')"
                       color="primary"
                       variant="subtle"
                       size="xs"
@@ -196,7 +201,7 @@ onMounted(() => {
                   <div class="h-3 w-40 rounded bg-muted/30" />
                   <div class="ml-auto">
                     <UBadge
-                      label="review"
+                      :label="$t('welcome.features.focus.mockup.review')"
                       color="warning"
                       variant="subtle"
                       size="xs"
@@ -208,7 +213,7 @@ onMounted(() => {
                   <div class="h-3 w-28 rounded bg-muted/30" />
                   <div class="ml-auto">
                     <UBadge
-                      label="failing"
+                      :label="$t('welcome.features.focus.mockup.failing')"
                       color="error"
                       variant="subtle"
                       size="xs"
@@ -253,13 +258,13 @@ onMounted(() => {
               <div class="rounded-xl border border-default bg-elevated/50 p-4 space-y-3">
                 <div class="flex gap-2 pb-2 border-b border-default">
                   <div class="h-6 px-3 rounded-full bg-primary/10 text-primary text-xs flex items-center">
-                    Open
+                    {{ $t('welcome.features.issues.mockup.open') }}
                   </div>
                   <div class="h-6 px-3 rounded-full bg-muted/20 text-muted text-xs flex items-center">
-                    Closed
+                    {{ $t('welcome.features.issues.mockup.closed') }}
                   </div>
                   <div class="h-6 px-3 rounded-full bg-muted/20 text-muted text-xs flex items-center">
-                    Assigned
+                    {{ $t('welcome.features.issues.mockup.assigned') }}
                   </div>
                 </div>
                 <div class="flex items-center gap-2 pb-2 border-b border-default">
@@ -439,7 +444,7 @@ onMounted(() => {
       </section>
 
       <!-- Bottom CTA -->
-      <section class="reveal py-24 px-6 text-center bg-gradient-to-b from-transparent via-primary/5 to-primary/10">
+      <section class="reveal py-24 px-6 text-center bg-linear-to-b from-transparent via-primary/5 to-primary/10">
         <h2 class="text-3xl font-bold mb-4">
           {{ $t('welcome.cta.title') }}
         </h2>
@@ -521,18 +526,15 @@ onMounted(() => {
   50% { transform: translateY(4px); }
 }
 
-/* Scroll reveal */
+/* Scroll reveal — visible by default, hidden only when JS adds .reveal-hidden */
 .reveal {
-  opacity: 0;
-  transform: translateY(24px);
-  filter: blur(3px);
   transition: opacity 0.7s ease-out, transform 0.7s ease-out, filter 0.7s ease-out;
 }
 
-.reveal.is-visible {
-  opacity: 1;
-  transform: translateY(0);
-  filter: blur(0);
+.reveal.reveal-hidden {
+  opacity: 0;
+  transform: translateY(24px);
+  filter: blur(3px);
 }
 
 /* Respect reduced motion */
@@ -549,7 +551,8 @@ onMounted(() => {
   .wave-3 { opacity: 0.7 !important; }
   .wave-4 { opacity: 1 !important; }
   .bounce { animation: none !important; }
-  .reveal {
+  .reveal,
+  .reveal.reveal-hidden {
     opacity: 1 !important;
     transform: none !important;
     filter: none !important;
