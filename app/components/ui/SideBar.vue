@@ -79,13 +79,17 @@ const PINNED_MIN_H = 80
 const PINNED_MAX_H = 600
 const PINNED_DEFAULT_H = 220
 
-const pinnedHeight = ref(settings.value?.pinnedHeight ?? PINNED_DEFAULT_H)
+function clampHeight(h: number): number {
+  return Math.min(PINNED_MAX_H, Math.max(PINNED_MIN_H, h))
+}
+
+const pinnedHeight = ref(clampHeight(settings.value?.pinnedHeight ?? PINNED_DEFAULT_H))
 const pinnedResizing = ref(false)
 let resizeSaveTimer: ReturnType<typeof setTimeout> | null = null
 
 // Sync pinnedHeight when settings arrive asynchronously (e.g. after SSR hydration)
 watch(() => settings.value?.pinnedHeight, (h) => {
-  if (h != null && !pinnedResizing.value) pinnedHeight.value = h
+  if (h != null && !pinnedResizing.value) pinnedHeight.value = clampHeight(h)
 })
 
 onUnmounted(() => {
@@ -134,6 +138,7 @@ let sidebarSearchRequestId = 0
 function selectPinnedRepo(repo: string) {
   issueStore.selectRepo(repo)
   updateSettings({ selectedRepo: repo })
+  navigateTo(localePath('/issues'))
 }
 
 function resetSidebarSearch() {
@@ -461,9 +466,8 @@ const mainItems = computed<NavigationMenuItem[]>(() => [
                     name="i-lucide-grip-vertical"
                     class="size-3.5 shrink-0 text-muted/50 cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100 transition-opacity"
                   />
-                  <NuxtLink
-                    :to="localePath('/issues')"
-                    class="flex items-center gap-2 flex-1 min-w-0"
+                  <button
+                    class="flex items-center gap-2 flex-1 min-w-0 cursor-pointer"
                     @click="selectPinnedRepo(item.id)"
                   >
                     <UIcon
@@ -480,7 +484,7 @@ const mainItems = computed<NavigationMenuItem[]>(() => [
                     >
                       {{ $t('repos.badge.fork') }}
                     </UBadge>
-                  </NuxtLink>
+                  </button>
                   <UTooltip :text="$t('pinnedRepos.unpin')">
                     <UButton
                       icon="i-lucide-pin-off"
