@@ -9,11 +9,17 @@
           <USkeleton class="h-3 w-8 rounded" />
         </div>
 
-        <div class="flex items-center gap-2 mt-0.5">
+        <div class="flex items-center gap-1.5 mt-1.5">
+          <USkeleton class="h-5 w-12 rounded-full" />
+          <USkeleton class="h-5 w-14 rounded-full" />
+          <USkeleton class="size-3.5 rounded-full" />
+        </div>
+
+        <div class="flex items-center gap-2 mt-2 ml-4">
           <USkeleton class="h-3 w-24 rounded" />
+          <USkeleton class="h-4 w-20 rounded" />
           <USkeleton class="size-4 rounded-full" />
           <USkeleton class="h-3 w-16 rounded" />
-          <USkeleton class="h-5 w-12 rounded-full" />
           <USkeleton class="ml-auto h-3 w-14 rounded" />
         </div>
       </div>

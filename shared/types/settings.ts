@@ -17,6 +17,7 @@ export interface UserSettings {
   cliToken: string | null
   contributionSkin: ContributionSkin
   pinnedHeight: number | null
+  dismissedInbox: string[]
 }
 
 export const defaultUserSettings: UserSettings = {
@@ -29,6 +30,7 @@ export const defaultUserSettings: UserSettings = {
   cliToken: null,
   contributionSkin: 'default',
   pinnedHeight: null,
+  dismissedInbox: [],
 }
 
 export const accentColors = [

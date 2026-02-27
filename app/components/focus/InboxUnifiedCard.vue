@@ -3,7 +3,14 @@ import type { UnifiedInboxItem } from '~~/shared/types/inbox'
 
 const props = defineProps<{
   item: UnifiedInboxItem
+  highlighted?: boolean
 }>()
+
+const el = useTemplateRef<HTMLElement>('cardEl')
+
+watch(() => props.highlighted, (v) => {
+  if (v) el.value?.scrollIntoView({ block: 'nearest' })
+})
 
 const { t } = useI18n()
 const toast = useToast()
@@ -151,7 +158,11 @@ const issuePreview = computed(() =>
 </script>
 
 <template>
-  <div class="group border-b border-default last:border-b-0">
+  <div
+    ref="cardEl"
+    class="group border-b border-default last:border-b-0"
+    :class="{ 'ring-2 ring-primary': highlighted }"
+  >
     <!-- Clickable card area -->
     <div
       class="relative px-4 py-3 hover:bg-elevated transition-colors"
@@ -254,11 +265,27 @@ const issuePreview = computed(() =>
           </div>
         </div>
 
-        <!-- Expand indicator -->
-        <UIcon
-          :name="expanded ? 'i-lucide-chevron-up' : 'i-lucide-chevron-down'"
-          class="size-4 mt-0.5 shrink-0 text-dimmed"
-        />
+        <div class="flex items-center gap-1 shrink-0 mt-0.5">
+          <!-- Dismiss button -->
+          <UTooltip :text="t('focus.inbox.dismissed')">
+            <button
+              type="button"
+              class="opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity p-0.5 rounded hover:bg-muted cursor-pointer"
+              @click.stop="store.dismissItem(`${item.repo}#${item.number}`)"
+            >
+              <UIcon
+                name="i-lucide-eye-off"
+                class="size-3.5 text-dimmed hover:text-muted"
+              />
+            </button>
+          </UTooltip>
+
+          <!-- Expand indicator -->
+          <UIcon
+            :name="expanded ? 'i-lucide-chevron-up' : 'i-lucide-chevron-down'"
+            class="size-4 text-dimmed"
+          />
+        </div>
       </div>
 
       <!-- Meta row -->

@@ -33,6 +33,12 @@ export const useFocusStore = defineStore('focus', () => {
 
   const expanded = ref<SectionKey | null>(null)
 
+  // --- Keyboard navigation ---
+  const highlightedKey = ref<string | null>(null)
+
+  // --- Dismiss state ---
+  const dismissedKeys = ref<Set<string>>(new Set())
+
   // --- Counts (lightweight, loaded on mount) ---
   const counts = ref<FocusCounts | null>(null)
   const countsFetchedAt = ref<number | null>(null)
@@ -383,6 +389,131 @@ export const useFocusStore = defineStore('focus', () => {
     }
   }
 
+  // --- Visible items (filtered by dismissed) ---
+  const visiblePRs = computed(() =>
+    activeInboxPRs.value.data.value.filter(item => !dismissedKeys.value.has(`${item.repo}#${item.number}`)),
+  )
+  const visibleIssues = computed(() =>
+    activeInboxIssues.value.data.value.filter(item => !dismissedKeys.value.has(`${item.repo}#${item.number}`)),
+  )
+
+  const dismissedPRs = computed(() =>
+    activeInboxPRs.value.data.value.filter(item => dismissedKeys.value.has(`${item.repo}#${item.number}`)),
+  )
+  const dismissedIssues = computed(() =>
+    activeInboxIssues.value.data.value.filter(item => dismissedKeys.value.has(`${item.repo}#${item.number}`)),
+  )
+
+  // --- Flat items for keyboard navigation ---
+  const flatItems = computed<UnifiedInboxItem[]>(() => [
+    ...visiblePRs.value,
+    ...visibleIssues.value,
+  ])
+
+  const highlightedItem = computed(() => {
+    if (!highlightedKey.value) return null
+    return flatItems.value.find(item => `${item.repo}#${item.number}` === highlightedKey.value) ?? null
+  })
+
+  function highlightNext() {
+    const items = flatItems.value
+    if (items.length === 0) return
+    if (!highlightedKey.value) {
+      highlightedKey.value = `${items[0].repo}#${items[0].number}`
+      return
+    }
+    const idx = items.findIndex(item => `${item.repo}#${item.number}` === highlightedKey.value)
+    const next = idx < items.length - 1 ? idx + 1 : 0
+    highlightedKey.value = `${items[next].repo}#${items[next].number}`
+  }
+
+  function highlightPrev() {
+    const items = flatItems.value
+    if (items.length === 0) return
+    if (!highlightedKey.value) {
+      highlightedKey.value = `${items[items.length - 1].repo}#${items[items.length - 1].number}`
+      return
+    }
+    const idx = items.findIndex(item => `${item.repo}#${item.number}` === highlightedKey.value)
+    const prev = idx > 0 ? idx - 1 : items.length - 1
+    highlightedKey.value = `${items[prev].repo}#${items[prev].number}`
+  }
+
+  function openHighlighted() {
+    const item = highlightedItem.value
+    if (!item) return
+    if (item.type === 'pr') {
+      window.open(item.url, '_blank')
+    }
+    else {
+      const lp = useLocalePath()
+      navigateTo(lp({ path: `/issues/${item.number}`, query: { repo: item.repo } }))
+    }
+  }
+
+  function dismissItem(key: string) {
+    dismissedKeys.value = new Set([...dismissedKeys.value, key])
+    persistDismissed()
+  }
+
+  function restoreItem(key: string) {
+    const next = new Set(dismissedKeys.value)
+    next.delete(key)
+    dismissedKeys.value = next
+    persistDismissed()
+  }
+
+  function toggleDismiss() {
+    const key = highlightedKey.value
+    if (!key) return
+    const items = flatItems.value
+    const idx = items.findIndex(item => `${item.repo}#${item.number}` === key)
+
+    if (dismissedKeys.value.has(key)) {
+      restoreItem(key)
+    }
+    else {
+      dismissItem(key)
+      // Auto-advance to next item after dismiss
+      const remaining = items.filter(item => `${item.repo}#${item.number}` !== key)
+      if (remaining.length === 0) {
+        highlightedKey.value = null
+      }
+      else if (idx < remaining.length) {
+        const next = remaining[idx]!
+        highlightedKey.value = `${next.repo}#${next.number}`
+      }
+      else {
+        const last = remaining[remaining.length - 1]!
+        highlightedKey.value = `${last.repo}#${last.number}`
+      }
+    }
+
+    // Debounced persist
+    persistDismissed()
+  }
+
+  let _dismissTimer: ReturnType<typeof setTimeout> | null = null
+  function persistDismissed() {
+    if (_dismissTimer) clearTimeout(_dismissTimer)
+    _dismissTimer = setTimeout(() => {
+      apiFetch('/api/user/settings', {
+        method: 'PUT',
+        body: { dismissedInbox: [...dismissedKeys.value] },
+      }).catch(() => {})
+    }, 1000)
+  }
+
+  function loadDismissedFromSettings(keys: string[]) {
+    dismissedKeys.value = new Set(keys)
+  }
+
+  // Reset highlight on filter/scope/page change
+  watch(
+    [inboxScope, inboxRepo, inboxSearch, inboxPRStateFilter, inboxIssueStateFilter],
+    () => { highlightedKey.value = null },
+  )
+
   return {
     expanded,
     counts,
@@ -457,5 +588,21 @@ export const useFocusStore = defineStore('focus', () => {
     refreshInboxNew,
     stopCiPolling: ciPolling.stop,
     stopNotifPolling: notifPolling.stop,
+    // Keyboard navigation + dismiss
+    highlightedKey,
+    highlightedItem,
+    flatItems,
+    visiblePRs,
+    visibleIssues,
+    dismissedKeys,
+    highlightNext,
+    highlightPrev,
+    openHighlighted,
+    toggleDismiss,
+    dismissItem,
+    restoreItem,
+    loadDismissedFromSettings,
+    dismissedPRs,
+    dismissedIssues,
   }
 })

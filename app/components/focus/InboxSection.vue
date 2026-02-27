@@ -2,7 +2,14 @@
 const { t } = useI18n()
 const store = useFocusStore()
 const { user } = useUserSession()
-const { orgs } = useUserSettings()
+const { settings, orgs } = useUserSettings()
+
+// Load dismissed keys from persisted settings
+watchEffect(() => {
+  if (settings.value?.dismissedInbox?.length) {
+    store.loadDismissedFromSettings(settings.value.dismissedInbox)
+  }
+})
 
 // Build scope options: user's own repos + each org
 const scopeOptions = computed(() => [
@@ -83,6 +90,35 @@ watch(() => store.inboxPRs.data, (items) => {
 watch(() => store.inboxIssues.data, (items) => {
   if (items.length > 0) lastIssueCount.value = items.length
 })
+
+// --- Dismissed view toggle ---
+const showDismissed = ref(false)
+
+const dismissedCount = computed(() => store.dismissedKeys.size)
+
+// --- Keyboard shortcuts ---
+const helpOpen = ref(false)
+
+const inboxActive = computed(() => store.expanded === 'inbox')
+
+defineShortcuts({
+  j: () => { if (inboxActive.value) store.highlightNext() },
+  k: () => { if (inboxActive.value) store.highlightPrev() },
+  d: () => { if (inboxActive.value) store.toggleDismiss() },
+  enter: () => { if (inboxActive.value) store.openHighlighted() },
+})
+
+// Manual listener for '?' — defineShortcuts rejects it because Shift mismatch across browsers
+function onQuestionMark(e: KeyboardEvent) {
+  if (e.key !== '?' || !inboxActive.value) return
+  const tag = (e.target as HTMLElement)?.tagName
+  if (tag === 'INPUT' || tag === 'TEXTAREA' || (e.target as HTMLElement)?.isContentEditable) return
+  e.preventDefault()
+  helpOpen.value = !helpOpen.value
+}
+
+onMounted(() => window.addEventListener('keydown', onQuestionMark))
+onUnmounted(() => window.removeEventListener('keydown', onQuestionMark))
 </script>
 
 <template>
@@ -125,6 +161,40 @@ watch(() => store.inboxIssues.data, (items) => {
         class="flex-1"
         @update:model-value="onSearchInput"
       />
+
+      <button
+        v-if="dismissedCount > 0"
+        type="button"
+        class="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs rounded-md border transition-colors cursor-pointer shrink-0"
+        :class="showDismissed
+          ? 'text-highlighted bg-elevated border-primary'
+          : 'text-muted hover:text-highlighted hover:bg-elevated border-default'"
+        @click="showDismissed = !showDismissed"
+      >
+        <UIcon
+          name="i-lucide-eye-off"
+          class="size-3.5"
+        />
+        {{ t('focus.inbox.dismissed') }}
+        <UBadge
+          :label="String(dismissedCount)"
+          color="neutral"
+          variant="subtle"
+          size="xs"
+        />
+      </button>
+
+      <button
+        type="button"
+        class="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs text-muted hover:text-highlighted rounded-md hover:bg-elevated border border-default transition-colors cursor-pointer shrink-0"
+        @click="helpOpen = true"
+      >
+        <UIcon
+          name="i-lucide-keyboard"
+          class="size-4"
+        />
+        <kbd class="px-1.5 py-0.5 bg-muted rounded font-mono text-[10px] leading-none">?</kbd>
+      </button>
     </div>
 
     <!-- PRs sub-section -->
@@ -183,22 +253,52 @@ watch(() => store.inboxIssues.data, (items) => {
         />
       </div>
 
-      <div
-        v-else-if="store.inboxPRs.data.length === 0"
-        class="px-4 py-3 text-center"
-      >
-        <p class="text-xs text-muted">
-          {{ t('focus.inbox.noPRs') }}
-        </p>
-      </div>
+      <template v-else-if="showDismissed">
+        <div
+          v-if="store.dismissedPRs.length === 0"
+          class="px-4 py-3 text-center"
+        >
+          <p class="text-xs text-muted">
+            {{ t('focus.inbox.noPRs') }}
+          </p>
+        </div>
+        <div
+          v-for="item in store.dismissedPRs"
+          :key="`dismissed-${item.repo}#${item.number}`"
+          class="flex items-center gap-2 px-4 py-2 border-b border-default last:border-b-0 opacity-60"
+        >
+          <div class="min-w-0 flex-1 text-sm truncate">
+            {{ item.title }}
+            <span class="text-xs text-dimmed">#{{ item.number }}</span>
+          </div>
+          <button
+            type="button"
+            class="text-xs text-primary hover:underline cursor-pointer shrink-0"
+            @click="store.restoreItem(`${item.repo}#${item.number}`)"
+          >
+            {{ t('focus.inbox.restore') }}
+          </button>
+        </div>
+      </template>
 
-      <div v-else>
-        <FocusInboxUnifiedCard
-          v-for="item in store.inboxPRs.data"
-          :key="`${item.repo}#${item.number}`"
-          :item="item"
-        />
-      </div>
+      <template v-else>
+        <div
+          v-if="store.visiblePRs.length === 0"
+          class="px-4 py-3 text-center"
+        >
+          <p class="text-xs text-muted">
+            {{ t('focus.inbox.noPRs') }}
+          </p>
+        </div>
+        <div v-else>
+          <FocusInboxUnifiedCard
+            v-for="item in store.visiblePRs"
+            :key="`${item.repo}#${item.number}`"
+            :item="item"
+            :highlighted="store.highlightedKey === `${item.repo}#${item.number}`"
+          />
+        </div>
+      </template>
 
       <UiPaginator
         v-if="!store.inboxPRs.loading && store.inboxPRs.totalPages > 1"
@@ -268,22 +368,52 @@ watch(() => store.inboxIssues.data, (items) => {
         />
       </div>
 
-      <div
-        v-else-if="store.inboxIssues.data.length === 0"
-        class="px-4 py-3 text-center"
-      >
-        <p class="text-xs text-muted">
-          {{ t('focus.inbox.noIssues') }}
-        </p>
-      </div>
+      <template v-else-if="showDismissed">
+        <div
+          v-if="store.dismissedIssues.length === 0"
+          class="px-4 py-3 text-center"
+        >
+          <p class="text-xs text-muted">
+            {{ t('focus.inbox.noIssues') }}
+          </p>
+        </div>
+        <div
+          v-for="item in store.dismissedIssues"
+          :key="`dismissed-${item.repo}#${item.number}`"
+          class="flex items-center gap-2 px-4 py-2 border-b border-default last:border-b-0 opacity-60"
+        >
+          <div class="min-w-0 flex-1 text-sm truncate">
+            {{ item.title }}
+            <span class="text-xs text-dimmed">#{{ item.number }}</span>
+          </div>
+          <button
+            type="button"
+            class="text-xs text-primary hover:underline cursor-pointer shrink-0"
+            @click="store.restoreItem(`${item.repo}#${item.number}`)"
+          >
+            {{ t('focus.inbox.restore') }}
+          </button>
+        </div>
+      </template>
 
-      <div v-else>
-        <FocusInboxUnifiedCard
-          v-for="item in store.inboxIssues.data"
-          :key="`${item.repo}#${item.number}`"
-          :item="item"
-        />
-      </div>
+      <template v-else>
+        <div
+          v-if="store.visibleIssues.length === 0"
+          class="px-4 py-3 text-center"
+        >
+          <p class="text-xs text-muted">
+            {{ t('focus.inbox.noIssues') }}
+          </p>
+        </div>
+        <div v-else>
+          <FocusInboxUnifiedCard
+            v-for="item in store.visibleIssues"
+            :key="`${item.repo}#${item.number}`"
+            :item="item"
+            :highlighted="store.highlightedKey === `${item.repo}#${item.number}`"
+          />
+        </div>
+      </template>
 
       <UiPaginator
         v-if="!store.inboxIssues.loading && store.inboxIssues.totalPages > 1"
@@ -296,5 +426,28 @@ watch(() => store.inboxIssues.data, (items) => {
         @previous="store.inboxIssuesPrevPage()"
       />
     </div>
+
+    <!-- Keyboard shortcuts help modal -->
+    <UModal v-model:open="helpOpen">
+      <template #content>
+        <div class="p-6">
+          <h3 class="text-lg font-semibold mb-4">
+            {{ t('focus.inbox.shortcuts.title') }}
+          </h3>
+          <div class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-sm">
+            <kbd class="px-2 py-0.5 bg-muted rounded font-mono text-xs">j</kbd>
+            <span>{{ t('focus.inbox.shortcuts.next') }}</span>
+            <kbd class="px-2 py-0.5 bg-muted rounded font-mono text-xs">k</kbd>
+            <span>{{ t('focus.inbox.shortcuts.prev') }}</span>
+            <kbd class="px-2 py-0.5 bg-muted rounded font-mono text-xs">Enter</kbd>
+            <span>{{ t('focus.inbox.shortcuts.open') }}</span>
+            <kbd class="px-2 py-0.5 bg-muted rounded font-mono text-xs">d</kbd>
+            <span>{{ t('focus.inbox.shortcuts.dismiss') }}</span>
+            <kbd class="px-2 py-0.5 bg-muted rounded font-mono text-xs">?</kbd>
+            <span>{{ t('focus.inbox.shortcuts.help') }}</span>
+          </div>
+        </div>
+      </template>
+    </UModal>
   </div>
 </template>

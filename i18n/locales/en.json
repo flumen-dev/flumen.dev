@@ -539,7 +539,17 @@
       "mergedPullRequest": "Merged Pull Request",
       "closedPullRequest": "Closed Pull Request",
       "issue": "Issue",
-      "closedIssue": "Closed Issue"
+      "closedIssue": "Closed Issue",
+      "dismissed": "Dismissed",
+      "restore": "Restore",
+      "shortcuts": {
+        "title": "Keyboard Shortcuts",
+        "next": "Next item",
+        "prev": "Previous item",
+        "open": "Open item",
+        "dismiss": "Dismiss / Restore item",
+        "help": "Toggle this help"
+      }
     },
     "created": {
       "title": "Created",

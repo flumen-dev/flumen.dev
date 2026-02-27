@@ -539,7 +539,17 @@
       "mergedPullRequest": "Gemergter Pull Request",
       "closedPullRequest": "Geschlossener Pull Request",
       "issue": "Issue",
-      "closedIssue": "Geschlossenes Issue"
+      "closedIssue": "Geschlossenes Issue",
+      "dismissed": "Ausgeblendet",
+      "restore": "Wiederherstellen",
+      "shortcuts": {
+        "title": "Tastenkürzel",
+        "next": "Nächstes Element",
+        "prev": "Vorheriges Element",
+        "open": "Element öffnen",
+        "dismiss": "Ausblenden / Wiederherstellen",
+        "help": "Diese Hilfe ein-/ausblenden"
+      }
     },
     "created": {
       "title": "Erstellt",
