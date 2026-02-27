@@ -9,7 +9,7 @@ const props = defineProps<{
 const { t } = useI18n()
 
 const { data: achievements } = useFetch<Achievement[]>('/api/user/achievements', {
-  params: { login: props.login },
+  params: computed(() => ({ login: props.login })),
   lazy: true,
   default: () => [],
 })
