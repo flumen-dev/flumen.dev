@@ -29,6 +29,13 @@ export interface ProfilePin extends ProfileRepo {
   id: string // GraphQL node ID (needed for pin/unpin mutations)
 }
 
+export interface Achievement {
+  name: string
+  slug: string
+  tier: number
+  imageUrl: string
+}
+
 export interface GitHubEmail {
   email: string
   primary: boolean

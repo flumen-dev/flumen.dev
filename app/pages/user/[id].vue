@@ -469,8 +469,16 @@ function sanitizeUrl(raw: string): string | null {
           </div>
         </div><!-- /left column -->
 
-        <!-- Right column: Profile README -->
-        <div class="flex-2/3 min-w-0">
+        <!-- Right column: Achievements + Profile README -->
+        <div class="flex-2/3 min-w-0 space-y-6">
+          <!-- Achievements -->
+          <div v-if="store.profile?.login">
+            <h2 class="text-lg font-semibold mb-4">
+              {{ t('profile.achievements') }}
+            </h2>
+            <UserAchievements :login="store.profile.login" />
+          </div>
+
           <div class="flex items-center justify-between mb-4">
             <h2 class="text-lg font-semibold">
               {{ t('profile.readme') }}

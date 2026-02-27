@@ -160,6 +160,12 @@ function activityLabel(ev: UserActivityEvent): string {
       </div>
     </div>
 
+    <!-- Achievements -->
+    <UserAchievements
+      :login="profile.login"
+      compact
+    />
+
     <!-- Details -->
     <div
       v-if="profile.company || profile.location || links.length > 0"

@@ -227,6 +227,7 @@
     "addSocial": "Konto hinzufügen",
     "noSocials": "Noch keine sozialen Konten",
     "socialLimit": "GitHub erlaubt maximal 4 soziale Konten.",
+    "achievements": "Erfolge",
     "readme": "Profil-README",
     "readmePlaceholder": "Schreibe etwas über dich...",
     "readmeEmpty": "Noch kein Profil-README",
@@ -404,6 +405,7 @@
       "contributionDay": "{count} Beiträge am {date}",
       "busy": "Beschäftigt",
       "sharedRepos": "Gemeinsame Repositories",
+      "achievements": "Erfolge",
       "recentActivity": "Letzte Aktivität",
       "activity": {
         "push": "Push auf {branch}",
