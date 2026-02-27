@@ -497,7 +497,20 @@
     "viewPr": "PR ansehen"
   },
   "dashboard": {
-    "description": "Was gerade deine Aufmerksamkeit braucht."
+    "description": "Was gerade deine Aufmerksamkeit braucht.",
+    "prHealth": {
+      "title": "PR-Zustand",
+      "empty": "Alle deine PRs sind gesund.",
+      "summary": "{issues} Probleme: {ci} CI-Fehler, {conflicts} Merge-Konflikte",
+      "ageDays": "{days}T alt",
+      "reason": {
+        "ci-failing": "CI schlägt fehl",
+        "merge-conflict": "Hat Merge-Konflikte",
+        "needs-reviewers": "Keine Reviewer zugewiesen",
+        "stale-draft": "Draft seit {days} Tagen offen",
+        "approved-not-merged": "Genehmigt, aber nicht gemerged"
+      }
+    }
   },
   "focus": {
     "title": "Focus",

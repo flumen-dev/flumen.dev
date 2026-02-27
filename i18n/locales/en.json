@@ -497,7 +497,20 @@
     "viewPr": "View PR"
   },
   "dashboard": {
-    "description": "What needs your attention right now."
+    "description": "What needs your attention right now.",
+    "prHealth": {
+      "title": "PR Health",
+      "empty": "All your PRs are healthy.",
+      "summary": "{issues} issues: {ci} CI failures, {conflicts} merge conflicts",
+      "ageDays": "{days}d old",
+      "reason": {
+        "ci-failing": "CI is failing",
+        "merge-conflict": "Has merge conflicts",
+        "needs-reviewers": "No reviewers assigned",
+        "stale-draft": "Draft open for {days} days",
+        "approved-not-merged": "Approved but not merged"
+      }
+    }
   },
   "focus": {
     "title": "Focus",

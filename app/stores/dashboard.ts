@@ -1,4 +1,5 @@
 import type { WaitingOnMeItem, WaitingOnMeCursors, WaitingOnMeResponse } from '~~/shared/types/waiting-on-me'
+import type { PRHealthItem, PRHealthResponse } from '~~/shared/types/pr-health'
 
 export const useDashboardStore = defineStore('dashboard', () => {
   const apiFetch = useRequestFetch()
@@ -67,9 +68,43 @@ export const useDashboardStore = defineStore('dashboard', () => {
     }
   }
 
+  // --- PR Health ---
+  const prHealth = ref<{
+    data: PRHealthItem[]
+    summary: PRHealthResponse['summary'] | null
+    loading: boolean
+    error: boolean
+    fetchedAt: number | null
+  }>({
+    data: [],
+    summary: null,
+    loading: false,
+    error: false,
+    fetchedAt: null,
+  })
+
+  async function fetchPRHealth() {
+    prHealth.value.loading = true
+    prHealth.value.error = false
+    try {
+      const res = await apiFetch<PRHealthResponse>('/api/focus/pr-health')
+      prHealth.value.data = res.items
+      prHealth.value.summary = res.summary
+      prHealth.value.fetchedAt = Date.now()
+    }
+    catch {
+      prHealth.value.error = true
+    }
+    finally {
+      prHealth.value.loading = false
+    }
+  }
+
   return {
     waitingOnMe,
     fetchWaitingOnMe,
     loadMoreWaitingOnMe,
+    prHealth,
+    fetchPRHealth,
   }
 })
