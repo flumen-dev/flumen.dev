@@ -850,6 +850,9 @@
         "filter": {
           "type": "object",
           "properties": {
+            "assignedToMe": {
+              "type": "string"
+            },
             "unassigned": {
               "type": "string"
             },

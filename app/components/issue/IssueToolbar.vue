@@ -2,20 +2,26 @@
 const { t } = useI18n()
 const store = useIssueStore()
 
+const EXCLUSIVE_FILTERS = ['assignedToMe', 'unassigned']
+
 function toggleFilter(key: string) {
-  const current = store.activeFilters
+  let current = store.activeFilters
   if (current.includes(key)) {
     store.activeFilters = current.filter(f => f !== key)
   }
   else {
+    // Mutually exclusive: enabling one disables the other
+    if (EXCLUSIVE_FILTERS.includes(key)) {
+      current = current.filter(f => !EXCLUSIVE_FILTERS.includes(f))
+    }
     store.activeFilters = [...current, key]
   }
+  store.fetchIssues()
 }
 
 const filterChips = computed(() => [
+  { key: 'assignedToMe', label: t('issues.filter.assignedToMe'), icon: 'i-lucide-user-check' },
   { key: 'unassigned', label: t('issues.filter.unassigned'), icon: 'i-lucide-user-x' },
-  { key: 'hasLinkedPr', label: t('issues.filter.hasLinkedPr'), icon: 'i-lucide-git-pull-request', color: 'text-blue-500' },
-  { key: 'noLinkedPr', label: t('issues.filter.noLinkedPr'), icon: 'i-lucide-git-pull-request-closed', color: 'text-rose-500' },
   { key: 'hasMilestone', label: t('issues.filter.hasMilestone'), icon: 'i-lucide-milestone' },
 ])
 
@@ -40,7 +46,7 @@ const sortOptions = computed(() => [
         class="flex-1"
       />
       <span class="text-sm text-muted shrink-0">
-        {{ t('issues.count', store.filteredIssues.length) }}
+        {{ t('issues.count', store.totalCount) }}
       </span>
     </div>
 
@@ -51,7 +57,7 @@ const sortOptions = computed(() => [
         :key="chip.key"
         class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium transition-colors cursor-pointer"
         :class="store.activeFilters.includes(chip.key)
-          ? (chip.color ? `bg-muted ${chip.color} ring-1 ring-current/20` : 'bg-primary text-inverted')
+          ? 'bg-primary text-inverted'
           : 'bg-muted text-toned hover:bg-accented'"
         @click="toggleFilter(chip.key)"
       >

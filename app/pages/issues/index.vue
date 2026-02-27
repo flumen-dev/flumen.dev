@@ -61,12 +61,31 @@ async function setFilter(state: 'open' | 'closed') {
       </div>
 
       <!-- Loading (initial) -->
-      <div
-        v-else-if="store.loading && !store.loaded"
-        class="py-8 text-center text-muted"
-      >
-        {{ t('common.loading') }}
-      </div>
+      <template v-else-if="store.loading && !store.loaded">
+        <div class="flex items-center gap-4">
+          <USkeleton class="h-5 w-20 rounded" />
+          <USkeleton class="h-5 w-20 rounded" />
+          <USkeleton class="ml-auto h-8 w-24 rounded-md" />
+        </div>
+        <div class="flex items-center gap-3">
+          <USkeleton class="h-9 flex-1 rounded-md" />
+          <USkeleton class="h-4 w-20 rounded" />
+        </div>
+        <div class="flex items-center gap-2">
+          <USkeleton
+            v-for="n in 4"
+            :key="n"
+            class="h-7 w-20 rounded-md"
+          />
+          <USkeleton class="ml-auto h-7 w-28 rounded-md" />
+        </div>
+        <div class="rounded-lg border border-default divide-y divide-default overflow-hidden">
+          <IssueRowSkeleton
+            v-for="n in 8"
+            :key="n"
+          />
+        </div>
+      </template>
 
       <!-- Loaded -->
       <template v-else-if="store.loaded">
@@ -115,17 +134,20 @@ async function setFilter(state: 'open' | 'closed') {
         <!-- Toolbar -->
         <IssueToolbar />
 
-        <!-- Searching indicator -->
+        <!-- Loading (filter/state change) or searching -->
         <div
-          v-if="store.searching"
-          class="py-4 text-center text-sm text-muted"
+          v-if="store.loading || store.searching"
+          class="rounded-lg border border-default divide-y divide-default overflow-hidden"
         >
-          {{ t('issues.serverSearch') }}
+          <IssueRowSkeleton
+            v-for="n in 6"
+            :key="n"
+          />
         </div>
 
         <!-- Issue list -->
         <div
-          v-else-if="store.filteredIssues.length"
+          v-else-if="store.sortedIssues.length"
           class="space-y-4"
         >
           <div
@@ -133,7 +155,7 @@ async function setFilter(state: 'open' | 'closed') {
             :class="store.paging ? 'opacity-50 pointer-events-none' : ''"
           >
             <IssueRow
-              v-for="issue in store.filteredIssues"
+              v-for="issue in store.sortedIssues"
               :key="issue.id"
               :issue="issue"
             />

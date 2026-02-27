@@ -281,6 +281,7 @@
     "nextPage": "Weiter",
     "serverSearch": "Suche läuft...",
     "filter": {
+      "assignedToMe": "Mir zugewiesen",
       "unassigned": "Nicht zugewiesen",
       "hasLinkedPr": "Hat PR",
       "noLinkedPr": "Kein PR",
