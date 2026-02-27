@@ -542,12 +542,17 @@
       "closedIssue": "Closed Issue",
       "dismissed": "Dismissed",
       "restore": "Restore",
+      "selected": "{count} selected",
+      "dismissSelected": "Dismiss selected",
+      "restoreSelected": "Restore selected",
+      "clearSelection": "Clear",
       "shortcuts": {
         "title": "Keyboard Shortcuts",
         "next": "Next item",
         "prev": "Previous item",
         "open": "Open item",
         "dismiss": "Dismiss / Restore item",
+        "select": "Toggle selection",
         "help": "Toggle this help"
       }
     },

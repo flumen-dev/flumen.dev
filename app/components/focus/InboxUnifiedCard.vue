@@ -4,6 +4,7 @@ import type { UnifiedInboxItem } from '~~/shared/types/inbox'
 const props = defineProps<{
   item: UnifiedInboxItem
   highlighted?: boolean
+  selected?: boolean
 }>()
 
 const el = useTemplateRef<HTMLElement>('cardEl')
@@ -170,6 +171,14 @@ const issuePreview = computed(() =>
       @click="toggleExpand"
     >
       <div class="flex items-start gap-3">
+        <input
+          type="checkbox"
+          :checked="selected"
+          :aria-label="`Select ${item.repo}#${item.number}`"
+          class="size-4 mt-0.5 shrink-0 accent-primary cursor-pointer"
+          :class="store.selectedKeys.size > 0 ? 'opacity-100' : 'opacity-0 group-hover:opacity-100 focus:opacity-100'"
+          @click.stop="store.toggleSelect(`${item.repo}#${item.number}`)"
+        >
         <UTooltip :text="stateTooltip">
           <UIcon
             :name="stateIcon"

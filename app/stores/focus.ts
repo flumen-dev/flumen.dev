@@ -39,6 +39,9 @@ export const useFocusStore = defineStore('focus', () => {
   // --- Dismiss state ---
   const dismissedKeys = ref<Set<string>>(new Set())
 
+  // --- Selection state (batch operations) ---
+  const selectedKeys = ref<Set<string>>(new Set())
+
   // --- Counts (lightweight, loaded on mount) ---
   const counts = ref<FocusCounts | null>(null)
   const countsFetchedAt = ref<number | null>(null)
@@ -510,10 +513,41 @@ export const useFocusStore = defineStore('focus', () => {
     dismissedKeys.value = new Set(keys)
   }
 
-  // Reset highlight on filter/scope/page change
+  // --- Batch selection ---
+  function toggleSelect(key: string) {
+    const next = new Set(selectedKeys.value)
+    if (next.has(key)) next.delete(key)
+    else next.add(key)
+    selectedKeys.value = next
+  }
+
+  function clearSelection() {
+    selectedKeys.value = new Set()
+  }
+
+  function dismissSelected() {
+    if (selectedKeys.value.size === 0) return
+    dismissedKeys.value = new Set([...dismissedKeys.value, ...selectedKeys.value])
+    selectedKeys.value = new Set()
+    persistDismissed()
+  }
+
+  function restoreSelected() {
+    if (selectedKeys.value.size === 0) return
+    const next = new Set(dismissedKeys.value)
+    for (const key of selectedKeys.value) next.delete(key)
+    dismissedKeys.value = next
+    selectedKeys.value = new Set()
+    persistDismissed()
+  }
+
+  // Reset highlight + selection on filter/scope/page change
   watch(
     [inboxScope, inboxRepo, inboxSearch, inboxPRStateFilter, inboxIssueStateFilter],
-    () => { highlightedKey.value = null },
+    () => {
+      highlightedKey.value = null
+      selectedKeys.value = new Set()
+    },
   )
 
   return {
@@ -606,5 +640,11 @@ export const useFocusStore = defineStore('focus', () => {
     loadDismissedFromSettings,
     dismissedPRs,
     dismissedIssues,
+    // Batch selection
+    selectedKeys,
+    toggleSelect,
+    clearSelection,
+    dismissSelected,
+    restoreSelected,
   }
 })

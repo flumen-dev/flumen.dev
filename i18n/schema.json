@@ -1633,6 +1633,18 @@
             "restore": {
               "type": "string"
             },
+            "selected": {
+              "type": "string"
+            },
+            "dismissSelected": {
+              "type": "string"
+            },
+            "restoreSelected": {
+              "type": "string"
+            },
+            "clearSelection": {
+              "type": "string"
+            },
             "shortcuts": {
               "type": "object",
               "properties": {
@@ -1649,6 +1661,9 @@
                   "type": "string"
                 },
                 "dismiss": {
+                  "type": "string"
+                },
+                "select": {
                   "type": "string"
                 },
                 "help": {

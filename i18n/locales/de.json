@@ -542,12 +542,17 @@
       "closedIssue": "Geschlossenes Issue",
       "dismissed": "Ausgeblendet",
       "restore": "Wiederherstellen",
+      "selected": "{count} ausgewählt",
+      "dismissSelected": "Auswahl ausblenden",
+      "restoreSelected": "Auswahl wiederherstellen",
+      "clearSelection": "Aufheben",
       "shortcuts": {
         "title": "Tastenkürzel",
         "next": "Nächstes Element",
         "prev": "Vorheriges Element",
         "open": "Element öffnen",
         "dismiss": "Ausblenden / Wiederherstellen",
+        "select": "Auswahl umschalten",
         "help": "Diese Hilfe ein-/ausblenden"
       }
     },

@@ -164,3 +164,68 @@ describe('dismiss and restore', () => {
     expect(next.has('org/repo#2')).toBe(true)
   })
 })
+
+// --- Batch selection ---
+
+function toggleSelect(selected: Set<string>, key: string): Set<string> {
+  const next = new Set(selected)
+  if (next.has(key)) next.delete(key)
+  else next.add(key)
+  return next
+}
+
+function dismissSelected(dismissed: Set<string>, selected: Set<string>): { dismissed: Set<string>, selected: Set<string> } {
+  return {
+    dismissed: new Set([...dismissed, ...selected]),
+    selected: new Set(),
+  }
+}
+
+function restoreSelected(dismissed: Set<string>, selected: Set<string>): { dismissed: Set<string>, selected: Set<string> } {
+  const next = new Set(dismissed)
+  for (const key of selected) next.delete(key)
+  return { dismissed: next, selected: new Set() }
+}
+
+describe('batch selection', () => {
+  it('toggleSelect adds key to empty set', () => {
+    const result = toggleSelect(new Set(), 'org/repo#1')
+    expect(result.has('org/repo#1')).toBe(true)
+    expect(result.size).toBe(1)
+  })
+
+  it('toggleSelect removes existing key', () => {
+    const result = toggleSelect(new Set(['org/repo#1']), 'org/repo#1')
+    expect(result.has('org/repo#1')).toBe(false)
+    expect(result.size).toBe(0)
+  })
+
+  it('toggleSelect accumulates multiple keys', () => {
+    let selected = new Set<string>()
+    selected = toggleSelect(selected, 'org/repo#1')
+    selected = toggleSelect(selected, 'org/repo#2')
+    expect(selected.size).toBe(2)
+    expect(selected.has('org/repo#1')).toBe(true)
+    expect(selected.has('org/repo#2')).toBe(true)
+  })
+
+  it('dismissSelected moves all selected keys to dismissed and clears selection', () => {
+    const selected = new Set(['org/repo#1', 'org/repo#3'])
+    const dismissed = new Set(['org/repo#2'])
+    const result = dismissSelected(dismissed, selected)
+    expect(result.dismissed.has('org/repo#1')).toBe(true)
+    expect(result.dismissed.has('org/repo#2')).toBe(true)
+    expect(result.dismissed.has('org/repo#3')).toBe(true)
+    expect(result.selected.size).toBe(0)
+  })
+
+  it('restoreSelected removes selected keys from dismissed and clears selection', () => {
+    const dismissed = new Set(['org/repo#1', 'org/repo#2', 'org/repo#3'])
+    const selected = new Set(['org/repo#1', 'org/repo#3'])
+    const result = restoreSelected(dismissed, selected)
+    expect(result.dismissed.has('org/repo#1')).toBe(false)
+    expect(result.dismissed.has('org/repo#2')).toBe(true)
+    expect(result.dismissed.has('org/repo#3')).toBe(false)
+    expect(result.selected.size).toBe(0)
+  })
+})

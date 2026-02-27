@@ -109,6 +109,7 @@ defineShortcuts({
   j: () => { if (inboxActive.value) store.highlightNext() },
   k: () => { if (inboxActive.value) store.highlightPrev() },
   d: () => { if (inboxActive.value) store.toggleDismiss() },
+  x: () => { if (inboxActive.value && store.highlightedKey) store.toggleSelect(store.highlightedKey) },
   enter: () => { if (inboxActive.value) store.openHighlighted() },
 })
 
@@ -201,6 +202,47 @@ onUnmounted(() => window.removeEventListener('keydown', onQuestionMark))
       </button>
     </div>
 
+    <!-- Batch action bar -->
+    <div
+      v-if="store.selectedKeys.size > 0"
+      class="sticky top-0 z-10 flex items-center gap-2 px-4 py-2 bg-primary/10 border-b border-primary/20"
+    >
+      <span class="text-xs font-medium">
+        {{ t('focus.inbox.selected', { count: store.selectedKeys.size }) }}
+      </span>
+      <button
+        v-if="!showDismissed"
+        type="button"
+        class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded-md bg-primary text-white hover:bg-primary/90 transition-colors cursor-pointer"
+        @click="store.dismissSelected()"
+      >
+        <UIcon
+          name="i-lucide-eye-off"
+          class="size-3.5"
+        />
+        {{ t('focus.inbox.dismissSelected') }}
+      </button>
+      <button
+        v-if="showDismissed"
+        type="button"
+        class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded-md bg-primary text-white hover:bg-primary/90 transition-colors cursor-pointer"
+        @click="store.restoreSelected()"
+      >
+        <UIcon
+          name="i-lucide-eye"
+          class="size-3.5"
+        />
+        {{ t('focus.inbox.restoreSelected') }}
+      </button>
+      <button
+        type="button"
+        class="text-xs text-muted hover:text-highlighted cursor-pointer"
+        @click="store.clearSelection()"
+      >
+        {{ t('focus.inbox.clearSelection') }}
+      </button>
+    </div>
+
     <!-- PRs sub-section -->
     <div class="border-b border-default">
       <div class="flex items-center gap-2 px-4 py-2 bg-muted/50">
@@ -271,6 +313,14 @@ onUnmounted(() => window.removeEventListener('keydown', onQuestionMark))
           :key="`dismissed-${item.repo}#${item.number}`"
           class="flex items-center gap-2 px-4 py-2 border-b border-default last:border-b-0 opacity-60"
         >
+          <input
+            type="checkbox"
+            :checked="store.selectedKeys.has(`${item.repo}#${item.number}`)"
+            :aria-label="`Select ${item.repo}#${item.number}`"
+            class="size-4 shrink-0 accent-primary cursor-pointer"
+            :class="store.selectedKeys.size > 0 ? 'opacity-100' : 'opacity-0 hover:opacity-100 focus:opacity-100'"
+            @click.stop="store.toggleSelect(`${item.repo}#${item.number}`)"
+          >
           <div class="min-w-0 flex-1 text-sm truncate">
             {{ item.title }}
             <span class="text-xs text-dimmed">#{{ item.number }}</span>
@@ -300,12 +350,13 @@ onUnmounted(() => window.removeEventListener('keydown', onQuestionMark))
             :key="`${item.repo}#${item.number}`"
             :item="item"
             :highlighted="store.highlightedKey === `${item.repo}#${item.number}`"
+            :selected="store.selectedKeys.has(`${item.repo}#${item.number}`)"
           />
         </div>
       </template>
 
       <UiPaginator
-        v-if="!store.inboxPRs.loading && store.inboxPRs.totalPages > 1"
+        v-if="!showDismissed && !store.inboxPRs.loading && store.inboxPRs.totalPages > 1"
         :current-page="store.inboxPRs.page"
         :total-pages="store.inboxPRs.totalPages"
         :has-more="store.inboxPRs.hasMore"
@@ -386,6 +437,14 @@ onUnmounted(() => window.removeEventListener('keydown', onQuestionMark))
           :key="`dismissed-${item.repo}#${item.number}`"
           class="flex items-center gap-2 px-4 py-2 border-b border-default last:border-b-0 opacity-60"
         >
+          <input
+            type="checkbox"
+            :checked="store.selectedKeys.has(`${item.repo}#${item.number}`)"
+            :aria-label="`Select ${item.repo}#${item.number}`"
+            class="size-4 shrink-0 accent-primary cursor-pointer"
+            :class="store.selectedKeys.size > 0 ? 'opacity-100' : 'opacity-0 hover:opacity-100 focus:opacity-100'"
+            @click.stop="store.toggleSelect(`${item.repo}#${item.number}`)"
+          >
           <div class="min-w-0 flex-1 text-sm truncate">
             {{ item.title }}
             <span class="text-xs text-dimmed">#{{ item.number }}</span>
@@ -415,12 +474,13 @@ onUnmounted(() => window.removeEventListener('keydown', onQuestionMark))
             :key="`${item.repo}#${item.number}`"
             :item="item"
             :highlighted="store.highlightedKey === `${item.repo}#${item.number}`"
+            :selected="store.selectedKeys.has(`${item.repo}#${item.number}`)"
           />
         </div>
       </template>
 
       <UiPaginator
-        v-if="!store.inboxIssues.loading && store.inboxIssues.totalPages > 1"
+        v-if="!showDismissed && !store.inboxIssues.loading && store.inboxIssues.totalPages > 1"
         :current-page="store.inboxIssues.page"
         :total-pages="store.inboxIssues.totalPages"
         :has-more="store.inboxIssues.hasMore"
@@ -447,6 +507,8 @@ onUnmounted(() => window.removeEventListener('keydown', onQuestionMark))
             <span>{{ t('focus.inbox.shortcuts.open') }}</span>
             <kbd class="px-2 py-0.5 bg-muted rounded font-mono text-xs">d</kbd>
             <span>{{ t('focus.inbox.shortcuts.dismiss') }}</span>
+            <kbd class="px-2 py-0.5 bg-muted rounded font-mono text-xs">x</kbd>
+            <span>{{ t('focus.inbox.shortcuts.select') }}</span>
             <kbd class="px-2 py-0.5 bg-muted rounded font-mono text-xs">?</kbd>
             <span>{{ t('focus.inbox.shortcuts.help') }}</span>
           </div>
