@@ -14,6 +14,8 @@ const pagedItems = computed(() => {
   return store.waitingOnMe.data.slice(start, start + PAGE_SIZE)
 })
 
+const isOnLastPage = computed(() => page.value >= totalPages.value)
+
 // Reset page when data changes
 watch(() => store.waitingOnMe.data.length, () => {
   page.value = 1
@@ -106,15 +108,34 @@ watch(() => store.waitingOnMe.data.length, () => {
         />
       </div>
 
-      <UiPaginator
-        v-if="totalPages > 1"
-        :current-page="page"
-        :total-pages="totalPages"
-        :has-more="page < totalPages"
-        :has-previous="page > 1"
-        @next="page++"
-        @previous="page--"
-      />
+      <!-- Pagination + Load more -->
+      <div class="border-t border-default">
+        <UiPaginator
+          v-if="totalPages > 1"
+          :current-page="page"
+          :total-pages="totalPages"
+          :has-more="page < totalPages"
+          :has-previous="page > 1"
+          @next="page++"
+          @previous="page--"
+        />
+
+        <!-- Load more from server -->
+        <div
+          v-if="store.waitingOnMe.hasMore && isOnLastPage"
+          class="flex items-center justify-center px-4 py-3"
+          :class="totalPages > 1 ? 'border-t border-default' : ''"
+        >
+          <UButton
+            :label="t('focus.waitingOnMe.loadMore')"
+            icon="i-lucide-chevrons-down"
+            variant="ghost"
+            size="sm"
+            :loading="store.waitingOnMe.loadingMore"
+            @click="store.loadMoreWaitingOnMe()"
+          />
+        </div>
+      </div>
     </template>
   </div>
 </template>

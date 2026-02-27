@@ -515,7 +515,8 @@
         "review-requested": "{login} braucht dein Review",
         "needs-response": "{login} wartet auf deine Antwort",
         "changes-requested": "{login} hat Änderungen an deinem PR angefragt"
-      }
+      },
+      "loadMore": "Mehr anzeigen"
     },
     "workingOn": {
       "title": "In Arbeit",

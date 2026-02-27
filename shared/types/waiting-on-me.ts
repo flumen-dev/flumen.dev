@@ -22,6 +22,12 @@ export interface WaitingOnMeItem {
   labels: Array<{ name: string, color: string }>
 }
 
+export interface WaitingOnMeCursors {
+  review: string | null
+  assigned: string | null
+  changes: string | null
+}
+
 export interface WaitingOnMeResponse {
   items: WaitingOnMeItem[]
   summary: {
@@ -29,4 +35,6 @@ export interface WaitingOnMeResponse {
     uniquePeopleBlocked: number
     averageWaitDays: number
   }
+  hasMore: boolean
+  cursors: WaitingOnMeCursors
 }

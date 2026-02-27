@@ -515,7 +515,8 @@
         "changes-requested": "{login} requested changes on your PR"
       },
       "waitingDays": "{days}d",
-      "waitingSince": "Waiting for {days} days"
+      "waitingSince": "Waiting for {days} days",
+      "loadMore": "Load more"
     },
     "workingOn": {
       "title": "Working On",
