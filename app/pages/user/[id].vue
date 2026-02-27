@@ -410,6 +410,7 @@ function sanitizeUrl(raw: string): string | null {
               <a
                 href="https://github.com/settings"
                 target="_blank"
+                rel="noopener noreferrer"
                 class="text-xs text-muted hover:text-primary transition-colors inline-flex items-center gap-1"
               >
                 <UIcon

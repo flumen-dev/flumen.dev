@@ -127,8 +127,9 @@ export const useProfileStore = defineStore('profile', () => {
   }
 
   async function fetchPinnedRepos() {
+    if (!user.value?.login) return
     try {
-      const data = await apiFetch<{ pinned: ProfilePin[] }>('/api/user/pinned-repos', { query: { login: user.value?.login } })
+      const data = await apiFetch<{ pinned: ProfilePin[] }>('/api/user/pinned-repos', { query: { login: user.value.login } })
       pinnedRepos.value = data.pinned
     }
     catch (err) {
