@@ -53,8 +53,8 @@ function dismissAndAdvance(
   const idx = items.findIndex(item => itemKey(item) === key)
 
   let highlightedKey: string | null
-  if (remaining.length === 0) {
-    highlightedKey = null
+  if (remaining.length === 0 || idx === -1) {
+    highlightedKey = remaining.length > 0 ? itemKey(remaining[0]!) : null
   }
   else if (idx < remaining.length) {
     highlightedKey = itemKey(remaining[idx]!)
@@ -149,6 +149,11 @@ describe('dismiss and restore', () => {
     const dismissed = new Set(['org/repo#1', 'org/repo#2'])
     const result = dismissAndAdvance(items, dismissed, 'org/repo#3')
     expect(result.highlightedKey).toBeNull()
+  })
+
+  it('dismiss with unknown key falls back to first remaining item', () => {
+    const result = dismissAndAdvance(items, new Set(), 'org/other#999')
+    expect(result.highlightedKey).toBe('org/repo#1')
   })
 
   it('restore removes key from dismissed set', () => {

@@ -6,7 +6,7 @@ const { settings, orgs } = useUserSettings()
 
 // Load dismissed keys from persisted settings
 watchEffect(() => {
-  if (settings.value?.dismissedInbox?.length) {
+  if (settings.value?.dismissedInbox !== undefined) {
     store.loadDismissedFromSettings(settings.value.dismissedInbox)
   }
 })
@@ -95,6 +95,10 @@ watch(() => store.inboxIssues.data, (items) => {
 const showDismissed = ref(false)
 
 const dismissedCount = computed(() => store.dismissedKeys.size)
+
+watch(dismissedCount, (count) => {
+  if (count === 0) showDismissed.value = false
+})
 
 // --- Keyboard shortcuts ---
 const helpOpen = ref(false)

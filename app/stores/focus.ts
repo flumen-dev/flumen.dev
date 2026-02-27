@@ -476,8 +476,10 @@ export const useFocusStore = defineStore('focus', () => {
       dismissItem(key)
       // Auto-advance to next item after dismiss
       const remaining = items.filter(item => `${item.repo}#${item.number}` !== key)
-      if (remaining.length === 0) {
-        highlightedKey.value = null
+      if (remaining.length === 0 || idx === -1) {
+        highlightedKey.value = remaining.length > 0
+          ? `${remaining[0]!.repo}#${remaining[0]!.number}`
+          : null
       }
       else if (idx < remaining.length) {
         const next = remaining[idx]!

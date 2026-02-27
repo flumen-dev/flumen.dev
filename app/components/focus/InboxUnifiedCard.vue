@@ -270,6 +270,7 @@ const issuePreview = computed(() =>
           <UTooltip :text="t('focus.inbox.dismissed')">
             <button
               type="button"
+              :aria-label="`${t('focus.inbox.dismissed')} ${item.repo}#${item.number}`"
               class="opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity p-0.5 rounded hover:bg-muted cursor-pointer"
               @click.stop="store.dismissItem(`${item.repo}#${item.number}`)"
             >
