@@ -98,4 +98,38 @@ describe('parseAchievements', () => {
     const result = parseAchievements(html, login)
     expect(result).toEqual([])
   })
+
+  it('escapes special regex characters in login', () => {
+    const specialLogin = 'user.name+test'
+    const html = `
+      <a href="/${specialLogin}?achievement=starstruck&amp;tab=achievements">
+        <img src="https://github.githubassets.com/assets/starstruck-abc.png" alt="Achievement: Starstruck" />
+      </a>
+    `
+    const result = parseAchievements(html, specialLogin)
+    expect(result).toHaveLength(1)
+    expect(result[0]!.slug).toBe('starstruck')
+  })
+
+  it('skips entries without an image URL', () => {
+    const html = `
+      <a href="/${login}?achievement=ghost&amp;tab=achievements">
+        <span>no image here</span>
+      </a>
+    `
+    const result = parseAchievements(html, login)
+    expect(result).toEqual([])
+  })
+
+  it('parses multi-digit tier values', () => {
+    const html = `
+      <a href="/${login}?achievement=pull-shark&amp;tab=achievements">
+        <img src="https://github.githubassets.com/assets/pull-shark-abc.png" alt="Achievement: Pull Shark" />
+        x16
+      </a>
+    `
+    const result = parseAchievements(html, login)
+    expect(result).toHaveLength(1)
+    expect(result[0]!.tier).toBe(16)
+  })
 })
