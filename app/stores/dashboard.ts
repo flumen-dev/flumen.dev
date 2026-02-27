@@ -29,7 +29,7 @@ export const useDashboardStore = defineStore('dashboard', () => {
     waitingOnMe.value.loading = true
     waitingOnMe.value.error = false
     try {
-      const res = await apiFetch<WaitingOnMeResponse>('/api/focus/waiting-on-me')
+      const res = await apiFetch<WaitingOnMeResponse>('/api/dashboard/waiting-on-me')
       waitingOnMe.value.data = res.items
       waitingOnMe.value.summary = res.summary
       waitingOnMe.value.hasMore = res.hasMore
@@ -54,7 +54,7 @@ export const useDashboardStore = defineStore('dashboard', () => {
       if (waitingOnMe.value.cursors.changes) params.set('cursorChanges', waitingOnMe.value.cursors.changes)
 
       // Server merges with cached data and returns the full set
-      const res = await apiFetch<WaitingOnMeResponse>(`/api/focus/waiting-on-me?${params}`)
+      const res = await apiFetch<WaitingOnMeResponse>(`/api/dashboard/waiting-on-me?${params}`)
       waitingOnMe.value.data = res.items
       waitingOnMe.value.summary = res.summary
       waitingOnMe.value.hasMore = res.hasMore
@@ -87,7 +87,7 @@ export const useDashboardStore = defineStore('dashboard', () => {
     prHealth.value.loading = true
     prHealth.value.error = false
     try {
-      const res = await apiFetch<PRHealthResponse>('/api/focus/pr-health')
+      const res = await apiFetch<PRHealthResponse>('/api/dashboard/pr-health')
       prHealth.value.data = res.items
       prHealth.value.summary = res.summary
       prHealth.value.fetchedAt = Date.now()
