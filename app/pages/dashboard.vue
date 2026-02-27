@@ -10,6 +10,7 @@ const store = useDashboardStore()
 onMounted(() => {
   store.fetchWaitingOnMe()
   store.fetchPRHealth()
+  store.fetchPulse()
 })
 </script>
 
@@ -32,5 +33,6 @@ onMounted(() => {
 
     <DashboardWaitingOnMePanel />
     <DashboardPRHealthPanel />
+    <DashboardProductivityPanel />
   </div>
 </template>

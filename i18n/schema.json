@@ -1495,6 +1495,96 @@
       },
       "additionalProperties": false
     },
+    "dashboard": {
+      "type": "object",
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "prHealth": {
+          "type": "object",
+          "properties": {
+            "title": {
+              "type": "string"
+            },
+            "empty": {
+              "type": "string"
+            },
+            "summary": {
+              "type": "string"
+            },
+            "ageDays": {
+              "type": "string"
+            },
+            "reason": {
+              "type": "object",
+              "properties": {
+                "ci-failing": {
+                  "type": "string"
+                },
+                "merge-conflict": {
+                  "type": "string"
+                },
+                "needs-reviewers": {
+                  "type": "string"
+                },
+                "stale-draft": {
+                  "type": "string"
+                },
+                "approved-not-merged": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
+        },
+        "pulse": {
+          "type": "object",
+          "properties": {
+            "title": {
+              "type": "string"
+            },
+            "empty": {
+              "type": "string"
+            },
+            "ratio": {
+              "type": "string"
+            },
+            "summary": {
+              "type": "string"
+            },
+            "clearing": {
+              "type": "string"
+            },
+            "keeping": {
+              "type": "string"
+            },
+            "falling": {
+              "type": "string"
+            },
+            "incoming": {
+              "type": "string"
+            },
+            "resolved": {
+              "type": "string"
+            },
+            "prsMerged": {
+              "type": "string"
+            },
+            "issuesClosed": {
+              "type": "string"
+            },
+            "moreItems": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
     "focus": {
       "type": "object",
       "properties": {
@@ -1503,6 +1593,42 @@
         },
         "description": {
           "type": "string"
+        },
+        "waitingOnMe": {
+          "type": "object",
+          "properties": {
+            "title": {
+              "type": "string"
+            },
+            "empty": {
+              "type": "string"
+            },
+            "summary": {
+              "type": "string"
+            },
+            "reason": {
+              "type": "object",
+              "properties": {
+                "review-requested": {
+                  "type": "string"
+                },
+                "needs-response": {
+                  "type": "string"
+                },
+                "changes-requested": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false
+            },
+            "waitingDays": {
+              "type": "string"
+            },
+            "loadMore": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
         },
         "workingOn": {
           "type": "object",

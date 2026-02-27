@@ -510,6 +510,20 @@
         "stale-draft": "Draft seit {days} Tagen offen",
         "approved-not-merged": "Genehmigt, aber nicht gemerged"
       }
+    },
+    "pulse": {
+      "title": "Wochenpuls",
+      "empty": "Keine Aktivität in deinen Repos diese Woche.",
+      "ratio": "{ratio}x",
+      "summary": "{resolved} erledigt vs. {incoming} eingegangen",
+      "clearing": "Rückstau wird kleiner",
+      "keeping": "Auf Kurs",
+      "falling": "Rückstau wächst",
+      "incoming": "Eingegangen",
+      "resolved": "Erledigt",
+      "prsMerged": "PRs gemerged",
+      "issuesClosed": "Issues geschlossen",
+      "moreItems": "+{count} weitere"
     }
   },
   "focus": {
@@ -519,11 +533,7 @@
       "title": "Wartet auf mich",
       "empty": "Alles erledigt. Niemand wartet auf dich.",
       "summary": "Du blockierst {people} Personen seit durchschnittlich {days} Tagen.",
-      "review-requested": "Review angefragt",
-      "needs-response": "Antwort nötig",
-      "changes-requested": "Änderungen angefragt",
       "waitingDays": "{days}T",
-      "waitingSince": "Wartet seit {days} Tagen",
       "reason": {
         "review-requested": "{login} braucht dein Review",
         "needs-response": "{login} wartet auf deine Antwort",

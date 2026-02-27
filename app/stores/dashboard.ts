@@ -1,6 +1,3 @@
-import type { WaitingOnMeItem, WaitingOnMeCursors, WaitingOnMeResponse } from '~~/shared/types/waiting-on-me'
-import type { PRHealthItem, PRHealthResponse } from '~~/shared/types/pr-health'
-
 export const useDashboardStore = defineStore('dashboard', () => {
   const apiFetch = useRequestFetch()
 
@@ -100,11 +97,41 @@ export const useDashboardStore = defineStore('dashboard', () => {
     }
   }
 
+  // --- Weekly Pulse ---
+  const pulse = ref<{
+    data: PulseResponse | null
+    loading: boolean
+    error: boolean
+    fetchedAt: number | null
+  }>({
+    data: null,
+    loading: false,
+    error: false,
+    fetchedAt: null,
+  })
+
+  async function fetchPulse() {
+    pulse.value.loading = true
+    pulse.value.error = false
+    try {
+      pulse.value.data = await apiFetch<PulseResponse>('/api/dashboard/pulse')
+      pulse.value.fetchedAt = Date.now()
+    }
+    catch {
+      pulse.value.error = true
+    }
+    finally {
+      pulse.value.loading = false
+    }
+  }
+
   return {
     waitingOnMe,
     fetchWaitingOnMe,
     loadMoreWaitingOnMe,
     prHealth,
     fetchPRHealth,
+    pulse,
+    fetchPulse,
   }
 })

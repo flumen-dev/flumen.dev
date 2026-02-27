@@ -510,6 +510,20 @@
         "stale-draft": "Draft open for {days} days",
         "approved-not-merged": "Approved but not merged"
       }
+    },
+    "pulse": {
+      "title": "Weekly Pulse",
+      "empty": "No activity in your repos this week.",
+      "ratio": "{ratio}x",
+      "summary": "{resolved} resolved vs. {incoming} incoming",
+      "clearing": "Clearing backlog",
+      "keeping": "Keeping up",
+      "falling": "Backlog growing",
+      "incoming": "Incoming",
+      "resolved": "Resolved",
+      "prsMerged": "PRs merged",
+      "issuesClosed": "Issues closed",
+      "moreItems": "+{count} more"
     }
   },
   "focus": {
@@ -519,16 +533,12 @@
       "title": "Waiting on Me",
       "empty": "You're all caught up. No one is waiting on you.",
       "summary": "You're blocking {people} people for an average of {days} days.",
-      "review-requested": "Review requested",
-      "needs-response": "Needs response",
-      "changes-requested": "Changes requested",
       "reason": {
         "review-requested": "{login} needs your review",
         "needs-response": "{login} is waiting for your reply",
         "changes-requested": "{login} requested changes on your PR"
       },
       "waitingDays": "{days}d",
-      "waitingSince": "Waiting for {days} days",
       "loadMore": "Load more"
     },
     "workingOn": {
