@@ -23,15 +23,46 @@ const mockIssue: Issue = {
   repository: { nameWithOwner: 'org/repo', name: 'repo', owner: 'org' },
 }
 
+const unassignedIssue: Issue = {
+  ...mockIssue,
+  id: 'I_unassigned',
+  assignees: [],
+}
+
+const bugOnly: Issue = {
+  ...mockIssue,
+  id: 'I_bug',
+  labels: [{ name: 'bug', color: 'ff0000' }],
+}
+
+const featureOnly: Issue = {
+  ...mockIssue,
+  id: 'I_feature',
+  labels: [{ name: 'feature', color: '00ff00' }],
+}
+
 registerEndpoint('/api/issues', {
   method: 'GET',
   handler: (event: { path: string }) => {
     const url = new URL(event.path, 'http://localhost')
     const repo = url.searchParams.get('repo')
     if (!repo) return { statusCode: 400 }
+
+    // Server-side filter simulation
+    let issues = [mockIssue]
+
+    if (url.searchParams.has('unassigned')) {
+      issues = [unassignedIssue]
+    }
+    if (url.searchParams.has('label')) {
+      const label = url.searchParams.get('label')
+      if (label === 'bug') issues = [bugOnly]
+      if (label === 'feature') issues = [featureOnly]
+    }
+
     return {
-      issues: [mockIssue],
-      totalCount: 1,
+      items: issues,
+      totalCount: issues.length,
       pageInfo: { hasNextPage: false, endCursor: null },
     }
   },
@@ -114,10 +145,10 @@ describe('issueStore', () => {
         { ...mockIssue, id: 'I_2', title: 'Dashboard crash' },
       ]
       store.search = 'login'
-      // Server-side search: filteredIssues returns searchResults when search is active
+      // Server-side search: sortedIssues returns searchResults when search is active
       store.searchResults = [{ ...mockIssue, id: 'I_1', title: 'Login bug' }]
-      expect(store.filteredIssues).toHaveLength(1)
-      expect(store.filteredIssues[0]?.title).toBe('Login bug')
+      expect(store.sortedIssues).toHaveLength(1)
+      expect(store.sortedIssues[0]?.title).toBe('Login bug')
     })
   })
 
@@ -128,20 +159,18 @@ describe('issueStore', () => {
         { ...mockIssue, id: 'I_2', number: 99 },
       ]
       store.search = '#99'
-      // No searchResults set — filteredIssues returns empty
-      expect(store.filteredIssues).toHaveLength(0)
+      // No searchResults set — sortedIssues returns empty
+      expect(store.sortedIssues).toHaveLength(0)
     })
   })
 
-  it('unassigned filter keeps only issues without assignees', async () => {
-    await withStore((store) => {
-      store.issues = [
-        { ...mockIssue, id: 'I_1', assignees: [] },
-        { ...mockIssue, id: 'I_2', assignees: [{ login: 'bob', avatarUrl: '' }] },
-      ]
+  it('unassigned filter fetches only unassigned issues from server', async () => {
+    await withStore(async (store) => {
+      await store.selectRepo('org/repo')
       store.activeFilters = ['unassigned']
-      expect(store.filteredIssues).toHaveLength(1)
-      expect(store.filteredIssues[0]?.id).toBe('I_1')
+      await store.fetchIssues()
+      expect(store.issues).toHaveLength(1)
+      expect(store.issues[0]?.id).toBe('I_unassigned')
     })
   })
 
@@ -151,7 +180,7 @@ describe('issueStore', () => {
       const hot: Issue = { ...mockIssue, id: 'I_hot', commentCount: 10, assignees: [], linkedPrCount: 0, maintainerCommented: false }
       store.issues = [assigned, hot]
       store.sortKey = 'critical'
-      expect(store.filteredIssues[0]?.id).toBe('I_hot')
+      expect(store.sortedIssues[0]?.id).toBe('I_hot')
     })
   })
 
@@ -161,7 +190,7 @@ describe('issueStore', () => {
       const ignored: Issue = { ...mockIssue, id: 'I_ign', commentCount: 5, maintainerCommented: false, assignees: [], linkedPrCount: 0 }
       store.issues = [responded, ignored]
       store.sortKey = 'critical'
-      expect(store.filteredIssues[0]?.id).toBe('I_ign')
+      expect(store.sortedIssues[0]?.id).toBe('I_ign')
     })
   })
 
@@ -172,19 +201,17 @@ describe('issueStore', () => {
         { ...mockIssue, id: 'I_new', createdAt: '2025-06-01T00:00:00Z' },
       ]
       store.sortKey = 'newest'
-      expect(store.filteredIssues[0]?.id).toBe('I_new')
+      expect(store.sortedIssues[0]?.id).toBe('I_new')
     })
   })
 
-  it('label filter narrows by label name', async () => {
-    await withStore((store) => {
-      store.issues = [
-        { ...mockIssue, id: 'I_1', labels: [{ name: 'bug', color: 'ff0000' }] },
-        { ...mockIssue, id: 'I_2', labels: [{ name: 'feature', color: '00ff00' }] },
-      ]
+  it('label filter fetches matching issues from server', async () => {
+    await withStore(async (store) => {
+      await store.selectRepo('org/repo')
       store.activeFilters = ['label:bug']
-      expect(store.filteredIssues).toHaveLength(1)
-      expect(store.filteredIssues[0]?.id).toBe('I_1')
+      await store.fetchIssues()
+      expect(store.issues).toHaveLength(1)
+      expect(store.issues[0]?.id).toBe('I_bug')
     })
   })
 
