@@ -688,6 +688,9 @@
         "socialLimit": {
           "type": "string"
         },
+        "achievements": {
+          "type": "string"
+        },
         "readme": {
           "type": "string"
         },
@@ -1217,6 +1220,9 @@
               "type": "string"
             },
             "sharedRepos": {
+              "type": "string"
+            },
+            "achievements": {
               "type": "string"
             },
             "recentActivity": {
