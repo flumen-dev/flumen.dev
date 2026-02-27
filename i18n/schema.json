@@ -630,6 +630,21 @@
             }
           },
           "additionalProperties": false
+        },
+        "pins": {
+          "type": "object",
+          "properties": {
+            "title": {
+              "type": "string"
+            },
+            "empty": {
+              "type": "string"
+            },
+            "manageOnGithub": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
         }
       },
       "additionalProperties": false

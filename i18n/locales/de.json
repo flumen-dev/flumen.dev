@@ -207,6 +207,11 @@
       "loadFailed": "Profildaten konnten nicht geladen werden.",
       "readmeSaveFailed": "Profil-README konnte nicht gespeichert werden.",
       "statusFailed": "Status konnte nicht aktualisiert werden."
+    },
+    "pins": {
+      "title": "Angeheftete Repositories",
+      "empty": "Noch keine angehefteten Repositories.",
+      "manageOnGithub": "Auf GitHub verwalten"
     }
   },
   "issues": {

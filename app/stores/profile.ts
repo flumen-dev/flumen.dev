@@ -1,4 +1,4 @@
-import type { GitHubProfile, GitHubEmail } from '~~/shared/types/profile'
+import type { GitHubProfile, GitHubEmail, ProfilePin } from '~~/shared/types/profile'
 import type { UserStatus } from '~~/shared/types/status'
 import { socialProviders, detectProvider } from '~~/shared/socialProviders'
 
@@ -11,6 +11,7 @@ export const useProfileStore = defineStore('profile', () => {
   const { t } = useI18n()
   const toast = useToast()
   const apiFetch = useRequestFetch()
+  const { user } = useUserSession()
 
   // --- State ---
   const profile = ref<GitHubProfile | null>(null)
@@ -28,6 +29,7 @@ export const useProfileStore = defineStore('profile', () => {
   const savingReadme = ref(false)
   const status = ref<UserStatus | null>(null)
   const savingStatus = ref(false)
+  const pinnedRepos = ref<ProfilePin[]>([])
 
   // --- Computed ---
   const primaryEmail = computed(() => emails.value.find(e => e.primary))
@@ -124,6 +126,16 @@ export const useProfileStore = defineStore('profile', () => {
     }
   }
 
+  async function fetchPinnedRepos() {
+    try {
+      const data = await apiFetch<{ pinned: ProfilePin[] }>('/api/user/pinned-repos', { query: { login: user.value?.login } })
+      pinnedRepos.value = data.pinned
+    }
+    catch (err) {
+      handleError('loadFailed', err)
+    }
+  }
+
   async function fetchAll() {
     if (loaded.value) return
     loading.value = true
@@ -134,6 +146,7 @@ export const useProfileStore = defineStore('profile', () => {
         apiFetch<SocialAccount[]>('/api/user/social-accounts'),
         fetchReadme(),
         fetchStatus(),
+        fetchPinnedRepos(),
       ])
       profile.value = p as GitHubProfile
       emails.value = e
@@ -269,6 +282,7 @@ export const useProfileStore = defineStore('profile', () => {
     savingReadme,
     status,
     savingStatus,
+    pinnedRepos,
     // Computed
     primaryEmail,
     emailIsPublic,
@@ -286,5 +300,6 @@ export const useProfileStore = defineStore('profile', () => {
     fetchStatus,
     updateStatus,
     clearStatus,
+    fetchPinnedRepos,
   }
 })

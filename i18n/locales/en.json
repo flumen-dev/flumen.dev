@@ -207,6 +207,11 @@
       "loadFailed": "Could not load profile data.",
       "readmeSaveFailed": "Could not save profile README.",
       "statusFailed": "Could not update status."
+    },
+    "pins": {
+      "title": "Pinned Repositories",
+      "empty": "No pinned repositories yet.",
+      "manageOnGithub": "Manage on GitHub"
     }
   },
   "issues": {

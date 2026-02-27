@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { ProfilePin } from '~~/shared/types/profile'
 import { shortcodeToUnicode } from '~~/shared/types/status'
 import type { SharedRepo } from '~~/server/api/user/shared-repos.get'
 import type { ActivityType, UserActivityEvent } from '~~/server/utils/activity'
@@ -47,6 +48,13 @@ const { data: sharedRepos } = useFetch<SharedRepo[]>('/api/user/shared-repos', {
   lazy: true,
   default: () => [],
 })
+
+const { data: pinnedReposData } = useFetch<{ pinned: ProfilePin[] }>('/api/user/pinned-repos', {
+  params: { login: props.profile.login },
+  lazy: true,
+})
+
+const pinnedRepos = computed(() => pinnedReposData.value?.pinned ?? [])
 
 const { data: activity } = useFetch<UserActivityEvent[]>('/api/user/activity', {
   params: { login: props.profile.login },
@@ -191,6 +199,52 @@ function activityLabel(ev: UserActivityEvent): string {
         />
         {{ link.label }}
       </a>
+    </div>
+
+    <!-- Pinned Repos -->
+    <div
+      v-if="pinnedRepos.length"
+      class="space-y-2"
+    >
+      <h3 class="text-xs font-semibold text-muted uppercase tracking-wide">
+        {{ t('profile.pins.title') }}
+      </h3>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+        <div
+          v-for="repo in pinnedRepos"
+          :key="repo.id"
+          class="flex flex-col p-2.5 rounded-lg border border-default"
+        >
+          <div class="flex items-center gap-1.5 min-w-0">
+            <UIcon
+              :name="repo.fork ? 'i-lucide-git-fork' : 'i-lucide-book-marked'"
+              class="size-3.5 shrink-0 text-muted"
+            />
+            <span class="text-sm font-medium text-highlighted truncate">
+              {{ repo.name }}
+            </span>
+          </div>
+          <p class="mt-1 text-xs text-muted line-clamp-2 flex-1">
+            {{ repo.description ?? '' }}
+          </p>
+          <div class="mt-1.5 flex items-center gap-3 text-xs text-dimmed">
+            <span
+              v-if="repo.language"
+              class="inline-flex items-center gap-1"
+            >
+              <span class="size-2 rounded-full bg-primary" />
+              {{ repo.language }}
+            </span>
+            <span class="inline-flex items-center gap-1">
+              <UIcon
+                name="i-lucide-star"
+                class="size-3"
+              />
+              {{ repo.stars }}
+            </span>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Top Repos -->

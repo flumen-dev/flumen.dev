@@ -25,6 +25,10 @@ export interface ProfileRepo {
   fork: boolean
 }
 
+export interface ProfilePin extends ProfileRepo {
+  id: string // GraphQL node ID (needed for pin/unpin mutations)
+}
+
 export interface GitHubEmail {
   email: string
   primary: boolean

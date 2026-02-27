@@ -2,6 +2,7 @@
 import type { SocialProvider } from '~~/shared/socialProviders'
 
 const { t } = useI18n()
+const localePath = useLocalePath()
 
 definePageMeta({
   titleKey: 'nav.profile',
@@ -399,6 +400,71 @@ function sanitizeUrl(raw: string): string | null {
                 {{ t('profile.socialLimit') }}
               </p>
             </div>
+          </div>
+          <!-- Pinned Repositories -->
+          <div class="mt-5">
+            <div class="flex items-center justify-between mb-4">
+              <h2 class="text-lg font-semibold">
+                {{ t('profile.pins.title') }}
+              </h2>
+              <a
+                href="https://github.com/settings"
+                target="_blank"
+                class="text-xs text-muted hover:text-primary transition-colors inline-flex items-center gap-1"
+              >
+                <UIcon
+                  name="i-lucide-external-link"
+                  class="size-3"
+                />
+                {{ t('profile.pins.manageOnGithub') }}
+              </a>
+            </div>
+            <div
+              v-if="store.pinnedRepos.length > 0"
+              class="grid grid-cols-1 sm:grid-cols-2 gap-2"
+            >
+              <NuxtLink
+                v-for="repo in store.pinnedRepos"
+                :key="repo.id"
+                :to="localePath({ path: '/issues', query: { repo: repo.fullName } })"
+                class="flex flex-col p-2.5 rounded-lg border border-default hover:bg-elevated transition-colors group"
+              >
+                <div class="flex items-center gap-1.5 min-w-0">
+                  <UIcon
+                    :name="repo.fork ? 'i-lucide-git-fork' : 'i-lucide-book-marked'"
+                    class="size-3.5 shrink-0 text-muted"
+                  />
+                  <span class="text-sm font-medium text-highlighted truncate group-hover:text-primary transition-colors">
+                    {{ repo.name }}
+                  </span>
+                </div>
+                <p class="mt-1 text-xs text-muted line-clamp-2 flex-1">
+                  {{ repo.description ?? '' }}
+                </p>
+                <div class="mt-1.5 flex items-center gap-3 text-xs text-dimmed">
+                  <span
+                    v-if="repo.language"
+                    class="inline-flex items-center gap-1"
+                  >
+                    <span class="size-2 rounded-full bg-primary" />
+                    {{ repo.language }}
+                  </span>
+                  <span class="inline-flex items-center gap-1">
+                    <UIcon
+                      name="i-lucide-star"
+                      class="size-3"
+                    />
+                    {{ repo.stars }}
+                  </span>
+                </div>
+              </NuxtLink>
+            </div>
+            <p
+              v-else
+              class="text-sm text-muted py-2"
+            >
+              {{ t('profile.pins.empty') }}
+            </p>
           </div>
         </div><!-- /left column -->
 
