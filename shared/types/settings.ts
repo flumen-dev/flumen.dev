@@ -16,6 +16,7 @@ export interface UserSettings {
   pinnedRepos: PinnedItem[]
   cliToken: string | null
   contributionSkin: ContributionSkin
+  pinnedHeight: number | null
 }
 
 export const defaultUserSettings: UserSettings = {
@@ -27,6 +28,7 @@ export const defaultUserSettings: UserSettings = {
   pinnedRepos: [],
   cliToken: null,
   contributionSkin: 'default',
+  pinnedHeight: null,
 }
 
 export const accentColors = [
