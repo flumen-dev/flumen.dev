@@ -1626,6 +1626,36 @@
             },
             "closedIssue": {
               "type": "string"
+            },
+            "dismissed": {
+              "type": "string"
+            },
+            "restore": {
+              "type": "string"
+            },
+            "shortcuts": {
+              "type": "object",
+              "properties": {
+                "title": {
+                  "type": "string"
+                },
+                "next": {
+                  "type": "string"
+                },
+                "prev": {
+                  "type": "string"
+                },
+                "open": {
+                  "type": "string"
+                },
+                "dismiss": {
+                  "type": "string"
+                },
+                "help": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false
             }
           },
           "additionalProperties": false
