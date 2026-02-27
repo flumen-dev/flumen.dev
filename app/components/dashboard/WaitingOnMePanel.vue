@@ -1,0 +1,120 @@
+<script setup lang="ts">
+const { t } = useI18n()
+const store = useDashboardStore()
+
+const PAGE_SIZE = 10
+const page = ref(1)
+
+const totalPages = computed(() =>
+  Math.ceil(store.waitingOnMe.data.length / PAGE_SIZE),
+)
+
+const pagedItems = computed(() => {
+  const start = (page.value - 1) * PAGE_SIZE
+  return store.waitingOnMe.data.slice(start, start + PAGE_SIZE)
+})
+
+// Reset page when data changes
+watch(() => store.waitingOnMe.data.length, () => {
+  page.value = 1
+})
+</script>
+
+<template>
+  <div class="rounded-lg border border-default overflow-hidden">
+    <!-- Header -->
+    <div class="flex items-center gap-2.5 px-4 py-3">
+      <UIcon
+        name="i-lucide-alarm-clock"
+        class="size-5 text-highlighted shrink-0"
+      />
+      <h2 class="text-sm font-semibold text-highlighted">
+        {{ t('focus.waitingOnMe.title') }}
+      </h2>
+      <UBadge
+        v-if="store.waitingOnMe.data.length > 0"
+        :label="String(store.waitingOnMe.data.length)"
+        color="warning"
+        variant="subtle"
+        size="sm"
+      />
+      <UIcon
+        v-if="store.waitingOnMe.loading"
+        name="i-lucide-loader-2"
+        class="size-4 text-dimmed animate-spin ml-auto"
+      />
+    </div>
+
+    <!-- Loading -->
+    <div
+      v-if="store.waitingOnMe.loading && !store.waitingOnMe.fetchedAt"
+      class="p-8 flex items-center justify-center gap-2 text-sm text-muted"
+    >
+      <UIcon
+        name="i-lucide-loader-2"
+        class="size-4 animate-spin"
+      />
+      {{ t('common.loading') }}
+    </div>
+
+    <!-- Error -->
+    <div
+      v-else-if="store.waitingOnMe.error"
+      class="p-8 text-center"
+    >
+      <p class="text-sm text-muted">
+        {{ t('common.retry') }}
+      </p>
+    </div>
+
+    <!-- Empty state -->
+    <div
+      v-else-if="store.waitingOnMe.fetchedAt && store.waitingOnMe.data.length === 0"
+      class="p-8 text-center"
+    >
+      <UIcon
+        name="i-lucide-check-circle"
+        class="size-10 text-emerald-500 mx-auto mb-3"
+      />
+      <p class="text-sm font-medium text-highlighted">
+        {{ t('focus.waitingOnMe.empty') }}
+      </p>
+    </div>
+
+    <!-- Content -->
+    <template v-else-if="store.waitingOnMe.data.length > 0">
+      <!-- Summary banner -->
+      <div class="flex items-center gap-2 px-4 py-2.5 bg-warning/10 border-y border-warning/20">
+        <UIcon
+          name="i-lucide-alert-triangle"
+          class="size-4 text-warning shrink-0"
+        />
+        <p class="text-xs font-medium text-warning">
+          {{ t('focus.waitingOnMe.summary', {
+            people: store.waitingOnMe.summary?.uniquePeopleBlocked ?? 0,
+            days: store.waitingOnMe.summary?.averageWaitDays ?? 0,
+          }) }}
+        </p>
+      </div>
+
+      <!-- Items grid -->
+      <div class="p-3 grid gap-2">
+        <DashboardWaitingOnMeCard
+          v-for="item in pagedItems"
+          :key="`${item.repo}#${item.number}`"
+          :item="item"
+        />
+      </div>
+
+      <UiPaginator
+        v-if="totalPages > 1"
+        :current-page="page"
+        :total-pages="totalPages"
+        :has-more="page < totalPages"
+        :has-previous="page > 1"
+        @next="page++"
+        @previous="page--"
+      />
+    </template>
+  </div>
+</template>

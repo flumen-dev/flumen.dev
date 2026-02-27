@@ -92,18 +92,8 @@ function prTooltip(pr: CreatedIssuePR) {
   return parts.join(' — ')
 }
 
-function ciIcon(pr: CreatedIssuePR) {
-  if (pr.ciStatus === 'SUCCESS') return 'i-lucide-circle-check'
-  if (pr.ciStatus === 'FAILURE') return 'i-lucide-circle-x'
-  if (pr.ciStatus === 'PENDING') return 'i-lucide-loader-2'
-  return null
-}
-
-function ciColor(pr: CreatedIssuePR) {
-  if (pr.ciStatus === 'SUCCESS') return 'text-emerald-500'
-  if (pr.ciStatus === 'FAILURE') return 'text-red-500'
-  if (pr.ciStatus === 'PENDING') return 'text-amber-400'
-  return ''
+function ciIconFor(pr: CreatedIssuePR) {
+  return getCIIcon(pr.ciStatus)
 }
 </script>
 
@@ -283,10 +273,10 @@ function ciColor(pr: CreatedIssuePR) {
               />
               <!-- CI status icon -->
               <UIcon
-                v-if="ciIcon(pr)"
-                :name="ciIcon(pr)!"
+                v-if="ciIconFor(pr)"
+                :name="ciIconFor(pr)!.name"
                 class="size-3"
-                :class="[ciColor(pr), pr.ciStatus === 'PENDING' ? 'animate-spin' : '']"
+                :class="[ciIconFor(pr)!.color, ciIconFor(pr)!.spin ? 'animate-spin' : '']"
               />
             </span>
           </UTooltip>

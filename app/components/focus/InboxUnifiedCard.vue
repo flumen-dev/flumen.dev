@@ -88,13 +88,8 @@ const ciTooltip = computed(() => {
 })
 
 const ciIcon = computed(() => {
-  if (props.item.type !== 'pr' || !props.item.ciStatus) return null
-  const map: Record<string, { name: string, color: string, spin?: boolean }> = {
-    SUCCESS: { name: 'i-lucide-circle-check', color: 'text-emerald-500' },
-    FAILURE: { name: 'i-lucide-circle-x', color: 'text-red-500' },
-    PENDING: { name: 'i-lucide-loader-2', color: 'text-amber-400', spin: true },
-  }
-  return map[props.item.ciStatus] ?? null
+  if (props.item.type !== 'pr') return null
+  return getCIIcon(props.item.ciStatus)
 })
 
 const hasConflict = computed(() =>
@@ -108,20 +103,12 @@ const prSize = computed(() => {
 
 const prSizeLabel = computed(() => {
   if (!prSize.value) return ''
-  const total = prSize.value.additions + prSize.value.deletions
-  if (total <= 50) return 'S'
-  if (total <= 200) return 'M'
-  if (total <= 500) return 'L'
-  return 'XL'
+  return getPRSizeLabel(prSize.value.additions, prSize.value.deletions)
 })
 
 const prSizeColor = computed(() => {
   if (!prSize.value) return 'neutral'
-  const total = prSize.value.additions + prSize.value.deletions
-  if (total <= 50) return 'success'
-  if (total <= 200) return 'primary'
-  if (total <= 500) return 'warning'
-  return 'error'
+  return getPRSizeColor(prSize.value.additions, prSize.value.deletions)
 })
 
 // GitHub profile/repo URLs

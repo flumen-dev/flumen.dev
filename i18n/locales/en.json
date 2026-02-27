@@ -496,9 +496,27 @@
     "nothingToPush": "Nothing to push",
     "viewPr": "View PR"
   },
+  "dashboard": {
+    "description": "What needs your attention right now."
+  },
   "focus": {
     "title": "Focus",
     "description": "Your personal command center. See what needs your attention across all repositories.",
+    "waitingOnMe": {
+      "title": "Waiting on Me",
+      "empty": "You're all caught up. No one is waiting on you.",
+      "summary": "You're blocking {people} people for an average of {days} days.",
+      "review-requested": "Review requested",
+      "needs-response": "Needs response",
+      "changes-requested": "Changes requested",
+      "reason": {
+        "review-requested": "{login} needs your review",
+        "needs-response": "{login} is waiting for your reply",
+        "changes-requested": "{login} requested changes on your PR"
+      },
+      "waitingDays": "{days}d",
+      "waitingSince": "Waiting for {days} days"
+    },
     "workingOn": {
       "title": "Working On",
       "empty": "No active work yet. Claim an issue to get started."

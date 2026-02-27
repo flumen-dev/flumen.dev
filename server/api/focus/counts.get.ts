@@ -10,18 +10,22 @@ export interface FocusCounts {
   createdOpen: number
   createdClosed: number
   inbox: number
+  waitingOnMe: number
 }
 
 const COUNTS_QUERY = /* GraphQL */ `
   query FocusCounts(
     $createdOpen: String!, $createdClosed: String!, $openPrs: String!,
-    $inboxPrs: String!, $inboxIssues: String!
+    $inboxPrs: String!, $inboxIssues: String!,
+    $reviewRequested: String!, $changesRequested: String!
   ) {
     createdOpen: search(query: $createdOpen, type: ISSUE, first: 1) { issueCount }
     createdClosed: search(query: $createdClosed, type: ISSUE, first: 1) { issueCount }
     openPrs: search(query: $openPrs, type: ISSUE, first: 1) { issueCount }
     inboxPrs: search(query: $inboxPrs, type: ISSUE, first: 1) { issueCount }
     inboxIssues: search(query: $inboxIssues, type: ISSUE, first: 1) { issueCount }
+    reviewRequested: search(query: $reviewRequested, type: ISSUE, first: 1) { issueCount }
+    changesRequested: search(query: $changesRequested, type: ISSUE, first: 1) { issueCount }
   }
 `
 
@@ -62,10 +66,14 @@ export default defineEventHandler(async (event): Promise<FocusCounts> => {
     openPrs: { issueCount: number }
     inboxPrs: { issueCount: number }
     inboxIssues: { issueCount: number }
+    reviewRequested: { issueCount: number }
+    changesRequested: { issueCount: number }
   }>(token, COUNTS_QUERY, {
     ...baseVars,
     inboxPrs: `is:pr is:open ${scopeQualifier} sort:updated-desc`,
     inboxIssues: `is:issue is:open ${scopeQualifier} sort:updated-desc`,
+    reviewRequested: `is:pr is:open review-requested:${login}`,
+    changesRequested: `is:pr is:open author:${login} review:changes_requested`,
   })
 
   return {
@@ -73,5 +81,6 @@ export default defineEventHandler(async (event): Promise<FocusCounts> => {
     createdOpen: data.createdOpen.issueCount,
     createdClosed: data.createdClosed.issueCount,
     inbox: data.inboxPrs.issueCount + data.inboxIssues.issueCount,
+    waitingOnMe: data.reviewRequested.issueCount + data.changesRequested.issueCount,
   }
 })

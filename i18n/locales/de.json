@@ -496,9 +496,27 @@
     "nothingToPush": "Nichts zu pushen",
     "viewPr": "PR ansehen"
   },
+  "dashboard": {
+    "description": "Was gerade deine Aufmerksamkeit braucht."
+  },
   "focus": {
     "title": "Focus",
     "description": "Deine persönliche Kommandozentrale. Sieh auf einen Blick, was deine Aufmerksamkeit braucht.",
+    "waitingOnMe": {
+      "title": "Wartet auf mich",
+      "empty": "Alles erledigt. Niemand wartet auf dich.",
+      "summary": "Du blockierst {people} Personen seit durchschnittlich {days} Tagen.",
+      "review-requested": "Review angefragt",
+      "needs-response": "Antwort nötig",
+      "changes-requested": "Änderungen angefragt",
+      "waitingDays": "{days}T",
+      "waitingSince": "Wartet seit {days} Tagen",
+      "reason": {
+        "review-requested": "{login} braucht dein Review",
+        "needs-response": "{login} wartet auf deine Antwort",
+        "changes-requested": "{login} hat Änderungen an deinem PR angefragt"
+      }
+    },
     "workingOn": {
       "title": "In Arbeit",
       "empty": "Noch nichts in Arbeit. Übernimm ein Issue, um loszulegen."

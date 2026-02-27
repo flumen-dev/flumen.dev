@@ -290,15 +290,16 @@ const filteredPinnedRepos = computed(() => {
 
 const mainItems = computed<NavigationMenuItem[]>(() => [
   {
+    label: t('nav.dashboard'),
+    icon: 'i-lucide-layout-dashboard',
+    to: localePath('/dashboard'),
+    disabled: !loggedIn.value,
+  },
+  {
     label: t('nav.focus'),
     icon: 'i-lucide-crosshair',
     to: localePath('/focus'),
     disabled: !loggedIn.value,
-  },
-  {
-    label: t('nav.dashboard'),
-    icon: 'i-lucide-layout-dashboard',
-    to: localePath('/'),
   },
   {
     label: t('nav.repos'),
