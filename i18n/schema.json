@@ -90,6 +90,120 @@
       "properties": {
         "greeting": {
           "type": "string"
+        },
+        "scrollDiscover": {
+          "type": "string"
+        },
+        "trust": {
+          "type": "object",
+          "properties": {
+            "openSource": {
+              "type": "string"
+            },
+            "githubOauth": {
+              "type": "string"
+            },
+            "noTracking": {
+              "type": "string"
+            },
+            "freePlan": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "features": {
+          "type": "object",
+          "properties": {
+            "focus": {
+              "type": "object",
+              "properties": {
+                "badge": {
+                  "type": "string"
+                },
+                "title": {
+                  "type": "string"
+                },
+                "description": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false
+            },
+            "issues": {
+              "type": "object",
+              "properties": {
+                "badge": {
+                  "type": "string"
+                },
+                "title": {
+                  "type": "string"
+                },
+                "description": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false
+            },
+            "notifications": {
+              "type": "object",
+              "properties": {
+                "badge": {
+                  "type": "string"
+                },
+                "title": {
+                  "type": "string"
+                },
+                "description": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false
+            },
+            "profile": {
+              "type": "object",
+              "properties": {
+                "badge": {
+                  "type": "string"
+                },
+                "title": {
+                  "type": "string"
+                },
+                "description": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
+        },
+        "openSource": {
+          "type": "object",
+          "properties": {
+            "label": {
+              "type": "string"
+            },
+            "description": {
+              "type": "string"
+            },
+            "cta": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "cta": {
+          "type": "object",
+          "properties": {
+            "title": {
+              "type": "string"
+            },
+            "description": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
         }
       },
       "additionalProperties": false

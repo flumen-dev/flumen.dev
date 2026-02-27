@@ -27,7 +27,45 @@
     "login": "Login"
   },
   "welcome": {
-    "greeting": "Welcome to"
+    "greeting": "Welcome to",
+    "scrollDiscover": "Discover more",
+    "trust": {
+      "openSource": "Open source",
+      "githubOauth": "GitHub OAuth",
+      "noTracking": "No tracking",
+      "freePlan": "Free forever"
+    },
+    "features": {
+      "focus": {
+        "badge": "Focus",
+        "title": "Your dashboard, your flow",
+        "description": "Everything you care about — issues, pull requests, notifications — in one clean overview. No clutter, no noise."
+      },
+      "issues": {
+        "badge": "Issues & PRs",
+        "title": "Browse, filter, act",
+        "description": "Manage issues and pull requests across all your repositories. Fast search, keyboard shortcuts, zero friction."
+      },
+      "notifications": {
+        "badge": "Notifications",
+        "title": "Notifications that make sense",
+        "description": "Smart grouping, instant updates, and a clean inbox. Stay on top of what matters without drowning in noise."
+      },
+      "profile": {
+        "badge": "Profile",
+        "title": "Your identity, at a glance",
+        "description": "Edit your GitHub profile, README, status, and social links — all from one place. No context switching."
+      }
+    },
+    "openSource": {
+      "label": "Built in the open",
+      "description": "Flumen is fully open source. Inspect the code, contribute features, or self-host your own instance.",
+      "cta": "View on GitHub"
+    },
+    "cta": {
+      "title": "Ready to flow?",
+      "description": "Connect your GitHub and get started in seconds."
+    }
   },
   "theme": {
     "light": "Light",

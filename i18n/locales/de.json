@@ -27,7 +27,45 @@
     "login": "Anmelden"
   },
   "welcome": {
-    "greeting": "Willkommen bei"
+    "greeting": "Willkommen bei",
+    "scrollDiscover": "Mehr entdecken",
+    "trust": {
+      "openSource": "Open Source",
+      "githubOauth": "GitHub OAuth",
+      "noTracking": "Kein Tracking",
+      "freePlan": "Für immer kostenlos"
+    },
+    "features": {
+      "focus": {
+        "badge": "Fokus",
+        "title": "Dein Dashboard, dein Flow",
+        "description": "Alles, was dir wichtig ist — Issues, Pull Requests, Benachrichtigungen — in einer übersichtlichen Ansicht. Kein Durcheinander."
+      },
+      "issues": {
+        "badge": "Issues & PRs",
+        "title": "Durchsuchen, filtern, handeln",
+        "description": "Verwalte Issues und Pull Requests über alle Repositories hinweg. Schnelle Suche, Tastenkürzel, kein Umweg."
+      },
+      "notifications": {
+        "badge": "Benachrichtigungen",
+        "title": "Benachrichtigungen, die Sinn ergeben",
+        "description": "Smarte Gruppierung, sofortige Updates und ein aufgeräumter Posteingang. Behalte den Überblick, ohne im Lärm unterzugehen."
+      },
+      "profile": {
+        "badge": "Profil",
+        "title": "Deine Identität auf einen Blick",
+        "description": "Bearbeite dein GitHub-Profil, README, Status und Social Links — alles an einem Ort. Kein Kontextwechsel."
+      }
+    },
+    "openSource": {
+      "label": "Offen entwickelt",
+      "description": "Flumen ist vollständig Open Source. Schau dir den Code an, trage Features bei oder hoste deine eigene Instanz.",
+      "cta": "Auf GitHub ansehen"
+    },
+    "cta": {
+      "title": "Bereit für den Flow?",
+      "description": "Verbinde dein GitHub und starte in Sekunden."
+    }
   },
   "theme": {
     "light": "Hell",

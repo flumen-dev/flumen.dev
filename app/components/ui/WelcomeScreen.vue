@@ -5,6 +5,33 @@ useHead({
   htmlAttrs: { lang: locale },
   title: 'Flumen',
 })
+
+// Scroll reveal with IntersectionObserver
+const sectionsRef = useTemplateRef<HTMLElement>('sections')
+
+onMounted(() => {
+  const el = sectionsRef.value
+  if (!el) return
+
+  const targets = el.querySelectorAll('.reveal')
+  if (!targets.length) return
+
+  const observer = new IntersectionObserver(
+    (entries) => {
+      for (const entry of entries) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-visible')
+          observer.unobserve(entry.target)
+        }
+      }
+    },
+    { threshold: 0.15 },
+  )
+
+  for (const target of targets) {
+    observer.observe(target)
+  }
+})
 </script>
 
 <template>
@@ -67,14 +94,13 @@ useHead({
         size="lg"
       />
 
-      <!-- Issue #13 - This is NOT finished and not translated at all! -->
       <!-- Scroll indicator -->
       <button
         class="anim anim-scroll absolute bottom-8 flex flex-col items-center gap-1 text-muted hover:text-default transition-colors cursor-pointer"
-        aria-label="Scroll down"
+        :aria-label="$t('welcome.scrollDiscover')"
         @click="$el.closest('.min-h-dvh')?.nextElementSibling?.scrollIntoView({ behavior: 'smooth' })"
       >
-        <span class="text-xs tracking-wide">Discover more</span>
+        <span class="text-xs tracking-wide">{{ $t('welcome.scrollDiscover') }}</span>
         <UIcon
           name="i-lucide-chevron-down"
           class="size-5 bounce"
@@ -82,72 +108,353 @@ useHead({
       </button>
     </div>
 
-    <!-- Content sections (placeholder — see issue #13) -->
-    <section class="py-24 px-6">
-      <div class="mx-auto max-w-4xl space-y-32">
-        <!-- Feature 1 -->
-        <div class="flex flex-col md:flex-row items-center gap-12">
-          <div class="flex-1 space-y-4">
-            <h2 class="text-3xl font-bold">
-              Your dashboard, your flow
-            </h2>
-            <p class="text-lg text-muted">
-              Everything you care about — issues, pull requests, notifications — in one clean overview. No clutter, no noise.
-            </p>
-          </div>
-          <div class="flex-1 rounded-xl border border-default bg-muted/50 aspect-video flex items-center justify-center">
-            <span class="text-muted text-sm">Screenshot placeholder</span>
-          </div>
-        </div>
-
-        <!-- Feature 2 -->
-        <div class="flex flex-col md:flex-row-reverse items-center gap-12">
-          <div class="flex-1 space-y-4">
-            <h2 class="text-3xl font-bold">
-              Issues & Pull Requests
-            </h2>
-            <p class="text-lg text-muted">
-              Browse, filter, and manage across all your repositories. Fast search, keyboard shortcuts, zero friction.
-            </p>
-          </div>
-          <div class="flex-1 rounded-xl border border-default bg-muted/50 aspect-video flex items-center justify-center">
-            <span class="text-muted text-sm">Screenshot placeholder</span>
-          </div>
-        </div>
-
-        <!-- Feature 3 -->
-        <div class="flex flex-col md:flex-row items-center gap-12">
-          <div class="flex-1 space-y-4">
-            <h2 class="text-3xl font-bold">
-              Notifications that make sense
-            </h2>
-            <p class="text-lg text-muted">
-              Smart grouping, instant updates, and a clean inbox. Stay on top of what matters without drowning in noise.
-            </p>
-          </div>
-          <div class="flex-1 rounded-xl border border-default bg-muted/50 aspect-video flex items-center justify-center">
-            <span class="text-muted text-sm">Screenshot placeholder</span>
-          </div>
+    <!-- Main content -->
+    <div ref="sections">
+      <!-- Trust Bar -->
+      <div class="py-6 border-y border-default">
+        <div class="mx-auto max-w-4xl px-6 flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-sm text-muted">
+          <span class="flex items-center gap-2">
+            <UIcon
+              name="i-lucide-code-2"
+              class="size-4 text-primary"
+            />
+            {{ $t('welcome.trust.openSource') }}
+          </span>
+          <span class="flex items-center gap-2">
+            <UIcon
+              name="i-lucide-shield-check"
+              class="size-4 text-primary"
+            />
+            {{ $t('welcome.trust.githubOauth') }}
+          </span>
+          <span class="flex items-center gap-2">
+            <UIcon
+              name="i-lucide-eye-off"
+              class="size-4 text-primary"
+            />
+            {{ $t('welcome.trust.noTracking') }}
+          </span>
+          <span class="flex items-center gap-2">
+            <UIcon
+              name="i-lucide-heart"
+              class="size-4 text-primary"
+            />
+            {{ $t('welcome.trust.freePlan') }}
+          </span>
         </div>
       </div>
-    </section>
 
-    <!-- Bottom CTA -->
-    <section class="py-24 px-6 text-center">
-      <h2 class="text-3xl font-bold mb-4">
-        Ready to flow?
-      </h2>
-      <p class="text-lg text-muted mb-8">
-        Connect your GitHub and get started in seconds.
-      </p>
-      <UButton
-        icon="i-lucide-github"
-        :label="$t('auth.loginWithGithub')"
-        to="/auth/github"
-        external
-        size="xl"
-      />
-    </section>
+      <!-- Feature Sections -->
+      <section class="py-24 px-6">
+        <div class="mx-auto max-w-4xl space-y-32">
+          <!-- Focus -->
+          <div class="reveal flex flex-col md:flex-row items-center gap-12">
+            <div class="flex-1 space-y-4">
+              <UBadge
+                :label="$t('welcome.features.focus.badge')"
+                color="primary"
+                variant="subtle"
+              />
+              <h2 class="text-3xl font-bold">
+                {{ $t('welcome.features.focus.title') }}
+              </h2>
+              <p class="text-lg text-muted">
+                {{ $t('welcome.features.focus.description') }}
+              </p>
+              <div class="flex gap-2 pt-2 text-muted">
+                <UIcon
+                  name="i-lucide-layout-dashboard"
+                  class="size-5"
+                />
+                <UIcon
+                  name="i-lucide-git-pull-request"
+                  class="size-5"
+                />
+                <UIcon
+                  name="i-lucide-bell"
+                  class="size-5"
+                />
+              </div>
+            </div>
+            <!-- Mockup: Focus dashboard with PR rows -->
+            <div class="flex-1 w-full">
+              <div class="rounded-xl border border-default bg-elevated/50 p-4 space-y-3">
+                <div class="flex items-center gap-2 pb-2 border-b border-default">
+                  <div class="size-2 rounded-full bg-green-500" />
+                  <div class="h-3 w-32 rounded bg-muted/30" />
+                  <div class="ml-auto">
+                    <UBadge
+                      label="merged"
+                      color="primary"
+                      variant="subtle"
+                      size="xs"
+                    />
+                  </div>
+                </div>
+                <div class="flex items-center gap-2 pb-2 border-b border-default">
+                  <div class="size-2 rounded-full bg-amber-500" />
+                  <div class="h-3 w-40 rounded bg-muted/30" />
+                  <div class="ml-auto">
+                    <UBadge
+                      label="review"
+                      color="warning"
+                      variant="subtle"
+                      size="xs"
+                    />
+                  </div>
+                </div>
+                <div class="flex items-center gap-2">
+                  <div class="size-2 rounded-full bg-red-500" />
+                  <div class="h-3 w-28 rounded bg-muted/30" />
+                  <div class="ml-auto">
+                    <UBadge
+                      label="failing"
+                      color="error"
+                      variant="subtle"
+                      size="xs"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Issues & PRs -->
+          <div class="reveal flex flex-col md:flex-row-reverse items-center gap-12">
+            <div class="flex-1 space-y-4">
+              <UBadge
+                :label="$t('welcome.features.issues.badge')"
+                color="primary"
+                variant="subtle"
+              />
+              <h2 class="text-3xl font-bold">
+                {{ $t('welcome.features.issues.title') }}
+              </h2>
+              <p class="text-lg text-muted">
+                {{ $t('welcome.features.issues.description') }}
+              </p>
+              <div class="flex gap-2 pt-2 text-muted">
+                <UIcon
+                  name="i-lucide-circle-dot"
+                  class="size-5"
+                />
+                <UIcon
+                  name="i-lucide-filter"
+                  class="size-5"
+                />
+                <UIcon
+                  name="i-lucide-search"
+                  class="size-5"
+                />
+              </div>
+            </div>
+            <!-- Mockup: Issue list with filter chips -->
+            <div class="flex-1 w-full">
+              <div class="rounded-xl border border-default bg-elevated/50 p-4 space-y-3">
+                <div class="flex gap-2 pb-2 border-b border-default">
+                  <div class="h-6 px-3 rounded-full bg-primary/10 text-primary text-xs flex items-center">
+                    Open
+                  </div>
+                  <div class="h-6 px-3 rounded-full bg-muted/20 text-muted text-xs flex items-center">
+                    Closed
+                  </div>
+                  <div class="h-6 px-3 rounded-full bg-muted/20 text-muted text-xs flex items-center">
+                    Assigned
+                  </div>
+                </div>
+                <div class="flex items-center gap-2 pb-2 border-b border-default">
+                  <UIcon
+                    name="i-lucide-circle-dot"
+                    class="size-4 text-green-500 shrink-0"
+                  />
+                  <div class="h-3 w-36 rounded bg-muted/30" />
+                  <div class="ml-auto h-3 w-8 rounded bg-muted/20" />
+                </div>
+                <div class="flex items-center gap-2 pb-2 border-b border-default">
+                  <UIcon
+                    name="i-lucide-circle-dot"
+                    class="size-4 text-green-500 shrink-0"
+                  />
+                  <div class="h-3 w-44 rounded bg-muted/30" />
+                  <div class="ml-auto h-3 w-8 rounded bg-muted/20" />
+                </div>
+                <div class="flex items-center gap-2">
+                  <UIcon
+                    name="i-lucide-circle-check"
+                    class="size-4 text-purple-500 shrink-0"
+                  />
+                  <div class="h-3 w-32 rounded bg-muted/30" />
+                  <div class="ml-auto h-3 w-8 rounded bg-muted/20" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Notifications -->
+          <div class="reveal flex flex-col md:flex-row items-center gap-12">
+            <div class="flex-1 space-y-4">
+              <UBadge
+                :label="$t('welcome.features.notifications.badge')"
+                color="primary"
+                variant="subtle"
+              />
+              <h2 class="text-3xl font-bold">
+                {{ $t('welcome.features.notifications.title') }}
+              </h2>
+              <p class="text-lg text-muted">
+                {{ $t('welcome.features.notifications.description') }}
+              </p>
+              <div class="flex gap-2 pt-2 text-muted">
+                <UIcon
+                  name="i-lucide-bell"
+                  class="size-5"
+                />
+                <UIcon
+                  name="i-lucide-inbox"
+                  class="size-5"
+                />
+                <UIcon
+                  name="i-lucide-check-check"
+                  class="size-5"
+                />
+              </div>
+            </div>
+            <!-- Mockup: Notification inbox rows -->
+            <div class="flex-1 w-full">
+              <div class="rounded-xl border border-default bg-elevated/50 p-4 space-y-3">
+                <div class="flex items-center gap-3 pb-2 border-b border-default">
+                  <div class="size-8 rounded-full bg-primary/20 shrink-0" />
+                  <div class="flex-1 space-y-1">
+                    <div class="h-3 w-36 rounded bg-muted/30" />
+                    <div class="h-2 w-24 rounded bg-muted/20" />
+                  </div>
+                  <div class="size-2 rounded-full bg-primary shrink-0" />
+                </div>
+                <div class="flex items-center gap-3 pb-2 border-b border-default">
+                  <div class="size-8 rounded-full bg-primary/20 shrink-0" />
+                  <div class="flex-1 space-y-1">
+                    <div class="h-3 w-44 rounded bg-muted/30" />
+                    <div class="h-2 w-20 rounded bg-muted/20" />
+                  </div>
+                  <div class="size-2 rounded-full bg-primary shrink-0" />
+                </div>
+                <div class="flex items-center gap-3">
+                  <div class="size-8 rounded-full bg-muted/20 shrink-0" />
+                  <div class="flex-1 space-y-1">
+                    <div class="h-3 w-32 rounded bg-muted/30" />
+                    <div class="h-2 w-16 rounded bg-muted/20" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Profile -->
+          <div class="reveal flex flex-col md:flex-row-reverse items-center gap-12">
+            <div class="flex-1 space-y-4">
+              <UBadge
+                :label="$t('welcome.features.profile.badge')"
+                color="primary"
+                variant="subtle"
+              />
+              <h2 class="text-3xl font-bold">
+                {{ $t('welcome.features.profile.title') }}
+              </h2>
+              <p class="text-lg text-muted">
+                {{ $t('welcome.features.profile.description') }}
+              </p>
+              <div class="flex gap-2 pt-2 text-muted">
+                <UIcon
+                  name="i-lucide-user"
+                  class="size-5"
+                />
+                <UIcon
+                  name="i-lucide-file-text"
+                  class="size-5"
+                />
+                <UIcon
+                  name="i-lucide-link"
+                  class="size-5"
+                />
+              </div>
+            </div>
+            <!-- Mockup: Mini profile card -->
+            <div class="flex-1 w-full">
+              <div class="rounded-xl border border-default bg-elevated/50 p-6 flex flex-col items-center gap-4">
+                <div class="size-16 rounded-full bg-primary/20" />
+                <div class="space-y-2 text-center">
+                  <div class="h-4 w-28 mx-auto rounded bg-muted/30" />
+                  <div class="h-3 w-20 mx-auto rounded bg-muted/20" />
+                </div>
+                <div class="h-3 w-48 rounded bg-muted/20" />
+                <div class="flex gap-3 text-muted">
+                  <UIcon
+                    name="i-lucide-github"
+                    class="size-5"
+                  />
+                  <UIcon
+                    name="i-lucide-twitter"
+                    class="size-5"
+                  />
+                  <UIcon
+                    name="i-lucide-globe"
+                    class="size-5"
+                  />
+                  <UIcon
+                    name="i-lucide-mail"
+                    class="size-5"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Open Source Strip -->
+      <section class="reveal py-12 px-6 bg-primary/5 border-y border-primary/20">
+        <div class="mx-auto max-w-4xl flex flex-col sm:flex-row items-center justify-center gap-6 text-center sm:text-left">
+          <div class="flex items-center gap-3">
+            <UIcon
+              name="i-lucide-github"
+              class="size-8 text-primary shrink-0"
+            />
+            <div>
+              <p class="font-semibold">
+                {{ $t('welcome.openSource.label') }}
+              </p>
+              <p class="text-sm text-muted">
+                {{ $t('welcome.openSource.description') }}
+              </p>
+            </div>
+          </div>
+          <UButton
+            :label="$t('welcome.openSource.cta')"
+            icon="i-lucide-external-link"
+            variant="outline"
+            to="https://github.com/flumen-dev/flumen.dev"
+            target="_blank"
+          />
+        </div>
+      </section>
+
+      <!-- Bottom CTA -->
+      <section class="reveal py-24 px-6 text-center bg-gradient-to-b from-transparent via-primary/5 to-primary/10">
+        <h2 class="text-3xl font-bold mb-4">
+          {{ $t('welcome.cta.title') }}
+        </h2>
+        <p class="text-lg text-muted mb-8">
+          {{ $t('welcome.cta.description') }}
+        </p>
+        <UButton
+          icon="i-lucide-github"
+          :label="$t('auth.loginWithGithub')"
+          to="/auth/github"
+          external
+          size="xl"
+        />
+      </section>
+    </div>
   </div>
 </template>
 
@@ -214,6 +521,20 @@ useHead({
   50% { transform: translateY(4px); }
 }
 
+/* Scroll reveal */
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  filter: blur(3px);
+  transition: opacity 0.7s ease-out, transform 0.7s ease-out, filter 0.7s ease-out;
+}
+
+.reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+  filter: blur(0);
+}
+
 /* Respect reduced motion */
 @media (prefers-reduced-motion: reduce) {
   .wave,
@@ -228,5 +549,11 @@ useHead({
   .wave-3 { opacity: 0.7 !important; }
   .wave-4 { opacity: 1 !important; }
   .bounce { animation: none !important; }
+  .reveal {
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+    transition: none !important;
+  }
 }
 </style>
