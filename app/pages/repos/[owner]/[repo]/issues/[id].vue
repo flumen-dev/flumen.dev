@@ -121,7 +121,7 @@ const toast = useToast()
     </Teleport>
 
     <div class="p-4">
-      <IssueHeader
+      <WorkItemHeader
         v-if="issue"
         :issue="issue"
         :repo="repo"

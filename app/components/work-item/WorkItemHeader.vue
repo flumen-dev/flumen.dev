@@ -9,11 +9,14 @@ export interface LinkedPr {
   actor: string
 }
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   issue: IssueDetail
   repo: string
   linkedPrs: LinkedPr[]
-}>()
+  showCi?: boolean
+}>(), {
+  showCi: false,
+})
 
 const { t } = useI18n()
 const toast = useToast()

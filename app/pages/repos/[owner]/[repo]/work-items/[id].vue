@@ -611,7 +611,7 @@ function onTimelineReactionToggle(item: WorkItemTimelineUiItem, content: string,
       </div>
 
       <template v-else-if="workItem">
-        <IssueHeader
+        <WorkItemHeader
           v-if="isIssuePrimary && issue"
           :issue="issue"
           :repo="repo"
