@@ -410,6 +410,9 @@
     "all": "Alle"
   },
   "workItems": {
+    "badge": {
+      "bot": "Bot"
+    },
     "filter": {
       "all": "Alle"
     },
@@ -440,6 +443,7 @@
       "reviewState": "Review: {state}",
       "eventCountOne": "1 Ereignis",
       "eventCount": "{count} Ereignisse",
+      "scrollToItem": "Zu {target} springen",
       "source": {
         "issue": "Issue",
         "pull": "PR #{number}"

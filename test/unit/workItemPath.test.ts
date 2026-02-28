@@ -6,6 +6,7 @@ describe('buildWorkItemPath', () => {
     expect(buildWorkItemPath('flumen-dev/flumen.dev', 7)).toBe('/repos/flumen-dev/flumen.dev/work-items/7')
     expect(buildWorkItemPath('flumen-dev/flumen.dev', 12, 'pr')).toBe('/repos/flumen-dev/flumen.dev/work-items/pr-12')
     expect(buildWorkItemPath('flumen-dev/flumen.dev', 19, 'pull')).toBe('/repos/flumen-dev/flumen.dev/work-items/pr-19')
+    expect(buildWorkItemPath('flumen-dev/flumen.dev', 'pr-123', 'pr')).toBe('/repos/flumen-dev/flumen.dev/work-items/pr-123')
   })
 
   it('returns null when owner or repo segment is missing', () => {

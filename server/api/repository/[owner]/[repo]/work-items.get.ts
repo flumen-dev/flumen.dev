@@ -6,7 +6,7 @@ import { mapCiStatus } from '~~/server/utils/focus-created'
 import { workItemIdFromIssue, workItemIdFromPull } from '~~/server/utils/work-items'
 import { toRepoIssue, toRepoPullRequest } from '~~/shared/utils/repository'
 
-const ISSUE_LINK_REGEX = /(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?)\s+#(\d+)/gi
+const ISSUE_LINK_REGEX = /(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?)\s+(?:#|(?:[\w.-]+\/)?[\w.-]+#)(\d+)/gi
 
 function collectIssueLinksFromText(text: string | null | undefined): number[] {
   if (!text) return []

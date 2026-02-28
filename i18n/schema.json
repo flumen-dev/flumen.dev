@@ -1237,6 +1237,15 @@
     "workItems": {
       "type": "object",
       "properties": {
+        "badge": {
+          "type": "object",
+          "properties": {
+            "bot": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
         "filter": {
           "type": "object",
           "properties": {
@@ -1325,6 +1334,9 @@
               "type": "string"
             },
             "eventCount": {
+              "type": "string"
+            },
+            "scrollToItem": {
               "type": "string"
             },
             "source": {

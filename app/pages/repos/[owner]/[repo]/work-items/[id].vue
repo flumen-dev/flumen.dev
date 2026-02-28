@@ -11,6 +11,10 @@ definePageMeta({
 const route = useRoute()
 const hasTeleportContent = useState('has-page-title-teleport', () => true)
 
+onMounted(() => {
+  hasTeleportContent.value = true
+})
+
 onUnmounted(() => {
   hasTeleportContent.value = false
 })
@@ -330,6 +334,12 @@ function railTooltip(bucket: WorkItemTimelineUiItem[], anchorItem: WorkItemTimel
     .join(' • ')
 }
 
+function railAriaLabel(entry: TimelineRailEntry) {
+  return t('workItems.timeline.scrollToItem', {
+    target: entry.tooltip || entry.targetId,
+  })
+}
+
 function flashTimelineEntry(targetId: string) {
   flashTimelineTargetId.value = targetId
 
@@ -604,6 +614,7 @@ function onTimelineReactionToggle(item: WorkItemTimelineUiItem, content: string,
                   entry.source === 'pull' ? 'ring-1 ring-primary/20' : '',
                 ]"
                 :style="{ top: `${entry.top}%` }"
+                :aria-label="railAriaLabel(entry)"
                 @click="scrollToTimelineItem(entry.targetId)"
               >
                 <UIcon
@@ -682,7 +693,7 @@ function onTimelineReactionToggle(item: WorkItemTimelineUiItem, content: string,
                       color="neutral"
                       variant="soft"
                     >
-                      Bot
+                      {{ t('workItems.badge.bot') }}
                     </UBadge>
                     <span class="font-normal text-muted">{{ item.action }}</span>
                     <span class="text-dimmed text-xs/5">{{ timeAgo(item.date as string) }}</span>

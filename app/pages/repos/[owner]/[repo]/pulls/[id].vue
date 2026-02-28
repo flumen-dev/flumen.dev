@@ -11,13 +11,27 @@ const route = useRoute()
 const owner = computed(() => route.params.owner as string)
 const repo = computed(() => route.params.repo as string)
 const number = computed(() => Number(route.params.id))
+const validNumber = computed(() => {
+  if (!Number.isFinite(number.value) || !Number.isInteger(number.value) || number.value <= 0) {
+    return null
+  }
+  return number.value
+})
 const repoFullName = computed(() => `${owner.value}/${repo.value}`)
 
 const { data: pull, status, error } = await useAsyncData(
-  () => `repo-pull-${owner.value}-${repo.value}-${number.value}`,
-  () => $fetch<PullDetail>(`/api/repository/${owner.value}/${repo.value}/pulls/${number.value}`),
+  () => validNumber.value === null
+    ? `repo-pull-${owner.value}-${repo.value}-invalid`
+    : `repo-pull-${owner.value}-${repo.value}-${validNumber.value}`,
+  () => {
+    if (validNumber.value === null) {
+      return null
+    }
+
+    return $fetch<PullDetail>(`/api/repository/${owner.value}/${repo.value}/pulls/${validNumber.value}`)
+  },
   {
-    watch: [owner, repo, number],
+    watch: [owner, repo, validNumber],
   },
 )
 </script>

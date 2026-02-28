@@ -51,7 +51,7 @@ export interface WorkItemContribution {
 }
 
 export type WorkItemTimelineSource = 'issue' | 'pull'
-export type WorkItemTimelineKind = 'comment' | 'review' | 'state' | 'assignment' | 'label'
+export type WorkItemTimelineKind = 'comment' | 'review' | 'state' | 'assignment' | 'label' | 'event'
 
 export interface WorkItemTimelineEntry {
   id: string

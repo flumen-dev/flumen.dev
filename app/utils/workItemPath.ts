@@ -1,11 +1,17 @@
 type WorkItemPathType = 'issue' | 'pr' | 'pull'
 
 function toWorkItemId(number: number | string, type: WorkItemPathType) {
+  const stringifiedNumber = String(number)
+
   if (type === 'issue') {
-    return String(number)
+    return stringifiedNumber
   }
 
-  return `pr-${number}`
+  if (stringifiedNumber.startsWith('pr-')) {
+    return stringifiedNumber
+  }
+
+  return `pr-${stringifiedNumber}`
 }
 
 export function buildWorkItemPath(repoFullName: string, number: number | string, type: WorkItemPathType = 'issue') {
