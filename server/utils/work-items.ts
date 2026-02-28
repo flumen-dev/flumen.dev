@@ -9,14 +9,14 @@ export function workItemIdFromPull(number: number): string {
 export function parseWorkItemId(id: string): { type: 'issue' | 'pull', number: number } {
   if (id.startsWith('pr-')) {
     const number = Number(id.slice(3))
-    if (!number || Number.isNaN(number)) {
+    if (!Number.isInteger(number) || number <= 0) {
       throw createError({ statusCode: 400, message: 'Invalid work item id' })
     }
     return { type: 'pull', number }
   }
 
   const number = Number(id)
-  if (!number || Number.isNaN(number)) {
+  if (!Number.isInteger(number) || number <= 0) {
     throw createError({ statusCode: 400, message: 'Invalid work item id' })
   }
   return { type: 'issue', number }

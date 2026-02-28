@@ -33,6 +33,9 @@
         },
         "close": {
           "type": "string"
+        },
+        "bot": {
+          "type": "string"
         }
       },
       "additionalProperties": false
@@ -523,6 +526,9 @@
             "workItems": {
               "type": "string"
             },
+            "linkedIssues": {
+              "type": "string"
+            },
             "recentIssues": {
               "type": "string"
             },
@@ -614,6 +620,69 @@
                   "type": "string"
                 },
                 "commitActivity": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
+        },
+        "workItem": {
+          "type": "object",
+          "properties": {
+            "state": {
+              "type": "object",
+              "properties": {
+                "open": {
+                  "type": "string"
+                },
+                "closed": {
+                  "type": "string"
+                },
+                "merged": {
+                  "type": "string"
+                },
+                "draft": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false
+            },
+            "status": {
+              "type": "object",
+              "properties": {
+                "draft": {
+                  "type": "string"
+                },
+                "merged": {
+                  "type": "string"
+                },
+                "approved": {
+                  "type": "string"
+                },
+                "changesRequested": {
+                  "type": "string"
+                },
+                "reviewRequested": {
+                  "type": "string"
+                },
+                "closed": {
+                  "type": "string"
+                },
+                "open": {
+                  "type": "string"
+                },
+                "prApproved": {
+                  "type": "string"
+                },
+                "prChangesRequested": {
+                  "type": "string"
+                },
+                "prReviewRequested": {
+                  "type": "string"
+                },
+                "prLinked": {
                   "type": "string"
                 }
               },
@@ -809,6 +878,9 @@
           "type": "string"
         },
         "closed": {
+          "type": "string"
+        },
+        "all": {
           "type": "string"
         },
         "selectRepo": {
@@ -1142,6 +1214,126 @@
                   "type": "string"
                 },
                 "description": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "pulls": {
+      "type": "object",
+      "properties": {
+        "all": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "workItems": {
+      "type": "object",
+      "properties": {
+        "filter": {
+          "type": "object",
+          "properties": {
+            "all": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "timeline": {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "object",
+              "properties": {
+                "comment": {
+                  "type": "string"
+                },
+                "review": {
+                  "type": "string"
+                },
+                "state": {
+                  "type": "string"
+                },
+                "assignment": {
+                  "type": "string"
+                },
+                "label": {
+                  "type": "string"
+                },
+                "event": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false
+            },
+            "action": {
+              "type": "object",
+              "properties": {
+                "opened": {
+                  "type": "string"
+                },
+                "commented": {
+                  "type": "string"
+                },
+                "approvedReview": {
+                  "type": "string"
+                },
+                "requestedChanges": {
+                  "type": "string"
+                },
+                "reviewed": {
+                  "type": "string"
+                },
+                "merged": {
+                  "type": "string"
+                },
+                "closed": {
+                  "type": "string"
+                },
+                "reopened": {
+                  "type": "string"
+                },
+                "updatedState": {
+                  "type": "string"
+                },
+                "assigned": {
+                  "type": "string"
+                },
+                "unassigned": {
+                  "type": "string"
+                },
+                "addedLabel": {
+                  "type": "string"
+                },
+                "removedLabel": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false
+            },
+            "reviewState": {
+              "type": "string"
+            },
+            "eventCountOne": {
+              "type": "string"
+            },
+            "eventCount": {
+              "type": "string"
+            },
+            "source": {
+              "type": "object",
+              "properties": {
+                "issue": {
+                  "type": "string"
+                },
+                "pull": {
                   "type": "string"
                 }
               },

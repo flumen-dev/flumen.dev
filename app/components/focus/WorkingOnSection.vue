@@ -8,7 +8,7 @@ const localePath = useLocalePath()
 function itemRoute(item: { repo: string, number: number, type: 'issue' | 'pr' }) {
   const path = buildWorkItemPath(item.repo, item.number, item.type)
   if (!path) {
-    return '/focus'
+    return localePath('/focus')
   }
 
   return localePath(path)

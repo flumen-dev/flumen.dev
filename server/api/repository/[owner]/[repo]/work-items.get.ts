@@ -62,21 +62,49 @@ async function fetchPullInsights(
       }
     `
 
-    const data = await githubGraphQL<Record<string, Record<string, {
-      number: number
-      reviewDecision: WorkItem['reviewDecision']
-      commits?: { nodes: Array<{ commit: { statusCheckRollup: { state: string } | null } }> }
-    } | null>>>(token, query, { owner, repo })
+    try {
+      const data = await githubGraphQL<Record<string, Record<string, {
+        number: number
+        reviewDecision: WorkItem['reviewDecision']
+        commits?: { nodes: Array<{ commit: { statusCheckRollup: { state: string } | null } }> }
+      } | null>>>(token, query, { owner, repo })
 
-    const repository = data.repository ?? {}
-    Object.values(repository).forEach((pull) => {
-      if (!pull) return
-      const ciRaw = pull.commits?.nodes?.[0]?.commit?.statusCheckRollup?.state
-      result.set(pull.number, {
-        reviewDecision: pull.reviewDecision ?? null,
-        ciStatus: mapCiStatus(ciRaw),
+      const repository = data.repository ?? {}
+      Object.values(repository).forEach((pull) => {
+        if (!pull) return
+        const ciRaw = pull.commits?.nodes?.[0]?.commit?.statusCheckRollup?.state
+        result.set(pull.number, {
+          reviewDecision: pull.reviewDecision ?? null,
+          ciStatus: mapCiStatus(ciRaw),
+        })
       })
-    })
+
+      for (const pullNumber of batch) {
+        if (!result.has(pullNumber)) {
+          result.set(pullNumber, {
+            reviewDecision: null,
+            ciStatus: null,
+          })
+        }
+      }
+    }
+    catch (error) {
+      console.error('[work-items] Failed to fetch pull insights batch', {
+        owner,
+        repo,
+        batch,
+        error,
+      })
+
+      for (const pullNumber of batch) {
+        if (!result.has(pullNumber)) {
+          result.set(pullNumber, {
+            reviewDecision: null,
+            ciStatus: null,
+          })
+        }
+      }
+    }
   }
 
   return result
@@ -183,7 +211,7 @@ const fetchWorkItems = defineCachedFunction(
             type: 'issue',
             number,
             title: issueMap.get(number)?.title ?? `#${number}`,
-            state: issueMap.get(number)?.state ?? 'OPEN',
+            state: issueMap.get(number)?.state,
             htmlUrl: issueMap.get(number)?.htmlUrl ?? `https://github.com/${owner}/${repo}/issues/${number}`,
           })),
         }

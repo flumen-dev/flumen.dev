@@ -14,7 +14,7 @@ const timeAgo = useTimeAgo(computed(() => props.item.updatedAt))
 const workItemRoute = computed(() => {
   const path = buildWorkItemPath(props.item.repo, props.item.number)
   if (!path) {
-    return '/focus'
+    return localePath('/focus')
   }
   return localePath(path)
 })

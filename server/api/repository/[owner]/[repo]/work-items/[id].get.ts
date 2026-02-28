@@ -457,26 +457,63 @@ const fetchWorkItemDetail = defineCachedFunction(
           const closingIssues = node.source?.closingIssuesReferences?.nodes ?? []
           return closingIssues.some((linkedIssue: { number: number }) => linkedIssue.number === issue.number)
         })
-        .map(node => ({
-          type: 'pull' as const,
-          number: node.source!.number,
-          title: node.source!.title,
-          state: node.source!.state,
-          htmlUrl: node.source!.url,
-        }))
+      const linkedPullMap = new Map<number, {
+        type: 'pull'
+        number: number
+        title: string
+        state: string
+        htmlUrl: string
+      }>()
 
-      const linkedPullNumbers = Array.from(new Set(linkedPulls.map((pull: { number: number }) => pull.number)))
+      linkedPulls.forEach((node) => {
+        const pull = node.source
+        if (!pull) return
+
+        if (!linkedPullMap.has(pull.number)) {
+          linkedPullMap.set(pull.number, {
+            type: 'pull',
+            number: pull.number,
+            title: pull.title,
+            state: pull.state,
+            htmlUrl: pull.url,
+          })
+        }
+      })
+
+      const dedupedLinkedPulls = Array.from(linkedPullMap.values())
+      const linkedPullNumbers = Array.from(linkedPullMap.keys())
       const contributions: WorkItemContribution[] = []
       const pullTimelineEntries: WorkItemTimelineEntry[] = []
 
-      for (const pullNumber of linkedPullNumbers) {
-        const pullData = await githubGraphQL<{ repository?: { pullRequest?: PullDetailNode | null } }>(token, PULL_DETAIL_QUERY, {
-          owner,
-          repo,
-          number: pullNumber,
-        })
-        const pull = pullData.repository?.pullRequest
-        if (!pull) continue
+      const pullResponses = await Promise.allSettled(
+        linkedPullNumbers.map(async (pullNumber) => {
+          const pullData = await githubGraphQL<{ repository?: { pullRequest?: PullDetailNode | null } }>(token, PULL_DETAIL_QUERY, {
+            owner,
+            repo,
+            number: pullNumber,
+          })
+
+          return pullData.repository?.pullRequest ?? null
+        }),
+      )
+
+      pullResponses.forEach((pullResponse, index) => {
+        const pullNumber = linkedPullNumbers[index]
+        if (!pullNumber) return
+
+        if (pullResponse.status === 'rejected') {
+          console.error('[work-item-detail] Failed to fetch linked pull', {
+            owner,
+            repo,
+            issueNumber: issue.number,
+            pullNumber,
+            error: pullResponse.reason,
+          })
+          return
+        }
+
+        const pull = pullResponse.value
+        if (!pull) return
 
         const ciRaw = pull.commits?.nodes?.[0]?.commit?.statusCheckRollup?.state
         contributions.push({
@@ -496,8 +533,10 @@ const fetchWorkItemDetail = defineCachedFunction(
         ;(pull.timelineItems?.nodes ?? [])
           .map((node: TimelineNode) => mapPullTimeline(node, pull.number))
           .filter((entry: WorkItemTimelineEntry | null): entry is WorkItemTimelineEntry => entry !== null)
-          .forEach((entry: WorkItemTimelineEntry) => pullTimelineEntries.push(entry))
-      }
+          .forEach((entry: WorkItemTimelineEntry) => {
+            pullTimelineEntries.push(entry)
+          })
+      })
 
       const issueInitialEntry = createInitialIssueEntry(issue)
       const issueTimelineEntries = issue.timelineItems.nodes
@@ -528,7 +567,7 @@ const fetchWorkItemDetail = defineCachedFunction(
         ciStatus: firstContribution?.ciStatus ?? null,
         issue: null,
         pull: null,
-        linkedPulls,
+        linkedPulls: dedupedLinkedPulls,
         linkedIssues: [],
         body: issue.body,
         bodyHTML: issue.bodyHTML,

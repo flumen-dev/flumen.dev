@@ -9,16 +9,16 @@ const props = defineProps<{
   linkMode?: 'external' | 'repo'
 }>()
 
-const limit = computed(() => props.limit ?? 5)
-const state = computed(() => props.state ?? 'open')
-const linkMode = computed(() => props.linkMode ?? 'external')
+const resolvedLimit = computed(() => props.limit ?? 5)
+const resolvedState = computed(() => props.state ?? 'open')
+const resolvedLinkMode = computed(() => props.linkMode ?? 'external')
 
 const { data: pulls, status } = useLazyFetch<RepoPullRequest[]>(
   `/api/repository/${props.owner}/${props.repo}/pulls`,
   {
     query: {
-      limit,
-      state,
+      limit: resolvedLimit,
+      state: resolvedState,
     },
   },
 )
@@ -52,7 +52,7 @@ function pullTo(pr: RepoPullRequest) {
 
     <!-- PR rows -->
     <template v-else-if="pulls?.length">
-      <template v-if="linkMode === 'repo'">
+      <template v-if="resolvedLinkMode === 'repo'">
         <NuxtLink
           v-for="pr in pulls"
           :key="pr.id"

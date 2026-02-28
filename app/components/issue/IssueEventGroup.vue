@@ -56,7 +56,7 @@ function isBotActor(actor: string) {
           color="neutral"
           variant="soft"
         >
-          Bot
+          {{ t('common.bot') }}
         </UBadge>
       </span>
 

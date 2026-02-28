@@ -8,7 +8,8 @@
     "copyLink": "Copy link",
     "copyFailed": "Failed to copy",
     "viewOnGithub": "View on GitHub",
-    "close": "Close"
+    "close": "Close",
+    "bot": "Bot"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -172,6 +173,7 @@
       "forkedFrom": "Forked from",
       "lists": "Lists",
       "workItems": "Work Items",
+      "linkedIssues": "Linked Issues",
       "recentIssues": "Recent Issues",
       "recentPrs": "Recent Pull Requests",
       "specialFiles": {
@@ -203,6 +205,27 @@
         "noRelease": "No releases",
         "license": "License",
         "commitActivity": "Commit activity (12 weeks)"
+      }
+    },
+    "workItem": {
+      "state": {
+        "open": "Open",
+        "closed": "Closed",
+        "merged": "Merged",
+        "draft": "Draft"
+      },
+      "status": {
+        "draft": "Draft",
+        "merged": "Merged",
+        "approved": "Approved",
+        "changesRequested": "Changes requested",
+        "reviewRequested": "Review requested",
+        "closed": "Closed",
+        "open": "Open",
+        "prApproved": "PR approved",
+        "prChangesRequested": "PR changes requested",
+        "prReviewRequested": "PR review requested",
+        "prLinked": "PR linked"
       }
     }
   },
@@ -268,6 +291,7 @@
   "issues": {
     "open": "Open",
     "closed": "Closed",
+    "all": "All",
     "selectRepo": "Select a repository...",
     "searchRepos": "Search repositories...",
     "searchReposHint": "Filter your repos or search GitHub",
@@ -379,6 +403,46 @@
       "rateLimited": {
         "title": "Too many requests",
         "description": "GitHub rate limit reached. Please wait a moment and try again."
+      }
+    }
+  },
+  "pulls": {
+    "all": "All"
+  },
+  "workItems": {
+    "filter": {
+      "all": "All"
+    },
+    "timeline": {
+      "kind": {
+        "comment": "Comment",
+        "review": "Review",
+        "state": "State",
+        "assignment": "Assignment",
+        "label": "Label",
+        "event": "Event"
+      },
+      "action": {
+        "opened": "opened",
+        "commented": "commented",
+        "approvedReview": "approved review",
+        "requestedChanges": "requested changes",
+        "reviewed": "reviewed",
+        "merged": "merged",
+        "closed": "closed",
+        "reopened": "reopened",
+        "updatedState": "updated state",
+        "assigned": "assigned {assignee}",
+        "unassigned": "unassigned {assignee}",
+        "addedLabel": "added label {label}",
+        "removedLabel": "removed label {label}"
+      },
+      "reviewState": "Review: {state}",
+      "eventCountOne": "1 event",
+      "eventCount": "{count} events",
+      "source": {
+        "issue": "Issue",
+        "pull": "PR #{number}"
       }
     }
   },

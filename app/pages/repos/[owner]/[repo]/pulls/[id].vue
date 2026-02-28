@@ -112,7 +112,7 @@ const { data: pull, status, error } = await useAsyncData(
               name="i-lucide-link"
               class="size-4 text-primary"
             />
-            <span class="text-sm font-medium">Linked Issues</span>
+            <span class="text-sm font-medium">{{ $t('repos.detail.linkedIssues') }}</span>
           </div>
         </template>
 

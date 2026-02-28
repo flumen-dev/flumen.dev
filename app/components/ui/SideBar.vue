@@ -214,6 +214,9 @@ function recentItemToCommand(item: RecentItem): CommandPaletteItem {
       if (workItemPath) {
         navigateTo(localePath(workItemPath))
       }
+      else if (isIssue) {
+        navigateTo(localePath('/issues'))
+      }
       else if (!isIssue) {
         navigateTo(item.url, { external: true, open: { target: '_blank' } })
       }

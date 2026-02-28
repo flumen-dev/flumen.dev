@@ -86,7 +86,7 @@ export default defineEventHandler(async (event) => {
   const { owner, repo } = getRepoParams(event)
   const number = Number(getRouterParam(event, 'id'))
 
-  if (!number || Number.isNaN(number)) {
+  if (!Number.isInteger(number) || number <= 0) {
     throw createError({ statusCode: 400, message: 'Invalid pull request number' })
   }
 

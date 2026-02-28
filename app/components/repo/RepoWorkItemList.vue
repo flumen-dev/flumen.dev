@@ -9,16 +9,17 @@ const props = defineProps<{
   linkMode?: 'external' | 'repo'
 }>()
 
-const limit = computed(() => props.limit ?? 5)
-const state = computed(() => props.state ?? 'open')
-const linkMode = computed(() => props.linkMode ?? 'external')
+const resolvedLimit = computed(() => props.limit ?? 5)
+const resolvedState = computed(() => props.state ?? 'open')
+const resolvedLinkMode = computed(() => props.linkMode ?? 'external')
+const { t } = useI18n()
 
 const { data: workItems, status } = useLazyFetch<WorkItem[]>(
   `/api/repository/${props.owner}/${props.repo}/work-items`,
   {
     query: {
-      limit,
-      state,
+      limit: resolvedLimit,
+      state: resolvedState,
     },
   },
 )
@@ -40,22 +41,29 @@ function stateBadgeColor(state: string) {
   return STATE_COLOR[state] ?? 'neutral'
 }
 
+function stateBadgeLabel(item: WorkItem) {
+  if (item.type === 'pull' && item.isDraft) return t('repos.workItem.state.draft')
+  if (item.state === 'MERGED') return t('repos.workItem.state.merged')
+  if (item.state === 'CLOSED') return t('repos.workItem.state.closed')
+  return t('repos.workItem.state.open')
+}
+
 function prStatusLabel(item: WorkItem) {
   if (item.type === 'pull') {
-    if (item.isDraft) return 'Draft'
-    if (item.state === 'MERGED') return 'Merged'
-    if (item.reviewDecision === 'APPROVED') return 'Approved'
-    if (item.reviewDecision === 'CHANGES_REQUESTED') return 'Changes requested'
-    if (item.reviewDecision === 'REVIEW_REQUIRED') return 'Review requested'
-    if (item.state === 'CLOSED') return 'Closed'
-    return 'Open'
+    if (item.isDraft) return t('repos.workItem.status.draft')
+    if (item.state === 'MERGED') return t('repos.workItem.status.merged')
+    if (item.reviewDecision === 'APPROVED') return t('repos.workItem.status.approved')
+    if (item.reviewDecision === 'CHANGES_REQUESTED') return t('repos.workItem.status.changesRequested')
+    if (item.reviewDecision === 'REVIEW_REQUIRED') return t('repos.workItem.status.reviewRequested')
+    if (item.state === 'CLOSED') return t('repos.workItem.status.closed')
+    return t('repos.workItem.status.open')
   }
 
   if (!item.linkedPulls.length) return null
-  if (item.reviewDecision === 'APPROVED') return 'PR approved'
-  if (item.reviewDecision === 'CHANGES_REQUESTED') return 'PR changes requested'
-  if (item.reviewDecision === 'REVIEW_REQUIRED') return 'PR review requested'
-  return 'PR linked'
+  if (item.reviewDecision === 'APPROVED') return t('repos.workItem.status.prApproved')
+  if (item.reviewDecision === 'CHANGES_REQUESTED') return t('repos.workItem.status.prChangesRequested')
+  if (item.reviewDecision === 'REVIEW_REQUIRED') return t('repos.workItem.status.prReviewRequested')
+  return t('repos.workItem.status.prLinked')
 }
 
 function ciIcon(ciStatus: WorkItem['ciStatus']) {
@@ -84,7 +92,7 @@ function ciIcon(ciStatus: WorkItem['ciStatus']) {
     </div>
 
     <template v-else-if="workItems?.length">
-      <template v-if="linkMode === 'repo'">
+      <template v-if="resolvedLinkMode === 'repo'">
         <NuxtLink
           v-for="item in workItems"
           :key="`repo-${item.id}`"
@@ -110,7 +118,7 @@ function ciIcon(ciStatus: WorkItem['ciStatus']) {
                 variant="subtle"
                 :color="stateBadgeColor(item.state) as any"
               >
-                {{ item.state.toLowerCase() }}
+                {{ stateBadgeLabel(item) }}
               </UBadge>
               <UBadge
                 v-if="prStatusLabel(item)"
@@ -222,7 +230,7 @@ function ciIcon(ciStatus: WorkItem['ciStatus']) {
                 variant="subtle"
                 :color="stateBadgeColor(item.state) as any"
               >
-                {{ item.state.toLowerCase() }}
+                {{ stateBadgeLabel(item) }}
               </UBadge>
               <UBadge
                 v-if="prStatusLabel(item)"

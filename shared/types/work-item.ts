@@ -9,7 +9,7 @@ export interface WorkItemRef {
   type: WorkItemType
   number: number
   title: string
-  state: string
+  state?: string | null
   htmlUrl: string
 }
 

@@ -26,29 +26,10 @@ const repoFullName = computed(() => `${owner.value}/${repo.value}`)
       <span class="text-sm text-muted">{{ $t('nav.issues') }}</span>
     </div>
 
-    <div class="flex items-center gap-2">
-      <UButton
-        size="xs"
-        :variant="state === 'open' ? 'solid' : 'outline'"
-        @click="state = 'open'"
-      >
-        {{ $t('issues.open') }}
-      </UButton>
-      <UButton
-        size="xs"
-        :variant="state === 'closed' ? 'solid' : 'outline'"
-        @click="state = 'closed'"
-      >
-        {{ $t('issues.closed') }}
-      </UButton>
-      <UButton
-        size="xs"
-        :variant="state === 'all' ? 'solid' : 'outline'"
-        @click="state = 'all'"
-      >
-        All
-      </UButton>
-    </div>
+    <StateFilterButtons
+      v-model="state"
+      :all-label="$t('issues.all')"
+    />
 
     <RepoIssueList
       :owner="owner"

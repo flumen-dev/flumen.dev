@@ -8,7 +8,8 @@
     "copyLink": "Link kopieren",
     "copyFailed": "Kopieren fehlgeschlagen",
     "viewOnGithub": "Auf GitHub ansehen",
-    "close": "Schließen"
+    "close": "Schließen",
+    "bot": "Bot"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -172,6 +173,7 @@
       "forkedFrom": "Geforkt von",
       "lists": "Listen",
       "workItems": "Work Items",
+      "linkedIssues": "Verknüpfte Issues",
       "recentIssues": "Aktuelle Issues",
       "recentPrs": "Aktuelle Pull Requests",
       "specialFiles": {
@@ -203,6 +205,27 @@
         "noRelease": "Keine Releases",
         "license": "Lizenz",
         "commitActivity": "Commit-Aktivität (12 Wochen)"
+      }
+    },
+    "workItem": {
+      "state": {
+        "open": "Offen",
+        "closed": "Geschlossen",
+        "merged": "Gemergt",
+        "draft": "Entwurf"
+      },
+      "status": {
+        "draft": "Entwurf",
+        "merged": "Gemergt",
+        "approved": "Genehmigt",
+        "changesRequested": "Änderungen angefragt",
+        "reviewRequested": "Review angefragt",
+        "closed": "Geschlossen",
+        "open": "Offen",
+        "prApproved": "PR genehmigt",
+        "prChangesRequested": "PR Änderungen angefragt",
+        "prReviewRequested": "PR Review angefragt",
+        "prLinked": "PR verknüpft"
       }
     }
   },
@@ -268,6 +291,7 @@
   "issues": {
     "open": "Offen",
     "closed": "Geschlossen",
+    "all": "Alle",
     "selectRepo": "Repository auswählen...",
     "searchRepos": "Repositories durchsuchen...",
     "searchReposHint": "Eigene Repos filtern oder GitHub durchsuchen",
@@ -379,6 +403,46 @@
       "rateLimited": {
         "title": "Zu viele Anfragen",
         "description": "GitHub-Rate-Limit erreicht. Bitte warte einen Moment und versuche es erneut."
+      }
+    }
+  },
+  "pulls": {
+    "all": "Alle"
+  },
+  "workItems": {
+    "filter": {
+      "all": "Alle"
+    },
+    "timeline": {
+      "kind": {
+        "comment": "Kommentar",
+        "review": "Review",
+        "state": "Status",
+        "assignment": "Zuweisung",
+        "label": "Label",
+        "event": "Ereignis"
+      },
+      "action": {
+        "opened": "geöffnet",
+        "commented": "kommentiert",
+        "approvedReview": "Review genehmigt",
+        "requestedChanges": "Änderungen angefragt",
+        "reviewed": "reviewt",
+        "merged": "gemergt",
+        "closed": "geschlossen",
+        "reopened": "wiedereröffnet",
+        "updatedState": "Status aktualisiert",
+        "assigned": "{assignee} zugewiesen",
+        "unassigned": "{assignee} nicht mehr zugewiesen",
+        "addedLabel": "Label {label} hinzugefügt",
+        "removedLabel": "Label {label} entfernt"
+      },
+      "reviewState": "Review: {state}",
+      "eventCountOne": "1 Ereignis",
+      "eventCount": "{count} Ereignisse",
+      "source": {
+        "issue": "Issue",
+        "pull": "PR #{number}"
       }
     }
   },

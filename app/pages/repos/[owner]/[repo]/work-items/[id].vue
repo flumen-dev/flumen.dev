@@ -49,7 +49,7 @@ const linkedPrs = computed(() => {
     number: pr.number,
     title: pr.title,
     url: pr.htmlUrl,
-    state: pr.state,
+    state: pr.state ?? '',
     actor: '',
   }))
 })
@@ -78,7 +78,7 @@ const mentionUsers = computed<MentionUser[]>(() => {
     }))
 })
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const { loggedIn } = useUserSession()
 const commentFormRef = ref<{ active: boolean }>()
 const toast = useToast()
@@ -112,12 +112,12 @@ watch(
 )
 
 function timelineKindLabel(kind: string) {
-  if (kind === 'comment') return 'Comment'
-  if (kind === 'review') return 'Review'
-  if (kind === 'state') return 'State'
-  if (kind === 'assignment') return 'Assignment'
-  if (kind === 'label') return 'Label'
-  return 'Event'
+  if (kind === 'comment') return t('workItems.timeline.kind.comment')
+  if (kind === 'review') return t('workItems.timeline.kind.review')
+  if (kind === 'state') return t('workItems.timeline.kind.state')
+  if (kind === 'assignment') return t('workItems.timeline.kind.assignment')
+  if (kind === 'label') return t('workItems.timeline.kind.label')
+  return t('workItems.timeline.kind.event')
 }
 
 const unifiedTimeline = computed(() => workItem.value?.timeline ?? [])
@@ -168,26 +168,26 @@ function timelineIcon(entry: WorkItemTimelineEntry) {
 }
 
 function timelineAction(entry: WorkItemTimelineEntry) {
-  if (entry.isInitial) return 'opened'
-  if (entry.kind === 'comment') return 'commented'
+  if (entry.isInitial) return t('workItems.timeline.action.opened')
+  if (entry.kind === 'comment') return t('workItems.timeline.action.commented')
   if (entry.kind === 'review') {
-    if (entry.reviewState === 'APPROVED') return 'approved review'
-    if (entry.reviewState === 'CHANGES_REQUESTED') return 'requested changes'
-    return 'reviewed'
+    if (entry.reviewState === 'APPROVED') return t('workItems.timeline.action.approvedReview')
+    if (entry.reviewState === 'CHANGES_REQUESTED') return t('workItems.timeline.action.requestedChanges')
+    return t('workItems.timeline.action.reviewed')
   }
   if (entry.kind === 'state') {
-    if (entry.state === 'MERGED') return 'merged'
-    if (entry.state === 'CLOSED') return 'closed'
-    if (entry.state === 'REOPENED') return 'reopened'
-    return 'updated state'
+    if (entry.state === 'MERGED') return t('workItems.timeline.action.merged')
+    if (entry.state === 'CLOSED') return t('workItems.timeline.action.closed')
+    if (entry.state === 'REOPENED') return t('workItems.timeline.action.reopened')
+    return t('workItems.timeline.action.updatedState')
   }
   if (entry.kind === 'assignment') {
-    if (entry.state === 'UNASSIGNED') return `unassigned ${entry.assignee ?? ''}`.trim()
-    return `assigned ${entry.assignee ?? ''}`.trim()
+    if (entry.state === 'UNASSIGNED') return t('workItems.timeline.action.unassigned', { assignee: entry.assignee ?? '' }).trim()
+    return t('workItems.timeline.action.assigned', { assignee: entry.assignee ?? '' }).trim()
   }
   if (entry.kind === 'label') {
-    if (entry.state === 'UNLABELED') return `removed label ${entry.labelName ?? ''}`.trim()
-    return `added label ${entry.labelName ?? ''}`.trim()
+    if (entry.state === 'UNLABELED') return t('workItems.timeline.action.removedLabel', { label: entry.labelName ?? '' }).trim()
+    return t('workItems.timeline.action.addedLabel', { label: entry.labelName ?? '' }).trim()
   }
   return timelineKindLabel(entry.kind)
 }
@@ -199,7 +199,9 @@ function isBotAuthor(author: string) {
 function timelineDescription(entry: WorkItemTimelineEntry): string | undefined {
   if (entry.kind === 'comment' || entry.kind === 'review') {
     if (entry.body) return entry.body
-    if (entry.kind === 'review' && entry.reviewState) return `Review: ${entry.reviewState}`
+    if (entry.kind === 'review' && entry.reviewState) {
+      return t('workItems.timeline.reviewState', { state: entry.reviewState })
+    }
   }
   return undefined
 }
@@ -303,15 +305,19 @@ function timelineDomId(id: string) {
 function formatTimelineDate(date: string | undefined) {
   if (!date) return ''
 
-  return new Intl.DateTimeFormat('de-DE', {
+  return new Intl.DateTimeFormat(locale.value || undefined, {
     dateStyle: 'short',
     timeStyle: 'short',
   }).format(new Date(date))
 }
 
 function railTooltip(bucket: WorkItemTimelineUiItem[], anchorItem: WorkItemTimelineUiItem) {
-  const eventCount = bucket.length === 1 ? '1 event' : `${bucket.length} events`
-  const sourceLabel = anchorItem.source === 'pull' ? `PR #${anchorItem.sourceNumber}` : 'Issue'
+  const eventCount = bucket.length === 1
+    ? t('workItems.timeline.eventCountOne')
+    : t('workItems.timeline.eventCount', { count: bucket.length })
+  const sourceLabel = anchorItem.source === 'pull'
+    ? t('workItems.timeline.source.pull', { number: anchorItem.sourceNumber })
+    : t('workItems.timeline.source.issue')
   const actorAction = `${anchorItem.title ?? 'Unknown'} ${anchorItem.action}`.trim()
   const kindLabels = [...new Set(bucket.map(item => timelineKindLabel(item.kind)))]
   const kindSummary = kindLabels.length <= 2
