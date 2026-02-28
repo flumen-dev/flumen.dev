@@ -33,6 +33,10 @@ const { data: workItem, status: workItemStatus, error: workItemError, refresh: r
   },
 )
 
+function delayedRefreshWorkItem() {
+  globalThis.setTimeout(() => refreshWorkItem(), 10_000)
+}
+
 const number = computed(() => {
   if (workItem.value?.number) return workItem.value.number
 
@@ -602,7 +606,7 @@ function onTimelineReactionToggle(item: WorkItemTimelineUiItem, content: string,
           :work-item="workItem"
           :repo="repo"
           :issue="isIssuePrimary ? issue : undefined"
-          @ci-status-changed="setTimeout(() => refreshWorkItem(), 10_000)"
+          @ci-status-changed="delayedRefreshWorkItem"
         />
 
         <div

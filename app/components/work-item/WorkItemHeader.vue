@@ -2,6 +2,7 @@
 import type { CheckRunDetail } from '~~/shared/types/check-run'
 import type { IssueDetail } from '~~/shared/types/issue-detail'
 import type { WorkItemDetail } from '~~/shared/types/work-item'
+import { formatDuration, getCIIcon, getIssueStateColor, getIssueStateIcon, getPRStateColor, getPRStateIcon } from '~/utils/prMeta'
 
 const props = defineProps<{
   workItem: WorkItemDetail
@@ -51,37 +52,17 @@ watch(statusChanged, () => {
 
 const stateIcon = computed(() => {
   const wi = props.workItem
-  if (wi.primaryType === 'pull') {
-    if (wi.state === 'MERGED') return 'i-lucide-git-merge'
-    if (wi.state === 'CLOSED') return 'i-lucide-git-pull-request-closed'
-    if (wi.state === 'DRAFT') return 'i-lucide-git-pull-request-draft'
-    return 'i-lucide-git-pull-request'
-  }
-  if (wi.state === 'OPEN') return 'i-lucide-circle-dot'
-  return 'i-lucide-check-circle'
+  if (wi.primaryType === 'pull') return getPRStateIcon(wi.state, wi.state === 'DRAFT')
+  return getIssueStateIcon(wi.state)
 })
 
 const stateColor = computed(() => {
   const wi = props.workItem
-  if (wi.primaryType === 'pull') {
-    if (wi.state === 'MERGED') return 'text-violet-500'
-    if (wi.state === 'CLOSED') return 'text-red-500'
-    return 'text-emerald-500'
-  }
-  if (wi.state === 'OPEN') return 'text-emerald-500'
-  return 'text-violet-500'
+  if (wi.primaryType === 'pull') return getPRStateColor(wi.state, wi.state === 'DRAFT')
+  return getIssueStateColor(wi.state)
 })
 
-const stateBg = computed(() => {
-  const wi = props.workItem
-  if (wi.primaryType === 'pull') {
-    if (wi.state === 'MERGED') return 'bg-violet-500/10'
-    if (wi.state === 'CLOSED') return 'bg-red-500/10'
-    return 'bg-emerald-500/10'
-  }
-  if (wi.state === 'OPEN') return 'bg-emerald-500/10'
-  return 'bg-violet-500/10'
-})
+const stateBg = computed(() => stateColor.value.replace('text-', 'bg-') + '/10')
 
 const stateLabel = computed(() => {
   const wi = props.workItem
@@ -111,24 +92,6 @@ const linkedPrs = computed(() =>
   })),
 )
 
-function prStateIcon(state: string) {
-  switch (state) {
-    case 'OPEN': return 'i-lucide-git-pull-request'
-    case 'MERGED': return 'i-lucide-git-merge'
-    case 'CLOSED': return 'i-lucide-git-pull-request-closed'
-    default: return 'i-lucide-git-pull-request'
-  }
-}
-
-function prStateColor(state: string) {
-  switch (state) {
-    case 'OPEN': return 'text-emerald-500'
-    case 'MERGED': return 'text-violet-500'
-    case 'CLOSED': return 'text-red-500'
-    default: return 'text-muted'
-  }
-}
-
 // --- Row 4: CI ---
 
 const failedChecks = computed(() => checkResult.value?.checks.filter(c => c.status === 'FAILURE') ?? [])
@@ -147,45 +110,18 @@ function openLogDialog(check: CheckRunDetail) {
   logDialogOpen.value = true
 }
 
-function statusIcon(status: string | null) {
-  switch (status) {
-    case 'SUCCESS': return 'i-lucide-check-circle-2'
-    case 'FAILURE': return 'i-lucide-x-circle'
-    case 'PENDING': return 'i-lucide-loader-circle'
-    default: return 'i-lucide-circle-dashed'
-  }
-}
-
-function statusColor(status: string | null) {
-  switch (status) {
-    case 'SUCCESS': return 'text-emerald-500'
-    case 'FAILURE': return 'text-red-500'
-    case 'PENDING': return 'text-amber-500'
-    default: return 'text-muted'
-  }
-}
-
-const ciIcon = computed(() => statusIcon(checkResult.value?.rollupStatus ?? null))
-const ciColor = computed(() => statusColor(checkResult.value?.rollupStatus ?? null))
+const ciMeta = computed(() => getCIIcon(checkResult.value?.rollupStatus) ?? { name: 'i-lucide-circle-dashed', color: 'text-muted' })
 
 const ciSummary = computed(() => {
-  if (!checkResult.value) return t('common.loading')
+  if (!checkResult.value) return ''
   const r = checkResult.value
   if (r.rollupStatus === 'SUCCESS' && r.total > 0) return t('workItems.ci.allPassed')
   const parts: string[] = []
   if (r.failed > 0) parts.push(t('workItems.ci.failedCount', { count: r.failed }))
   if (r.pending > 0) parts.push(t('workItems.ci.pending', { count: r.pending }))
   if (r.passed > 0) parts.push(t('workItems.ci.passedCount', { count: r.passed }))
-  return parts.join(' · ')
+  return parts.join(' \u00b7 ')
 })
-
-function formatDuration(seconds: number | null) {
-  if (seconds === null) return ''
-  if (seconds < 60) return t('workItems.ci.duration', { seconds })
-  const mins = Math.floor(seconds / 60)
-  const secs = seconds % 60
-  return `${mins}m ${secs}s`
-}
 </script>
 
 <template>
@@ -218,6 +154,7 @@ function formatDuration(seconds: number | null) {
             variant="ghost"
             color="neutral"
             size="xs"
+            :aria-label="t('common.copyLink')"
             @click="copyLink"
           />
         </UTooltip>
@@ -227,6 +164,7 @@ function formatDuration(seconds: number | null) {
             variant="ghost"
             color="neutral"
             size="xs"
+            :aria-label="t('common.viewOnGithub')"
             :to="workItem.url"
             target="_blank"
           />
@@ -279,9 +217,9 @@ function formatDuration(seconds: number | null) {
             class="inline-flex items-center gap-1 rounded-full border border-default bg-elevated/50 px-2 py-0.5 text-xs hover:border-primary/50 transition-colors"
           >
             <UIcon
-              :name="prStateIcon(pr.state)"
+              :name="getPRStateIcon(pr.state)"
               class="size-3.5"
-              :class="prStateColor(pr.state)"
+              :class="getPRStateColor(pr.state)"
             />
             <span class="text-muted">#{{ pr.number }}</span>
           </a>
@@ -337,12 +275,14 @@ function formatDuration(seconds: number | null) {
       <button
         type="button"
         class="flex items-center gap-2 w-full px-3 sm:px-4 py-1.5 sm:py-2 text-xs hover:bg-elevated/50 transition-colors"
+        :aria-label="t('workItems.ci.checks')"
+        :aria-expanded="ciExpanded"
         @click="ciExpanded = !ciExpanded"
       >
         <UIcon
-          :name="ciIcon"
+          :name="ciMeta.name"
           class="size-3.5 shrink-0"
-          :class="[ciColor, checkResult?.rollupStatus === 'PENDING' ? 'animate-spin' : '']"
+          :class="[ciMeta.color, ciMeta.spin ? 'animate-spin' : '']"
         />
         <span class="text-muted truncate">{{ ciSummary }}</span>
         <UIcon
@@ -376,8 +316,9 @@ function formatDuration(seconds: number | null) {
               class="flex items-center gap-2 text-xs py-0.5"
             >
               <UIcon
-                name="i-lucide-x-circle"
-                class="size-3.5 shrink-0 text-red-500"
+                :name="getCIIcon('FAILURE')!.name"
+                class="size-3.5 shrink-0"
+                :class="getCIIcon('FAILURE')!.color"
               />
               <button
                 class="truncate flex-1 text-highlighted text-left hover:underline cursor-pointer"
@@ -417,8 +358,9 @@ function formatDuration(seconds: number | null) {
             class="flex items-center gap-2 text-xs py-0.5"
           >
             <UIcon
-              name="i-lucide-loader-circle"
-              class="size-3.5 shrink-0 text-amber-500 animate-spin"
+              :name="getCIIcon('PENDING')!.name"
+              class="size-3.5 shrink-0 animate-spin"
+              :class="getCIIcon('PENDING')!.color"
             />
             <span class="truncate flex-1 text-highlighted">{{ check.name }}</span>
           </div>
@@ -444,8 +386,9 @@ function formatDuration(seconds: number | null) {
               class="flex items-center gap-2 text-xs py-0.5"
             >
               <UIcon
-                name="i-lucide-check-circle-2"
-                class="size-3.5 shrink-0 text-emerald-500"
+                :name="getCIIcon('SUCCESS')!.name"
+                class="size-3.5 shrink-0"
+                :class="getCIIcon('SUCCESS')!.color"
               />
               <button
                 class="truncate flex-1 text-muted text-left hover:underline cursor-pointer"

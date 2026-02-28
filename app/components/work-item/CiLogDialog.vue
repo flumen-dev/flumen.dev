@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import type { CheckRunDetail } from '~~/shared/types/check-run'
+import { formatDuration, getCIIcon } from '~/utils/prMeta'
 
 const props = defineProps<{
   check: CheckRunDetail | null
@@ -130,17 +131,17 @@ function toggleSection(index: number) {
     <template #header>
       <div class="flex items-center gap-3 min-w-0">
         <UIcon
-          v-if="check"
-          :name="check.status === 'SUCCESS' ? 'i-lucide-check-circle-2' : check.status === 'FAILURE' ? 'i-lucide-x-circle' : 'i-lucide-loader-circle'"
+          v-if="check && getCIIcon(check.status)"
+          :name="getCIIcon(check.status)!.name"
           class="size-5 shrink-0"
-          :class="check.status === 'SUCCESS' ? 'text-emerald-500' : check.status === 'FAILURE' ? 'text-red-500' : 'text-amber-500'"
+          :class="[getCIIcon(check.status)!.color, getCIIcon(check.status)!.spin ? 'animate-spin' : '']"
         />
         <span class="font-semibold text-highlighted truncate">{{ check?.name }}</span>
         <span
-          v-if="check?.durationSeconds !== null && check?.durationSeconds !== undefined"
+          v-if="formatDuration(check?.durationSeconds)"
           class="text-sm text-muted shrink-0"
         >
-          {{ check.durationSeconds < 60 ? `${check.durationSeconds}s` : `${Math.floor(check.durationSeconds / 60)}m ${check.durationSeconds % 60}s` }}
+          {{ formatDuration(check?.durationSeconds) }}
         </span>
         <div class="flex-1" />
         <UButton

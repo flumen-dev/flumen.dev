@@ -20,17 +20,8 @@ const workItemRoute = computed(() => {
 })
 
 // --- State ---
-const stateColor = computed(() => {
-  if (props.item.state === 'OPEN') return 'text-emerald-500'
-  if (props.item.stateReason === 'NOT_PLANNED') return 'text-neutral-400'
-  return 'text-purple-500'
-})
-
-const stateIcon = computed(() => {
-  if (props.item.state === 'OPEN') return 'i-lucide-circle-dot'
-  if (props.item.stateReason === 'NOT_PLANNED') return 'i-lucide-circle-slash'
-  return 'i-lucide-check-circle'
-})
+const stateColor = computed(() => getIssueStateColor(props.item.state, props.item.stateReason))
+const stateIcon = computed(() => getIssueStateIcon(props.item.state, props.item.stateReason))
 
 // --- Waiting since (feature 1) ---
 const waitingDays = computed(() => {
@@ -77,19 +68,6 @@ const activeReactions = computed(() =>
 )
 
 // --- PR helpers ---
-function prStateColor(pr: CreatedIssuePR) {
-  if (pr.isDraft) return 'text-neutral-400'
-  if (pr.state === 'MERGED') return 'text-purple-500'
-  if (pr.state === 'CLOSED') return 'text-red-500'
-  return 'text-emerald-500'
-}
-
-function prStateIcon(pr: CreatedIssuePR) {
-  if (pr.isDraft) return 'i-lucide-git-pull-request-draft'
-  if (pr.state === 'MERGED') return 'i-lucide-git-merge'
-  if (pr.state === 'CLOSED') return 'i-lucide-git-pull-request-closed'
-  return 'i-lucide-git-pull-request'
-}
 
 function prTooltip(pr: CreatedIssuePR) {
   const parts = [`#${pr.number}: ${pr.title}`]
@@ -262,10 +240,10 @@ function ciIconFor(pr: CreatedIssuePR) {
           >
             <span
               class="inline-flex items-center gap-0.5"
-              :class="prStateColor(pr)"
+              :class="getPRStateColor(pr.state, pr.isDraft)"
             >
               <UIcon
-                :name="prStateIcon(pr)"
+                :name="getPRStateIcon(pr.state, pr.isDraft)"
                 class="size-3.5"
               />
               #{{ pr.number }}

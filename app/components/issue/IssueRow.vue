@@ -12,17 +12,8 @@ const { open: openProfile } = useUserProfileDialog()
 const createdAgo = useTimeAgo(computed(() => props.issue.createdAt))
 const updatedAgo = useTimeAgo(computed(() => props.issue.updatedAt))
 
-const stateIcon = computed(() => {
-  if (props.issue.state === 'OPEN') return 'i-lucide-circle-dot'
-  if (props.issue.stateReason === 'NOT_PLANNED') return 'i-lucide-circle-slash'
-  return 'i-lucide-check-circle'
-})
-
-const stateColor = computed(() => {
-  if (props.issue.state === 'OPEN') return 'text-emerald-500'
-  if (props.issue.stateReason === 'NOT_PLANNED') return 'text-neutral-400'
-  return 'text-violet-500'
-})
+const stateIcon = computed(() => getIssueStateIcon(props.issue.state, props.issue.stateReason))
+const stateColor = computed(() => getIssueStateColor(props.issue.state, props.issue.stateReason))
 
 const issueLink = computed(() => {
   const path = buildWorkItemPath(props.issue.repository.nameWithOwner, props.issue.number)

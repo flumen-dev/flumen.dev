@@ -24,25 +24,13 @@ const timeAgo = useTimeAgo(computed(() => props.item.updatedAt))
 const isClosed = computed(() => props.item.state !== 'OPEN')
 
 const stateIcon = computed(() => {
-  if (props.item.type === 'pr') {
-    if (props.item.state === 'MERGED') return 'i-lucide-git-merge'
-    if (props.item.isDraft) return 'i-lucide-git-pull-request-draft'
-    if (isClosed.value) return 'i-lucide-git-pull-request-closed'
-    return 'i-lucide-git-pull-request'
-  }
-  if (isClosed.value) return 'i-lucide-circle-check'
-  return 'i-lucide-circle-dot'
+  if (props.item.type === 'pr') return getPRStateIcon(props.item.state, props.item.isDraft)
+  return getIssueStateIcon(props.item.state)
 })
 
 const stateColor = computed(() => {
-  if (props.item.type === 'pr') {
-    if (props.item.state === 'MERGED') return 'text-purple-500'
-    if (props.item.isDraft) return 'text-neutral-400'
-    if (isClosed.value) return 'text-red-500'
-    return 'text-blue-500'
-  }
-  if (isClosed.value) return 'text-purple-500'
-  return 'text-emerald-500'
+  if (props.item.type === 'pr') return getPRStateColor(props.item.state, props.item.isDraft)
+  return getIssueStateColor(props.item.state)
 })
 
 const stateTooltip = computed(() => {

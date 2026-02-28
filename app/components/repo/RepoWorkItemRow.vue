@@ -6,15 +6,15 @@ defineProps<{
   stateBadgeColor: string
   stateBadgeLabel: string
   prStatusLabel: string | null
-  ciIcon: { name: string, class: string } | null
+  ciIcon: { name: string, color: string, spin?: boolean } | null
 }>()
 </script>
 
 <template>
   <UIcon
-    :name="item.type === 'issue' ? 'i-lucide-circle-dot' : (item.isDraft ? 'i-lucide-git-pull-request-draft' : 'i-lucide-git-pull-request')"
+    :name="item.type === 'issue' ? getIssueStateIcon(item.state) : getPRStateIcon(item.state, item.isDraft)"
     class="size-4 shrink-0 mt-0.5"
-    :class="item.type === 'issue' ? 'text-rose-500' : (item.isDraft ? 'text-neutral-400' : 'text-blue-500')"
+    :class="item.type === 'issue' ? getIssueStateColor(item.state) : getPRStateColor(item.state, item.isDraft)"
   />
 
   <div class="min-w-0 flex-1">
@@ -44,7 +44,7 @@ defineProps<{
         v-if="ciIcon"
         :name="ciIcon.name"
         class="size-3.5"
-        :class="ciIcon.class"
+        :class="[ciIcon.color, ciIcon.spin ? 'animate-spin' : '']"
       />
     </div>
 

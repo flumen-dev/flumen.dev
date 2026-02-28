@@ -6,8 +6,10 @@ export function useCheckRuns(
   prNumbers: Ref<number[]>,
 ) {
   const requestFetch = useRequestFetch()
-  const results = ref<Record<number, CheckRunsResult>>({})
-  const loading = ref(false)
+
+  // Use useState so SSR data transfers to client (prevents hydration mismatch)
+  const stateKey = `check-runs-${owner.value}-${repo.value}`
+  const results = useState<Record<number, CheckRunsResult>>(stateKey, () => ({}))
   const fetched = ref(false)
 
   const mergedResult = computed<CheckRunsResult | null>(() => {
@@ -46,8 +48,6 @@ export function useCheckRuns(
     }
   })
 
-  // Poll while individual checks are pending OR the rollup says PENDING
-  // (GitHub knows about queued checks before they appear in the contexts list)
   const hasPending = computed(() =>
     (mergedResult.value?.pending ?? 0) > 0
     || mergedResult.value?.rollupStatus === 'PENDING',
@@ -70,7 +70,6 @@ export function useCheckRuns(
       return
     }
 
-    loading.value = true
     try {
       const responses = await Promise.allSettled(
         numbers.map(n =>
@@ -89,13 +88,11 @@ export function useCheckRuns(
         }
       })
 
-      // Only update if we got at least one result, otherwise keep stale data
       if (anySuccess || !fetched.value) {
         results.value = next
       }
     }
     finally {
-      loading.value = false
       fetched.value = true
     }
   }
@@ -120,11 +117,8 @@ export function useCheckRuns(
     }
   }
 
-  // Stable key — doesn't change with prNumbers
-  const stableKey = computed(() => `check-runs-${owner.value}-${repo.value}`)
-
   useAsyncData(
-    stableKey,
+    `async-${stateKey}`,
     () => fetchAll(),
   )
 
@@ -149,7 +143,6 @@ export function useCheckRuns(
 
   return {
     result: mergedResult,
-    loading: computed(() => loading.value && !fetched.value),
     hasPending,
     statusChanged,
   }

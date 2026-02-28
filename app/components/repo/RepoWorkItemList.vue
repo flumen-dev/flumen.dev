@@ -67,10 +67,7 @@ function prStatusLabel(item: WorkItem) {
 }
 
 function ciIcon(ciStatus: WorkItem['ciStatus']) {
-  if (ciStatus === 'SUCCESS') return { name: 'i-lucide-circle-check', class: 'text-emerald-500' }
-  if (ciStatus === 'FAILURE') return { name: 'i-lucide-circle-x', class: 'text-red-500' }
-  if (ciStatus === 'PENDING') return { name: 'i-lucide-loader-2', class: 'text-amber-400 animate-spin' }
-  return null
+  return getCIIcon(ciStatus)
 }
 </script>
 
