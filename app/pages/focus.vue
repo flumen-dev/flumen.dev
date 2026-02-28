@@ -6,6 +6,7 @@ definePageMeta({
 
 const { t } = useI18n()
 const store = useFocusStore()
+const recentStore = useRecentStore()
 
 // Load counts on mount (lightweight, single API call)
 onMounted(() => store.fetchCounts())
@@ -35,6 +36,12 @@ const sectionCounts = computed(() => {
 
   for (const key of ['workingOn', 'inbox', 'created', 'watching', 'recent'] as SectionKey[]) {
     const state = sectionState(key)
+
+    if (key === 'recent') {
+      const total = recentStore.items.length + recentStore.favorites.length
+      result[key] = total || null
+      continue
+    }
 
     if (key === 'inbox') {
       if (state.fetchedAt) {
@@ -187,18 +194,8 @@ const sectionCounts = computed(() => {
           </div>
         </template>
 
-        <!-- Recent: placeholder -->
-        <template v-else>
-          <div class="p-6 text-center">
-            <UIcon
-              name="i-lucide-activity"
-              class="size-8 text-dimmed mx-auto mb-2"
-            />
-            <p class="text-sm text-muted">
-              {{ t('focus.recent.empty') }}
-            </p>
-          </div>
-        </template>
+        <!-- Recent -->
+        <FocusRecentSection v-else />
       </div>
     </section>
   </div>

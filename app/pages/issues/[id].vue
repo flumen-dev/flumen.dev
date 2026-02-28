@@ -26,6 +26,18 @@ const {
   removeComment,
 } = useIssueDetail(repo, number)
 
+const recentStore = useRecentStore()
+watch(issue, (val) => {
+  if (!val || !repo.value) return
+  recentStore.track({
+    type: 'issue',
+    repo: repo.value,
+    number: val.number,
+    title: val.title,
+    url: val.url,
+  })
+}, { immediate: true })
+
 const linkedPrs = computed(() => {
   if (!issue.value) return []
   return issue.value.timeline

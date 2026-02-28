@@ -625,7 +625,11 @@
     },
     "recent": {
       "title": "Kürzlich",
-      "empty": "Noch keine Aktivität. Deine letzten Interaktionen erscheinen hier."
+      "empty": "Noch keine Aktivität. Deine letzten Interaktionen erscheinen hier.",
+      "favorites": "Favoriten",
+      "favorite": "Zu Favoriten hinzufügen",
+      "unfavorite": "Aus Favoriten entfernen",
+      "renamed": "umbenannt → {title}"
     }
   },
   "status": {

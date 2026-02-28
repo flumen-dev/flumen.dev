@@ -625,7 +625,11 @@
     },
     "recent": {
       "title": "Recent",
-      "empty": "No recent activity yet. Your latest interactions will show up here."
+      "empty": "No recent activity yet. Your latest interactions will show up here.",
+      "favorites": "Favorites",
+      "favorite": "Add to favorites",
+      "unfavorite": "Remove from favorites",
+      "renamed": "renamed → {title}"
     }
   },
   "status": {

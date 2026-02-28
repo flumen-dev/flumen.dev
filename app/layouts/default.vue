@@ -9,6 +9,8 @@ const { load: loadSettings } = useUserSettings()
 
 await loadSettings()
 
+useRecentSync()
+
 const hasTeleportContent = useState('has-page-title-teleport', () => false)
 
 const pageTitle = computed(() => {

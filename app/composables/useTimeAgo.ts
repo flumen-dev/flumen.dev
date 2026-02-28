@@ -1,5 +1,6 @@
-function formatTimeAgo(timestamp: string, t: (key: string, params?: unknown) => string): string {
-  const seconds = Math.floor((Date.now() - new Date(timestamp).getTime()) / 1000)
+function formatTimeAgo(timestamp: string | number, t: (key: string, params?: unknown) => string): string {
+  const ms = typeof timestamp === 'number' ? timestamp : new Date(timestamp).getTime()
+  const seconds = Math.floor((Date.now() - ms) / 1000)
 
   if (seconds < 60) return t('time.justNow')
 
@@ -20,16 +21,16 @@ function formatTimeAgo(timestamp: string, t: (key: string, params?: unknown) => 
 }
 
 /** Reactive composable — for values that change over time (e.g. repo.pushedAt) */
-export function useTimeAgo(date: Ref<string> | string) {
+export function useTimeAgo(date: Ref<string | number> | string | number) {
   const { t } = useI18n()
   return computed(() => {
-    const timestamp = typeof date === 'string' ? date : date.value
+    const timestamp = typeof date === 'string' || typeof date === 'number' ? date : date.value
     return formatTimeAgo(timestamp, t)
   })
 }
 
-/** Simple function — for static values in lists */
-export function timeAgo(date: string): string {
+/** Simple function — for static values in lists (ISO string or epoch ms) */
+export function timeAgo(date: string | number): string {
   const { t } = useI18n()
   return formatTimeAgo(date, t)
 }
