@@ -86,8 +86,8 @@ importers:
         specifier: 0.5.29
         version: 0.5.29(magicast@0.5.2)
       nuxt-freeform:
-        specifier: 0.1.0-alpha.6
-        version: 0.1.0-alpha.6(magicast@0.5.2)
+        specifier: 0.1.0-alpha.7
+        version: 0.1.0-alpha.7(magicast@0.5.2)
       pinia:
         specifier: ^3.0.4
         version: 3.0.4(typescript@5.9.3)(vue@3.5.28(typescript@5.9.3))
@@ -5116,8 +5116,8 @@ packages:
       echarts: ^6.0.0
       vue-echarts: ^8.0.0
 
-  nuxt-freeform@0.1.0-alpha.6:
-    resolution: {integrity: sha512-ILWy1pp7qcZHqleOqwEIw3GpJ2HNBo/P5OLpIZoNuVJybOUBeOPNhi/W4Jc5LzM6wopFivajI1d5OYK67RYITw==}
+  nuxt-freeform@0.1.0-alpha.7:
+    resolution: {integrity: sha512-CtgCv0tV3pDs2CDsVMlT6Oy4LeN5KRxZR0YaLix0PiXgRxoUGLl6GSDMRcTR+4HxKgX/4gZniX7MIq+XbLKNrA==}
 
   nuxt@4.3.1:
     resolution: {integrity: sha512-bl+0rFcT5Ax16aiWFBFPyWcsTob19NTZaDL5P6t0MQdK63AtgS6fN6fwvwdbXtnTk6/YdCzlmuLzXhSM22h0OA==}
@@ -11783,7 +11783,7 @@ snapshots:
     transitivePeerDependencies:
       - magicast
 
-  nuxt-freeform@0.1.0-alpha.6(magicast@0.5.2):
+  nuxt-freeform@0.1.0-alpha.7(magicast@0.5.2):
     dependencies:
       '@nuxt/kit': 4.3.1(magicast@0.5.2)
     transitivePeerDependencies:
