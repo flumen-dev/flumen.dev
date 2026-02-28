@@ -1258,9 +1258,6 @@
             "checks": {
               "type": "string"
             },
-            "summary": {
-              "type": "string"
-            },
             "allPassed": {
               "type": "string"
             },
@@ -1270,9 +1267,6 @@
             "viewOnGithub": {
               "type": "string"
             },
-            "failing": {
-              "type": "string"
-            },
             "failedCount": {
               "type": "string"
             },
@@ -1280,9 +1274,6 @@
               "type": "string"
             },
             "pending": {
-              "type": "string"
-            },
-            "duration": {
               "type": "string"
             },
             "loadingLogs": {
