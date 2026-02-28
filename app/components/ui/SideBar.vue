@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { CommandPaletteGroup, CommandPaletteItem, NavigationMenuItem } from '@nuxt/ui'
+import type { RecentItem } from '~~/shared/types/recent'
 import { shortcodeToUnicode } from '~~/shared/types/status'
 
 interface PinnedDragItem {
@@ -73,6 +74,7 @@ const { pinnedRepos, unpin, reorder } = usePinnedRepos()
 const { settings, update: updateSettings } = useUserSettings()
 
 const issueStore = useIssueStore()
+const recentStore = useRecentStore()
 
 // --- Resizable pinned section ---
 const PINNED_MIN_H = 80
@@ -196,19 +198,66 @@ function selectSearchRepo(repo: SearchRepo) {
   navigateTo(localePath(`/repos/${repo.owner}/${repo.name}`))
 }
 
+function recentItemToCommand(item: RecentItem): CommandPaletteItem {
+  const isIssue = item.type === 'issue'
+  return {
+    id: item.key,
+    label: item.title,
+    icon: isIssue ? 'i-lucide-circle-dot' : 'i-lucide-git-pull-request',
+    suffix: `${item.repo.split('/')[1]}#${item.number}`,
+    chip: recentStore.hasUpdate(item) ? { color: 'primary' as const } : undefined,
+    onSelect: () => {
+      recentStore.markSeen(item.key)
+      sidebarSearchOpen.value = false
+      if (isIssue) {
+        navigateTo(localePath({ path: `/issues/${item.number}`, query: { repo: item.repo } }))
+      }
+      else {
+        navigateTo(item.url, { external: true, open: { target: '_blank' } })
+      }
+    },
+  }
+}
+
 const sidebarSearchGroups = computed<CommandPaletteGroup<CommandPaletteItem>[]>(() => {
   const term = sidebarSearchTerm.value.trim()
 
   if (!term) {
-    return [{
-      id: 'hint',
-      items: [{
-        label: t('repos.searchStartTyping'),
-        icon: 'i-lucide-search',
-        disabled: true,
-      }],
-      ignoreFilter: true,
-    }]
+    const groups: CommandPaletteGroup<CommandPaletteItem>[] = []
+    const favs = recentStore.favorites
+    const recents = recentStore.items
+
+    if (favs.length) {
+      groups.push({
+        id: 'favorites',
+        label: t('focus.recent.searchFavorites'),
+        items: favs.map(recentItemToCommand),
+        ignoreFilter: true,
+      })
+    }
+
+    if (recents.length) {
+      groups.push({
+        id: 'recent',
+        label: t('focus.recent.searchRecent'),
+        items: recents.slice(0, 10).map(recentItemToCommand),
+        ignoreFilter: true,
+      })
+    }
+
+    if (!groups.length) {
+      return [{
+        id: 'hint',
+        items: [{
+          label: t('repos.searchStartTyping'),
+          icon: 'i-lucide-search',
+          disabled: true,
+        }],
+        ignoreFilter: true,
+      }]
+    }
+
+    return groups
   }
 
   if (term.length < 2) {

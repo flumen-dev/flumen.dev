@@ -1896,6 +1896,12 @@
             },
             "renamed": {
               "type": "string"
+            },
+            "searchFavorites": {
+              "type": "string"
+            },
+            "searchRecent": {
+              "type": "string"
             }
           },
           "additionalProperties": false

@@ -629,7 +629,9 @@
       "favorites": "Favoriten",
       "favorite": "Zu Favoriten hinzufügen",
       "unfavorite": "Aus Favoriten entfernen",
-      "renamed": "umbenannt → {title}"
+      "renamed": "umbenannt → {title}",
+      "searchFavorites": "Favoriten",
+      "searchRecent": "Zuletzt besucht"
     }
   },
   "status": {
