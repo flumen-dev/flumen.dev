@@ -441,8 +441,10 @@
         "removedLabel": "removed label {label}"
       },
       "reviewState": "Review: {state}",
-      "eventCountOne": "1 event",
-      "eventCount": "{count} events",
+      "eventCount": {
+        "one": "1 event",
+        "other": "{count} events"
+      },
       "scrollToItem": "Scroll to {target}",
       "source": {
         "issue": "Issue",

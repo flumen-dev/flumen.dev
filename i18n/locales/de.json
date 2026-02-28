@@ -430,7 +430,7 @@
         "commented": "kommentiert",
         "approvedReview": "Review genehmigt",
         "requestedChanges": "Änderungen angefragt",
-        "reviewed": "reviewt",
+        "reviewed": "geprüft",
         "merged": "gemergt",
         "closed": "geschlossen",
         "reopened": "wiedereröffnet",
@@ -441,8 +441,10 @@
         "removedLabel": "Label {label} entfernt"
       },
       "reviewState": "Review: {state}",
-      "eventCountOne": "1 Ereignis",
-      "eventCount": "{count} Ereignisse",
+      "eventCount": {
+        "one": "1 Ereignis",
+        "other": "{count} Ereignisse"
+      },
       "scrollToItem": "Zu {target} springen",
       "source": {
         "issue": "Issue",

@@ -14,7 +14,7 @@ const resolvedState = computed(() => props.state ?? 'open')
 const resolvedLinkMode = computed(() => props.linkMode ?? 'external')
 const { t } = useI18n()
 
-const { data: workItems, status } = useLazyFetch<WorkItem[]>(
+const { data: workItems, status, error: fetchError } = useLazyFetch<WorkItem[]>(
   `/api/repository/${props.owner}/${props.repo}/work-items`,
   {
     query: {
@@ -110,6 +110,13 @@ function ciIcon(ciStatus: WorkItem['ciStatus']) {
         />
       </component>
     </template>
+
+    <div
+      v-else-if="fetchError"
+      class="px-3 py-2 text-xs text-dimmed"
+    >
+      {{ $t('repos.error.fetchError.title') }}
+    </div>
 
     <div
       v-else

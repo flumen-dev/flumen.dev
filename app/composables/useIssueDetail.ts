@@ -7,7 +7,7 @@
  */
 import { normalizeMarkdownMentions } from '~/utils/normalizeMarkdownMentions'
 
-export function useIssueDetail(repo: Ref<string | undefined>, number: Ref<number>) {
+export function useIssueDetail(repo: Ref<string | undefined>, number: Ref<number | undefined>) {
   const apiFetch = useRequestFetch()
   const nuxtApp = useNuxtApp()
 
@@ -43,7 +43,7 @@ export function useIssueDetail(repo: Ref<string | undefined>, number: Ref<number
   // --- Mutations (API call + optimistic update + cache invalidation) ---
 
   async function saveBody(newBody: string) {
-    if (!issue.value || !repo.value) return
+    if (!issue.value || !repo.value || !number.value) return
     const normalizedBody = normalizeMarkdownMentions(newBody)
     const result = await apiFetch<{ id: string, body: string, bodyHTML: string, updatedAt: string }>('/api/issues/body', {
       method: 'PATCH',
@@ -60,7 +60,7 @@ export function useIssueDetail(repo: Ref<string | undefined>, number: Ref<number
   }
 
   async function submitComment(subjectId: string, body: string) {
-    if (!repo.value) return
+    if (!repo.value || !number.value) return
     const normalizedBody = normalizeMarkdownMentions(body)
     const comment = await apiFetch<TimelineComment>('/api/issues/comments', {
       method: 'POST',
@@ -77,7 +77,7 @@ export function useIssueDetail(repo: Ref<string | undefined>, number: Ref<number
   }
 
   async function saveComment(id: string, body: string) {
-    if (!repo.value) return
+    if (!repo.value || !number.value) return
     const normalizedBody = normalizeMarkdownMentions(body)
     const result = await apiFetch<{ id: string, body: string, bodyHTML: string, updatedAt: string }>('/api/issues/comments', {
       method: 'PATCH',
@@ -99,7 +99,7 @@ export function useIssueDetail(repo: Ref<string | undefined>, number: Ref<number
   }
 
   async function removeComment(id: string) {
-    if (!repo.value) return
+    if (!repo.value || !number.value) return
     await apiFetch('/api/issues/comments', {
       method: 'DELETE',
       body: { id, repo: repo.value, issueNumber: number.value },

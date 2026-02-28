@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { PullDetail } from '~~/shared/types/pull-detail'
+import { buildWorkItemPath } from '~/utils/workItemPath'
 
 definePageMeta({
   middleware: 'auth',
@@ -7,6 +8,7 @@ definePageMeta({
 })
 
 const route = useRoute()
+const localePath = useLocalePath()
 
 const owner = computed(() => route.params.owner as string)
 const repo = computed(() => route.params.repo as string)
@@ -19,13 +21,18 @@ const validNumber = computed(() => {
 })
 const repoFullName = computed(() => `${owner.value}/${repo.value}`)
 
-const { data: pull, status, error } = await useAsyncData(
+function linkedIssueTo(number: number) {
+  const path = buildWorkItemPath(repoFullName.value, number)
+  return localePath(path ?? `/repos/${owner.value}/${repo.value}/work-items/${number}`)
+}
+
+const { data: pull, status, error } = await useAsyncData<PullDetail>(
   () => validNumber.value === null
     ? `repo-pull-${owner.value}-${repo.value}-invalid`
     : `repo-pull-${owner.value}-${repo.value}-${validNumber.value}`,
-  () => {
+  async () => {
     if (validNumber.value === null) {
-      return null
+      throw createError({ statusCode: 404, statusMessage: 'Invalid pull ID' })
     }
 
     return $fetch<PullDetail>(`/api/repository/${owner.value}/${repo.value}/pulls/${validNumber.value}`)
@@ -134,7 +141,7 @@ const { data: pull, status, error } = await useAsyncData(
           <NuxtLinkLocale
             v-for="linkedIssue in pull.linkedIssues"
             :key="linkedIssue.number"
-            :to="`/repos/${owner}/${repo}/work-items/${linkedIssue.number}`"
+            :to="linkedIssueTo(linkedIssue.number)"
             class="block text-sm text-highlighted hover:text-primary transition-colors"
           >
             #{{ linkedIssue.number }} · {{ linkedIssue.title }}

@@ -25,7 +25,7 @@ const id = computed(() => route.params.id as string)
 const repo = computed(() => `${owner.value}/${repoName.value}`)
 const requestFetch = useRequestFetch()
 
-const { data: workItem } = await useAsyncData(
+const { data: workItem, status: workItemStatus, error: workItemError } = await useAsyncData(
   () => `work-item-detail-${owner.value}-${repoName.value}-${id.value}`,
   () => requestFetch<WorkItemDetail>(`/api/repository/${owner.value}/${repoName.value}/work-items/${id.value}`),
   {
@@ -35,7 +35,13 @@ const { data: workItem } = await useAsyncData(
 
 const number = computed(() => {
   if (workItem.value?.number) return workItem.value.number
-  return Number(id.value.replace(/^pr-/, ''))
+
+  const parsed = Number.parseInt(id.value.replace(/^pr-/, ''), 10)
+  if (!Number.isFinite(parsed) || Number.isNaN(parsed) || parsed <= 0) {
+    return undefined
+  }
+
+  return parsed
 })
 
 const isIssuePrimary = computed(() => workItem.value?.primaryType === 'issue')
@@ -257,7 +263,7 @@ function toIssueEvent(entry: WorkItemTimelineEntry): IssueNonCommentEvent | null
       }
     }
 
-    if (entry.state === 'CLOSED' || entry.state === 'MERGED') {
+    if (entry.state === 'CLOSED') {
       return {
         type: 'ClosedEvent',
         actor: entry.author,
@@ -317,12 +323,12 @@ function formatTimelineDate(date: string | undefined) {
 
 function railTooltip(bucket: WorkItemTimelineUiItem[], anchorItem: WorkItemTimelineUiItem) {
   const eventCount = bucket.length === 1
-    ? t('workItems.timeline.eventCountOne')
-    : t('workItems.timeline.eventCount', { count: bucket.length })
+    ? t('workItems.timeline.eventCount.one')
+    : t('workItems.timeline.eventCount.other', { count: bucket.length })
   const sourceLabel = anchorItem.source === 'pull'
     ? t('workItems.timeline.source.pull', { number: anchorItem.sourceNumber })
     : t('workItems.timeline.source.issue')
-  const actorAction = `${anchorItem.title ?? 'Unknown'} ${anchorItem.action}`.trim()
+  const actorAction = `${anchorItem.title ?? t('repos.reason.unknown')} ${anchorItem.action}`.trim()
   const kindLabels = [...new Set(bucket.map(item => timelineKindLabel(item.kind)))]
   const kindSummary = kindLabels.length <= 2
     ? kindLabels.join(', ')
@@ -567,15 +573,29 @@ function onTimelineReactionToggle(item: WorkItemTimelineUiItem, content: string,
     </Teleport>
 
     <div class="p-4">
+      <div
+        v-if="workItemStatus === 'pending'"
+        class="py-8 text-center text-muted"
+      >
+        {{ $t('common.loading') }}
+      </div>
+
+      <div
+        v-else-if="workItemError"
+        class="py-8 text-center text-muted"
+      >
+        {{ workItemError.message }}
+      </div>
+
       <IssueHeader
-        v-if="isIssuePrimary && issue"
+        v-else-if="isIssuePrimary && issue"
         :issue="issue"
         :repo="repo"
         :linked-prs="linkedPrs"
       />
 
       <div
-        v-if="isIssuePrimary && status === 'pending'"
+        v-else-if="isIssuePrimary && status === 'pending'"
         class="py-8 text-center text-muted"
       >
         {{ $t('common.loading') }}
@@ -721,7 +741,7 @@ function onTimelineReactionToggle(item: WorkItemTimelineUiItem, content: string,
                     </span>
 
                     <IssueReactions
-                      v-if="getTimelineSubjectId(item)"
+                      v-if="number !== undefined && getTimelineSubjectId(item)"
                       :reactions="getTimelineReactions(item)"
                       :subject-id="getTimelineSubjectId(item)!"
                       :repo="repo"

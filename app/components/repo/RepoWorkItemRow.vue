@@ -14,7 +14,7 @@ defineProps<{
   <UIcon
     :name="item.type === 'issue' ? 'i-lucide-circle-dot' : (item.isDraft ? 'i-lucide-git-pull-request-draft' : 'i-lucide-git-pull-request')"
     class="size-4 shrink-0 mt-0.5"
-    :class="item.type === 'issue' ? 'text-rose-500' : 'text-blue-500'"
+    :class="item.type === 'issue' ? 'text-rose-500' : (item.isDraft ? 'text-neutral-400' : 'text-blue-500')"
   />
 
   <div class="min-w-0 flex-1">

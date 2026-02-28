@@ -1330,11 +1330,17 @@
             "reviewState": {
               "type": "string"
             },
-            "eventCountOne": {
-              "type": "string"
-            },
             "eventCount": {
-              "type": "string"
+              "type": "object",
+              "properties": {
+                "one": {
+                  "type": "string"
+                },
+                "other": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false
             },
             "scrollToItem": {
               "type": "string"
