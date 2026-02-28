@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import type { CheckRunDetail } from '~~/shared/types/check-run'
+import { parseActionsLog } from '~/utils/ciLogParser'
 import { formatDuration, getCIIcon } from '~/utils/prMeta'
 
 const props = defineProps<{
@@ -56,56 +57,9 @@ async function loadLog(jobId: number) {
   }
 }
 
-interface LogSection {
-  name: string
-  lines: string[]
-  collapsed: boolean
-}
-
-const parsedSections = computed<LogSection[]>(() => {
+const parsedSections = computed(() => {
   if (!rawLog.value) return []
-
-  const lines = rawLog.value.split('\n')
-  const sections: LogSection[] = []
-  let current: LogSection | null = null
-
-  for (const raw of lines) {
-    // Strip timestamp prefix (2026-02-28T19:42:22.1234567Z )
-    const line = raw.replace(/^\d{4}-\d{2}-\d{2}T[\d:.]+Z\s?/, '')
-
-    if (line.startsWith('##[group]')) {
-      if (current) sections.push(current)
-      current = { name: line.replace('##[group]', ''), lines: [], collapsed: true }
-      continue
-    }
-
-    if (line.startsWith('##[endgroup]')) {
-      if (current) {
-        sections.push(current)
-        current = null
-      }
-      continue
-    }
-
-    // Skip other ##[] directives
-    if (line.startsWith('##[')) continue
-
-    if (current) {
-      current.lines.push(line)
-    }
-    else {
-      // Lines outside groups go into a default section
-      if (!sections.length || sections[sections.length - 1]!.collapsed) {
-        sections.push({ name: '', lines: [], collapsed: false })
-      }
-      sections[sections.length - 1]!.lines.push(line)
-    }
-  }
-
-  if (current) sections.push(current)
-
-  // Filter empty sections
-  return sections.filter(s => s.lines.length > 0 || s.name)
+  return parseActionsLog(rawLog.value)
 })
 
 const sectionOpen = ref<Record<number, boolean>>({})

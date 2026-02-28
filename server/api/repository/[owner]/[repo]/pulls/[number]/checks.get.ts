@@ -1,4 +1,6 @@
-import type { CheckRunDetail, CheckRunsResult } from '~~/shared/types/check-run'
+import type { CheckRunsResult } from '~~/shared/types/check-run'
+import type { ContextNode } from '~~/server/utils/check-run-mapper'
+import { mapContextNode } from '~~/server/utils/check-run-mapper'
 import { githubGraphQL } from '~~/server/utils/github-graphql'
 import { getRepoParams, getSessionToken } from '~~/server/utils/github'
 import { mapCiStatus } from '~~/server/utils/focus-created'
@@ -41,27 +43,6 @@ query($owner: String!, $repo: String!, $number: Int!) {
 }
 `
 
-interface CheckRunNode {
-  __typename: 'CheckRun'
-  databaseId: number
-  name: string
-  conclusion: string | null
-  status: string
-  startedAt: string | null
-  completedAt: string | null
-  detailsUrl: string | null
-}
-
-interface StatusContextNode {
-  __typename: 'StatusContext'
-  context: string
-  state: string
-  targetUrl: string | null
-  createdAt: string | null
-}
-
-type ContextNode = CheckRunNode | StatusContextNode
-
 interface GraphQLResult {
   repository: {
     pullRequest: {
@@ -78,46 +59,6 @@ interface GraphQLResult {
         }>
       }
     } | null
-  }
-}
-
-function mapContextNode(node: ContextNode): CheckRunDetail {
-  if (node.__typename === 'CheckRun') {
-    let status = mapCiStatus(node.conclusion)
-    if (!status && node.status === 'IN_PROGRESS') status = 'PENDING'
-    if (!status && node.status === 'QUEUED') status = 'PENDING'
-    if (!status && node.status === 'COMPLETED') status = 'FAILURE'
-
-    let durationSeconds: number | null = null
-    if (node.startedAt && node.completedAt) {
-      durationSeconds = Math.round(
-        (new Date(node.completedAt).getTime() - new Date(node.startedAt).getTime()) / 1000,
-      )
-    }
-
-    return {
-      name: node.name,
-      status,
-      durationSeconds,
-      detailsUrl: node.detailsUrl,
-      jobId: node.databaseId,
-    }
-  }
-
-  const stateMap: Record<string, ReturnType<typeof mapCiStatus>> = {
-    SUCCESS: 'SUCCESS',
-    PENDING: 'PENDING',
-    FAILURE: 'FAILURE',
-    ERROR: 'FAILURE',
-    EXPECTED: 'PENDING',
-  }
-
-  return {
-    name: node.context,
-    status: stateMap[node.state] ?? null,
-    durationSeconds: null,
-    detailsUrl: node.targetUrl,
-    jobId: null,
   }
 }
 
