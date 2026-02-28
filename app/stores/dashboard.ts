@@ -9,10 +9,12 @@ export const useDashboardStore = defineStore('dashboard', () => {
   )
 
   function togglePanel(key: DashboardPanel) {
-    if (collapsed.value.has(key)) collapsed.value.delete(key)
-    else collapsed.value.add(key)
+    const next = new Set(collapsed.value)
+    if (next.has(key)) next.delete(key)
+    else next.add(key)
+    collapsed.value = next
     if (import.meta.client)
-      localStorage.setItem('dashboard-collapsed', JSON.stringify([...collapsed.value]))
+      localStorage.setItem('dashboard-collapsed', JSON.stringify([...next]))
   }
 
   function isCollapsed(key: DashboardPanel) {
