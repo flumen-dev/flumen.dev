@@ -46,12 +46,14 @@ const number = computed(() => {
 
 const isIssuePrimary = computed(() => workItem.value?.primaryType === 'issue')
 
+const issueNumber = computed(() => isIssuePrimary.value ? number.value : undefined)
+
 const {
   issue,
   status,
   error,
   submitComment,
-} = useIssueDetail(repo, number)
+} = useIssueDetail(repo, issueNumber)
 
 const linkedPrs = computed(() => {
   const linkedPulls = workItem.value?.linkedPulls ?? []
@@ -64,19 +66,40 @@ const linkedPrs = computed(() => {
   }))
 })
 
+const primarySubjectId = computed(() => {
+  if (issue.value) return issue.value.id
+  const entry = workItem.value?.timeline.find(e => e.isInitial && e.source === workItem.value?.primaryType)
+  return entry?.subjectId
+})
+
 const mentionUsers = computed<MentionUser[]>(() => {
-  if (!issue.value) return []
+  if (issue.value) {
+    const users = new Map<string, string>()
+    users.set(issue.value.author.login, issue.value.author.avatarUrl)
 
-  const users = new Map<string, string>()
-  users.set(issue.value.author.login, issue.value.author.avatarUrl)
+    for (const assignee of issue.value.assignees) {
+      users.set(assignee.login, assignee.avatarUrl)
+    }
 
-  for (const assignee of issue.value.assignees) {
-    users.set(assignee.login, assignee.avatarUrl)
+    for (const item of issue.value.timeline) {
+      if (item.type === 'IssueComment') {
+        users.set(item.author.login, item.author.avatarUrl)
+      }
+    }
+
+    return Array.from(users.entries())
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([label, src]) => ({
+        label,
+        avatar: src ? { src } : undefined,
+      }))
   }
 
-  for (const item of issue.value.timeline) {
-    if (item.type === 'IssueComment') {
-      users.set(item.author.login, item.author.avatarUrl)
+  // Fallback: derive from work item timeline (PR case)
+  const users = new Map<string, string>()
+  for (const entry of workItem.value?.timeline ?? []) {
+    if (entry.author && entry.authorAvatarUrl) {
+      users.set(entry.author, entry.authorAvatarUrl)
     }
   }
 
@@ -587,201 +610,202 @@ function onTimelineReactionToggle(item: WorkItemTimelineUiItem, content: string,
         {{ workItemError.message }}
       </div>
 
-      <IssueHeader
-        v-else-if="isIssuePrimary && issue"
-        :issue="issue"
-        :repo="repo"
-        :linked-prs="linkedPrs"
-      />
+      <template v-else-if="workItem">
+        <IssueHeader
+          v-if="isIssuePrimary && issue"
+          :issue="issue"
+          :repo="repo"
+          :linked-prs="linkedPrs"
+        />
 
-      <div
-        v-else-if="isIssuePrimary && status === 'pending'"
-        class="py-8 text-center text-muted"
-      >
-        {{ $t('common.loading') }}
-      </div>
-
-      <div
-        v-else-if="isIssuePrimary && error"
-        class="py-8 text-center text-muted"
-      >
-        {{ error.message }}
-      </div>
-
-      <div
-        v-else-if="workItem"
-        class="mt-4 lg:grid lg:grid-cols-[minmax(0,1fr)_260px] lg:gap-6 2xl:grid-cols-[44px_minmax(0,1fr)_260px]"
-      >
         <div
-          v-if="timelineRailEntries.length"
-          class="hidden 2xl:flex"
+          v-else-if="isIssuePrimary && status === 'pending'"
+          class="py-8 text-center text-muted"
         >
-          <div class="sticky top-44 h-[72vh] w-10">
-            <div class="absolute left-1/2 top-0 h-full w-px -translate-x-1/2 bg-border" />
+          {{ $t('common.loading') }}
+        </div>
 
-            <UTooltip
-              v-for="entry in timelineRailEntries"
-              :key="entry.key"
-              :text="entry.tooltip"
-            >
-              <button
-                type="button"
-                class="absolute left-1/2 -translate-x-1/2 -translate-y-1/2 flex h-5 w-5 items-center justify-center rounded-full border transition-colors"
-                :class="[
-                  entry.targetIds.includes(activeRailTargetId ?? '')
-                    ? 'border-primary bg-primary/10 text-primary'
-                    : 'border-default bg-default text-muted hover:text-highlighted hover:border-primary/40',
-                  entry.source === 'pull' ? 'ring-1 ring-primary/20' : '',
-                ]"
-                :style="{ top: `${entry.top}%` }"
-                :aria-label="railAriaLabel(entry)"
-                @click="scrollToTimelineItem(entry.targetId)"
+        <div
+          v-else-if="isIssuePrimary && error"
+          class="py-8 text-center text-muted"
+        >
+          {{ error.message }}
+        </div>
+
+        <div
+          class="mt-4 lg:grid lg:grid-cols-[minmax(0,1fr)_260px] lg:gap-6 2xl:grid-cols-[44px_minmax(0,1fr)_260px]"
+        >
+          <div
+            v-if="timelineRailEntries.length"
+            class="hidden 2xl:flex"
+          >
+            <div class="sticky top-44 h-[72vh] w-10">
+              <div class="absolute left-1/2 top-0 h-full w-px -translate-x-1/2 bg-border" />
+
+              <UTooltip
+                v-for="entry in timelineRailEntries"
+                :key="entry.key"
+                :text="entry.tooltip"
               >
-                <UIcon
-                  :name="entry.icon"
-                  class="size-3"
-                />
-
-                <span
-                  v-if="entry.count > 1"
-                  class="absolute -right-1.5 -top-1.5 inline-flex min-w-4 items-center justify-center rounded-full bg-elevated px-1 text-[10px] leading-none text-muted"
-                >
-                  {{ entry.count }}
-                </span>
-              </button>
-            </UTooltip>
-          </div>
-        </div>
-
-        <div class="flex flex-col gap-4 min-w-0">
-          <div
-            v-if="unifiedTimeline.length"
-            class="space-y-4"
-          >
-            <UTimeline
-              :items="timelineItems"
-              size="xs"
-              :ui="{
-                root: 'gap-0',
-                separator: 'h-full',
-                description: 'mt-2 text-default',
-                item: 'py-0',
-                container: 'gap-0',
-                date: 'hidden',
-                wrapper: 'gap-2',
-              }"
-            >
-              <template #indicator="{ item }">
-                <UAvatar
-                  v-if="(item.kind === 'comment' || item.kind === 'review') && item.authorAvatarUrl"
-                  :src="item.authorAvatarUrl"
-                  :alt="item.title"
-                  size="2xs"
-                />
-                <UIcon
-                  v-else
-                  :name="item.icon"
-                  class="size-3.5"
-                />
-              </template>
-
-              <template #title="{ item }">
-                <div
-                  :id="timelineDomId(item.id)"
-                  class="flex gap-1 rounded-md px-1 py-0.5 transition-colors duration-700 w-fit"
+                <button
+                  type="button"
+                  class="absolute left-1/2 -translate-x-1/2 -translate-y-1/2 flex h-5 w-5 items-center justify-center rounded-full border transition-colors"
                   :class="[
-                    item.source === 'pull' ? 'justify-self-end' : '',
-                    flashTimelineTargetId === timelineDomId(item.id) ? 'bg-primary/10 ring-1 ring-primary/40' : '',
+                    entry.targetIds.includes(activeRailTargetId ?? '')
+                      ? 'border-primary bg-primary/10 text-primary'
+                      : 'border-default bg-default text-muted hover:text-highlighted hover:border-primary/40',
+                    entry.source === 'pull' ? 'ring-1 ring-primary/20' : '',
                   ]"
+                  :style="{ top: `${entry.top}%` }"
+                  :aria-label="railAriaLabel(entry)"
+                  @click="scrollToTimelineItem(entry.targetId)"
                 >
-                  <template
-                    v-if="item.issueEvent"
+                  <UIcon
+                    :name="entry.icon"
+                    class="size-3"
+                  />
+
+                  <span
+                    v-if="entry.count > 1"
+                    class="absolute -right-1.5 -top-1.5 inline-flex min-w-4 items-center justify-center rounded-full bg-elevated px-1 text-[10px] leading-none text-muted"
                   >
-                    <IssueEventGroup
-                      :class="item.source === 'pull' ? 'flex justify-end' : ''"
-                      :events="[item.issueEvent]"
-                      :show-time="false"
-                      compact
-                    />
-                  </template>
+                    {{ entry.count }}
+                  </span>
+                </button>
+              </UTooltip>
+            </div>
+          </div>
 
-                  <template v-else>
-                    <span>{{ item.title }}</span>
-                    <UBadge
-                      v-if="item.title && isBotAuthor(item.title)"
-                      size="xs"
-                      color="neutral"
-                      variant="soft"
+          <div class="flex flex-col gap-4 min-w-0">
+            <div
+              v-if="unifiedTimeline.length"
+              class="space-y-4"
+            >
+              <UTimeline
+                :items="timelineItems"
+                size="xs"
+                :ui="{
+                  root: 'gap-0',
+                  separator: 'h-full',
+                  description: 'mt-2 text-default',
+                  item: 'py-0',
+                  container: 'gap-0',
+                  date: 'hidden',
+                  wrapper: 'gap-2',
+                }"
+              >
+                <template #indicator="{ item }">
+                  <UAvatar
+                    v-if="(item.kind === 'comment' || item.kind === 'review') && item.authorAvatarUrl"
+                    :src="item.authorAvatarUrl"
+                    :alt="item.title"
+                    size="2xs"
+                  />
+                  <UIcon
+                    v-else
+                    :name="item.icon"
+                    class="size-3.5"
+                  />
+                </template>
+
+                <template #title="{ item }">
+                  <div
+                    :id="timelineDomId(item.id)"
+                    class="flex gap-1 rounded-md px-1 py-0.5 transition-colors duration-700 w-fit"
+                    :class="[
+                      item.source === 'pull' ? 'justify-self-end' : '',
+                      flashTimelineTargetId === timelineDomId(item.id) ? 'bg-primary/10 ring-1 ring-primary/40' : '',
+                    ]"
+                  >
+                    <template
+                      v-if="item.issueEvent"
                     >
-                      {{ t('workItems.badge.bot') }}
-                    </UBadge>
-                    <span class="font-normal text-muted">{{ item.action }}</span>
-                    <span class="text-dimmed text-xs/5">{{ timeAgo(item.date as string) }}</span>
-                  </template>
-                </div>
-              </template>
+                      <IssueEventGroup
+                        :class="item.source === 'pull' ? 'flex justify-end' : ''"
+                        :events="[item.issueEvent]"
+                        :show-time="false"
+                        compact
+                      />
+                    </template>
 
-              <template #description="{ item }">
-                <div
-                  v-if="item.kind === 'comment' || item.kind === 'review'"
-                  class="w-full"
-                  :class="item.source === 'pull' ? 'flex justify-end' : ''"
-                >
-                  <div class="w-full rounded-md border border-default px-3 py-2 min-w-[16rem] sm:min-w-[20rem] md:min-w-md max-w-full md:max-w-[85%]">
-                    <UiMarkdownRenderer
-                      v-if="item.body"
-                      :source="item.body"
-                      :repo-context="repo"
-                    />
-                    <span
-                      v-else
-                      class="text-sm text-muted"
-                    >
-                      {{ item.description }}
-                    </span>
-
-                    <IssueReactions
-                      v-if="number !== undefined && getTimelineSubjectId(item)"
-                      :reactions="getTimelineReactions(item)"
-                      :subject-id="getTimelineSubjectId(item)!"
-                      :repo="repo"
-                      :issue-number="number"
-                      class="mt-3"
-                      @toggle="(content, added) => onTimelineReactionToggle(item, content, added)"
-                    />
+                    <template v-else>
+                      <span>{{ item.title }}</span>
+                      <UBadge
+                        v-if="item.title && isBotAuthor(item.title)"
+                        size="xs"
+                        color="neutral"
+                        variant="soft"
+                      >
+                        {{ t('workItems.badge.bot') }}
+                      </UBadge>
+                      <span class="font-normal text-muted">{{ item.action }}</span>
+                      <span class="text-dimmed text-xs/5">{{ timeAgo(item.date as string) }}</span>
+                    </template>
                   </div>
-                </div>
-              </template>
-            </UTimeline>
+                </template>
+
+                <template #description="{ item }">
+                  <div
+                    v-if="item.kind === 'comment' || item.kind === 'review'"
+                    class="w-full"
+                    :class="item.source === 'pull' ? 'flex justify-end' : ''"
+                  >
+                    <div class="w-full rounded-md border border-default px-3 py-2 min-w-[16rem] sm:min-w-[20rem] md:min-w-md max-w-full md:max-w-[85%]">
+                      <UiMarkdownRenderer
+                        v-if="item.body"
+                        :source="item.body"
+                        :repo-context="repo"
+                      />
+                      <span
+                        v-else
+                        class="text-sm text-muted"
+                      >
+                        {{ item.description }}
+                      </span>
+
+                      <IssueReactions
+                        v-if="number !== undefined && getTimelineSubjectId(item)"
+                        :reactions="getTimelineReactions(item)"
+                        :subject-id="getTimelineSubjectId(item)!"
+                        :repo="repo"
+                        :issue-number="number"
+                        class="mt-3"
+                        @toggle="(content, added) => onTimelineReactionToggle(item, content, added)"
+                      />
+                    </div>
+                  </div>
+                </template>
+              </UTimeline>
+            </div>
+
+            <div
+              v-if="loggedIn && primarySubjectId"
+              :class="commentFormRef?.active ? 'sticky bottom-0 z-10' : ''"
+            >
+              <IssueCommentForm
+                ref="commentFormRef"
+                :issue-id="primarySubjectId"
+                :repo-context="repo"
+                :mention-users="mentionUsers"
+                :submit-comment="submitComment"
+                @submitted="toast.add({ title: t('issues.comment.submitted'), color: 'success' })"
+              />
+            </div>
           </div>
 
           <div
-            v-if="loggedIn && issue && !issue.locked"
-            :class="commentFormRef?.active ? 'sticky bottom-0 z-10' : ''"
+            v-if="issue"
+            class="hidden lg:block"
           >
-            <IssueCommentForm
-              ref="commentFormRef"
-              :issue-id="issue.id"
-              :repo-context="repo"
-              :mention-users="mentionUsers"
-              :submit-comment="submitComment"
-              @submitted="toast.add({ title: t('issues.comment.submitted'), color: 'success' })"
-            />
+            <div class="sticky top-48">
+              <IssueSidebar
+                :issue="issue"
+                :repo="repo"
+              />
+            </div>
           </div>
         </div>
-
-        <div
-          v-if="issue"
-          class="hidden lg:block"
-        >
-          <div class="sticky top-48">
-            <IssueSidebar
-              :issue="issue"
-              :repo="repo"
-            />
-          </div>
-        </div>
-      </div>
+      </template>
     </div>
   </div>
 </template>
