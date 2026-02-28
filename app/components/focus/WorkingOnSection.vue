@@ -1,7 +1,18 @@
 <script setup lang="ts">
+import { buildWorkItemPath } from '~/utils/workItemPath'
+
 const { t } = useI18n()
 const store = useFocusStore()
 const localePath = useLocalePath()
+
+function itemRoute(item: { repo: string, number: number, type: 'issue' | 'pr' }) {
+  const path = buildWorkItemPath(item.repo, item.number, item.type)
+  if (!path) {
+    return '/focus'
+  }
+
+  return localePath(path)
+}
 </script>
 
 <template>
@@ -35,9 +46,7 @@ const localePath = useLocalePath()
     <NuxtLink
       v-for="item in store.workingOn.data"
       :key="`${item.repo}#${item.number}`"
-      :to="item.type === 'issue' ? localePath({ path: `/issues/${item.number}`, query: { repo: item.repo } }) : item.url"
-      :external="item.type === 'pr'"
-      :target="item.type === 'pr' ? '_blank' : undefined"
+      :to="itemRoute(item)"
       class="flex items-start gap-3 px-4 py-3 hover:bg-elevated transition-colors border-b border-default last:border-b-0"
     >
       <UIcon

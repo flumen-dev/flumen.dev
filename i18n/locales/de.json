@@ -170,6 +170,8 @@
       "title": "Repository-Details",
       "viewOnGithub": "Auf GitHub ansehen",
       "forkedFrom": "Geforkt von",
+      "lists": "Listen",
+      "workItems": "Work Items",
       "recentIssues": "Aktuelle Issues",
       "recentPrs": "Aktuelle Pull Requests",
       "specialFiles": {

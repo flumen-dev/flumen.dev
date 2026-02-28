@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { Issue } from '~~/shared/types/issue'
+import { buildWorkItemPath } from '~/utils/workItemPath'
 
 const props = defineProps<{
   issue: Issue
@@ -22,11 +23,16 @@ const stateColor = computed(() => {
   if (props.issue.stateReason === 'NOT_PLANNED') return 'text-neutral-400'
   return 'text-violet-500'
 })
+
+const issueLink = computed(() => {
+  const path = buildWorkItemPath(props.issue.repository.nameWithOwner, props.issue.number)
+  return path ? localePath(path) : localePath({ path: `/issues/${props.issue.number}`, query: { repo: props.issue.repository.nameWithOwner } })
+})
 </script>
 
 <template>
   <NuxtLink
-    :to="localePath({ path: `/issues/${issue.number}`, query: { repo: issue.repository.nameWithOwner } })"
+    :to="issueLink"
     class="flex items-start gap-3 px-4 py-3 hover:bg-elevated transition-colors"
   >
     <!-- State icon -->

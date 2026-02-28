@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { PRHealthItem } from '~~/shared/types/pr-health'
+import { buildWorkItemPath } from '~/utils/workItemPath'
 
 const props = defineProps<{
   item: PRHealthItem
@@ -46,9 +47,10 @@ const categoryConfig = {
 
 const config = computed(() => categoryConfig[props.item.category])
 
-const itemLink = computed(() =>
-  localePath({ path: `/issues/${props.item.number}`, query: { repo: props.item.repo } }),
-)
+const itemLink = computed(() => {
+  const path = buildWorkItemPath(props.item.repo, props.item.number, 'pr')
+  return path ? localePath(path) : localePath('/dashboard')
+})
 
 const ciIcon = computed(() => getCIIcon(props.item.ciStatus))
 

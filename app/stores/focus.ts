@@ -2,6 +2,7 @@ import type { FocusItem } from '~~/server/api/focus/working-on.get'
 import type { CreatedIssueItem } from '~~/server/api/focus/created.get'
 import type { FocusCounts } from '~~/server/api/focus/counts.get'
 import type { UnifiedInboxItem, InboxPreview } from '~~/shared/types/inbox'
+import { buildWorkItemPath } from '~/utils/workItemPath'
 
 type SectionKey = 'workingOn' | 'inbox' | 'created' | 'watching' | 'recent'
 
@@ -445,6 +446,13 @@ export const useFocusStore = defineStore('focus', () => {
   function openHighlighted() {
     const item = highlightedItem.value
     if (!item) return
+    const workItemPath = buildWorkItemPath(item.repo, item.number, item.type)
+    if (workItemPath) {
+      const lp = useLocalePath()
+      navigateTo(lp(workItemPath))
+      return
+    }
+
     if (item.type === 'pr') {
       window.open(item.url, '_blank')
     }

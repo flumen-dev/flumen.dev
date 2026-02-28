@@ -1,8 +1,11 @@
 <script setup lang="ts">
 import type { EChartsInitOpts } from 'echarts'
 import type { ECBasicOption } from 'echarts/types/dist/shared'
+import type { PulseItem } from '~~/shared/types/pulse'
+import { buildWorkItemPath } from '~/utils/workItemPath'
 
 const { t } = useI18n()
+const localePath = useLocalePath()
 const store = useDashboardStore()
 const colorMode = useColorMode()
 
@@ -132,6 +135,15 @@ const stats = computed(() => [
   { label: t('dashboard.pulse.prsMerged'), value: totals.value?.prsMerged ?? 0, icon: 'i-lucide-git-merge', color: 'text-emerald-500' },
   { label: t('dashboard.pulse.issuesClosed'), value: totals.value?.issuesClosed ?? 0, icon: 'i-lucide-circle-check', color: 'text-emerald-500' },
 ])
+
+function pulseItemLink(item: PulseItem) {
+  const path = buildWorkItemPath(item.repo, item.number, item.type)
+  return path ? localePath(path) : item.url
+}
+
+function pulseItemExternal(item: PulseItem) {
+  return !buildWorkItemPath(item.repo, item.number, item.type)
+}
 </script>
 
 <template>
@@ -273,11 +285,12 @@ const stats = computed(() => [
                 </span>
               </div>
               <div class="space-y-1">
-                <a
+                <NuxtLink
                   v-for="item in selectedDay.resolvedItems"
                   :key="item.url"
-                  :href="item.url"
-                  target="_blank"
+                  :to="pulseItemLink(item)"
+                  :external="pulseItemExternal(item)"
+                  :target="pulseItemExternal(item) ? '_blank' : undefined"
                   class="flex items-start gap-2 text-xs group py-0.5"
                 >
                   <UIcon
@@ -288,7 +301,7 @@ const stats = computed(() => [
                     <span class="text-dimmed">{{ item.repo }}#{{ item.number }}</span>
                     {{ item.title }}
                   </span>
-                </a>
+                </NuxtLink>
               </div>
               <p
                 v-if="selectedDay.resolved > selectedDay.resolvedItems.length"
@@ -307,11 +320,12 @@ const stats = computed(() => [
                 </span>
               </div>
               <div class="space-y-1">
-                <a
+                <NuxtLink
                   v-for="item in selectedDay.incomingItems"
                   :key="item.url"
-                  :href="item.url"
-                  target="_blank"
+                  :to="pulseItemLink(item)"
+                  :external="pulseItemExternal(item)"
+                  :target="pulseItemExternal(item) ? '_blank' : undefined"
                   class="flex items-start gap-2 text-xs group py-0.5"
                 >
                   <UIcon
@@ -322,7 +336,7 @@ const stats = computed(() => [
                     <span class="text-dimmed">{{ item.repo }}#{{ item.number }}</span>
                     {{ item.title }}
                   </span>
-                </a>
+                </NuxtLink>
               </div>
               <p
                 v-if="selectedDay.incoming > selectedDay.incomingItems.length"

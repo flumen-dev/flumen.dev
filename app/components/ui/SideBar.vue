@@ -2,6 +2,7 @@
 import type { CommandPaletteGroup, CommandPaletteItem, NavigationMenuItem } from '@nuxt/ui'
 import type { RecentItem } from '~~/shared/types/recent'
 import { shortcodeToUnicode } from '~~/shared/types/status'
+import { buildWorkItemPath } from '~/utils/workItemPath'
 
 interface PinnedDragItem {
   id: string
@@ -200,6 +201,7 @@ function selectSearchRepo(repo: SearchRepo) {
 
 function recentItemToCommand(item: RecentItem): CommandPaletteItem {
   const isIssue = item.type === 'issue'
+  const workItemPath = buildWorkItemPath(item.repo, item.number, item.type)
   return {
     id: item.key,
     label: item.title,
@@ -209,10 +211,10 @@ function recentItemToCommand(item: RecentItem): CommandPaletteItem {
     onSelect: () => {
       recentStore.markSeen(item.key)
       sidebarSearchOpen.value = false
-      if (isIssue) {
-        navigateTo(localePath({ path: `/issues/${item.number}`, query: { repo: item.repo } }))
+      if (workItemPath) {
+        navigateTo(localePath(workItemPath))
       }
-      else {
+      else if (!isIssue) {
         navigateTo(item.url, { external: true, open: { target: '_blank' } })
       }
     },

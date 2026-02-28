@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { RecentItem } from '~~/shared/types/recent'
+import { buildWorkItemPath } from '~/utils/workItemPath'
 
 const props = defineProps<{
   item: RecentItem
@@ -17,11 +18,11 @@ const recentStore = useRecentStore()
 
 const isFavorite = computed(() => props.variant === 'favorite')
 
-const link = computed(() =>
-  props.item.type === 'issue'
-    ? localePath({ path: `/issues/${props.item.number}`, query: { repo: props.item.repo } })
-    : props.item.url,
-)
+const workItemPath = computed(() => buildWorkItemPath(props.item.repo, props.item.number, props.item.type))
+
+const link = computed(() => (workItemPath.value ? localePath(workItemPath.value) : props.item.url))
+
+const isExternal = computed(() => !workItemPath.value)
 
 const tooltip = computed(() => {
   const base = `${props.item.repo}#${props.item.number}`
@@ -62,8 +63,8 @@ const tooltip = computed(() => {
 
       <NuxtLink
         :to="link"
-        :external="item.type === 'pr'"
-        :target="item.type === 'pr' ? '_blank' : undefined"
+        :external="isExternal"
+        :target="isExternal ? '_blank' : undefined"
         class="min-w-0 flex-1"
         @click="recentStore.markSeen(item.key)"
       >

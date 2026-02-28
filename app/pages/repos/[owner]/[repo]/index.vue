@@ -127,6 +127,67 @@ const githubUrl = computed(() => repoDetail.value?.htmlUrl ?? `https://github.co
             :stats="stats"
           />
 
+          <UCard>
+            <template #header>
+              <div class="flex items-center gap-2">
+                <UIcon
+                  name="i-lucide-list"
+                  class="size-4 text-primary"
+                />
+                <span class="text-sm font-medium">
+                  {{ $t('repos.detail.lists') }}
+                </span>
+              </div>
+            </template>
+
+            <div class="grid grid-cols-1 gap-2">
+              <UButton
+                block
+                variant="outline"
+                icon="i-lucide-layers"
+                :to="`/repos/${owner}/${repo}/work-items`"
+              >
+                {{ $t('repos.detail.workItems') }}
+              </UButton>
+              <UButton
+                block
+                variant="outline"
+                icon="i-lucide-circle-dot"
+                :to="`/repos/${owner}/${repo}/issues`"
+              >
+                {{ $t('nav.issues') }}
+              </UButton>
+              <UButton
+                block
+                variant="outline"
+                icon="i-lucide-git-pull-request"
+                :to="`/repos/${owner}/${repo}/pulls`"
+              >
+                {{ $t('nav.pullRequests') }}
+              </UButton>
+            </div>
+          </UCard>
+
+          <!-- Work Items -->
+          <UCard>
+            <template #header>
+              <div class="flex items-center gap-2">
+                <UIcon
+                  name="i-lucide-layers"
+                  class="size-4 text-primary"
+                />
+                <span class="text-sm font-medium">
+                  {{ $t('repos.detail.workItems') }}
+                </span>
+              </div>
+            </template>
+            <RepoWorkItemList
+              :owner="owner"
+              :repo="repo"
+              link-mode="repo"
+            />
+          </UCard>
+
           <!-- Issues -->
           <UCard>
             <template #header>
@@ -143,6 +204,7 @@ const githubUrl = computed(() => repoDetail.value?.htmlUrl ?? `https://github.co
             <RepoIssueList
               :owner="owner"
               :repo="repo"
+              link-mode="repo"
             />
           </UCard>
 
@@ -162,6 +224,7 @@ const githubUrl = computed(() => repoDetail.value?.htmlUrl ?? `https://github.co
             <RepoPrList
               :owner="owner"
               :repo="repo"
+              link-mode="repo"
             />
           </UCard>
         </aside>

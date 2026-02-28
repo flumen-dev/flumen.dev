@@ -517,6 +517,12 @@
             "forkedFrom": {
               "type": "string"
             },
+            "lists": {
+              "type": "string"
+            },
+            "workItems": {
+              "type": "string"
+            },
             "recentIssues": {
               "type": "string"
             },

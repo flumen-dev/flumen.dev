@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { UnifiedInboxItem } from '~~/shared/types/inbox'
+import { buildWorkItemPath } from '~/utils/workItemPath'
 
 const props = defineProps<{
   item: UnifiedInboxItem
@@ -16,6 +17,7 @@ watch(() => props.highlighted, (v) => {
 const { t } = useI18n()
 const toast = useToast()
 const store = useFocusStore()
+const localePath = useLocalePath()
 const { open: openProfile } = useUserProfileDialog()
 const timeAgo = useTimeAgo(computed(() => props.item.updatedAt))
 
@@ -143,6 +145,15 @@ const prPreview = computed(() =>
 const issuePreview = computed(() =>
   preview.value?.type === 'issue' ? preview.value : null,
 )
+
+const workItemPath = computed(() => buildWorkItemPath(props.item.repo, props.item.number, props.item.type))
+
+const workItemLink = computed(() => (workItemPath.value ? localePath(workItemPath.value) : null))
+
+function linkedPrWorkItemLink(prNumber: number) {
+  const path = buildWorkItemPath(props.item.repo, prNumber, 'pr')
+  return path ? localePath(path) : null
+}
 </script>
 
 <template>
@@ -177,7 +188,16 @@ const issuePreview = computed(() =>
         <div class="min-w-0 flex-1">
           <!-- Title line -->
           <div class="flex items-center gap-2 min-w-0">
+            <NuxtLink
+              v-if="workItemLink"
+              :to="workItemLink"
+              class="text-sm font-medium text-highlighted truncate hover:underline"
+              @click.stop
+            >
+              {{ item.title }}
+            </NuxtLink>
             <a
+              v-else
               :href="item.url"
               target="_blank"
               rel="noopener noreferrer"
@@ -498,20 +518,36 @@ const issuePreview = computed(() =>
             <p class="text-[10px] uppercase tracking-wider text-dimmed font-semibold">
               {{ t('focus.inbox.linkedPRs') }}
             </p>
-            <a
+            <template
               v-for="pr in issuePreview.linkedPRs"
               :key="pr.number"
-              :href="pr.url"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="flex items-center gap-1.5 text-xs text-muted hover:text-highlighted py-0.5"
             >
-              <UIcon
-                name="i-lucide-git-pull-request"
-                class="size-3 text-blue-500"
-              />
-              #{{ pr.number }} {{ pr.title }}
-            </a>
+              <a
+                v-if="!linkedPrWorkItemLink(pr.number)"
+                :href="pr.url"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="flex items-center gap-1.5 text-xs text-muted hover:text-highlighted py-0.5"
+              >
+                <UIcon
+                  name="i-lucide-git-pull-request"
+                  class="size-3 text-blue-500"
+                />
+                #{{ pr.number }} {{ pr.title }}
+              </a>
+              <NuxtLink
+                v-else
+                :to="linkedPrWorkItemLink(pr.number)!"
+                class="flex items-center gap-1.5 text-xs text-muted hover:text-highlighted py-0.5"
+                @click.stop
+              >
+                <UIcon
+                  name="i-lucide-git-pull-request"
+                  class="size-3 text-blue-500"
+                />
+                #{{ pr.number }} {{ pr.title }}
+              </NuxtLink>
+            </template>
           </div>
           <p
             v-if="!issuePreview.body && !issuePreview.milestone && (!issuePreview.linkedPRs || issuePreview.linkedPRs.length === 0)"

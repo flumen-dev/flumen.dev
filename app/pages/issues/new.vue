@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import type { IssueTemplate, IssueFormTemplate } from '~~/server/api/issues/templates.get'
 import { normalizeMarkdownMentions } from '~/utils/normalizeMarkdownMentions'
+import { buildWorkItemPath } from '~/utils/workItemPath'
 
 definePageMeta({
   middleware: 'auth',
@@ -106,7 +107,8 @@ async function submitIssue(issueBody: string) {
       },
     })
     toast.add({ title: t('issues.create.success'), color: 'success' })
-    await router.push(localePath({ path: `/issues/${result.number}`, query: { repo: repo.value } }))
+    const workItemPath = buildWorkItemPath(repo.value, result.number)
+    await router.push(workItemPath ? localePath(workItemPath) : localePath({ path: `/issues/${result.number}`, query: { repo: repo.value } }))
     return true
   }
   catch {

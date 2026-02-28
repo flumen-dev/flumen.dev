@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { CreatedIssueItem, CreatedIssuePR } from '~~/server/api/focus/created.get'
+import { buildWorkItemPath } from '~/utils/workItemPath'
 
 const props = defineProps<{
   item: CreatedIssueItem
@@ -9,6 +10,14 @@ const { t } = useI18n()
 const localePath = useLocalePath()
 const { open: openProfile } = useUserProfileDialog()
 const timeAgo = useTimeAgo(computed(() => props.item.updatedAt))
+
+const workItemRoute = computed(() => {
+  const path = buildWorkItemPath(props.item.repo, props.item.number)
+  if (!path) {
+    return '/focus'
+  }
+  return localePath(path)
+})
 
 // --- State ---
 const stateColor = computed(() => {
@@ -99,7 +108,7 @@ function ciIconFor(pr: CreatedIssuePR) {
 
 <template>
   <NuxtLink
-    :to="localePath({ path: `/issues/${item.number}`, query: { repo: item.repo } })"
+    :to="workItemRoute"
     class="block px-4 py-3 hover:bg-elevated transition-colors border-b border-default last:border-b-0"
     :class="{ 'opacity-60': item.state === 'CLOSED' }"
   >

@@ -5,6 +5,8 @@ type NonCommentEvent = Exclude<TimelineItem, { type: 'IssueComment' }>
 
 const props = defineProps<{
   events: NonCommentEvent[]
+  showTime?: boolean
+  compact?: boolean
 }>()
 
 const { t } = useI18n()
@@ -31,6 +33,10 @@ const actorGroups = computed(() => {
 function groupTimeAgo(time: string) {
   return useTimeAgo(time).value
 }
+
+function isBotActor(actor: string) {
+  return /\[bot\]$/i.test(actor)
+}
 </script>
 
 <template>
@@ -38,10 +44,21 @@ function groupTimeAgo(time: string) {
     <div
       v-for="(group, gi) in actorGroups"
       :key="`${group.actor}-${gi}`"
-      class="flex flex-wrap items-center gap-x-1.5 gap-y-1 px-3 sm:px-4 py-1.5"
+      class="flex flex-wrap items-center gap-x-1.5 gap-y-1"
+      :class="props.compact ? '' : 'px-3 sm:px-4 py-1.5'"
     >
       <!-- Actor -->
-      <span class="text-xs font-medium text-highlighted">{{ group.actor }}</span>
+      <span class="inline-flex items-center gap-1 text-xs font-medium text-highlighted">
+        <span>{{ group.actor }}</span>
+        <UBadge
+          v-if="isBotActor(group.actor)"
+          size="xs"
+          color="neutral"
+          variant="soft"
+        >
+          Bot
+        </UBadge>
+      </span>
 
       <!-- Event chips -->
       <template
@@ -171,8 +188,10 @@ function groupTimeAgo(time: string) {
       </template>
 
       <!-- Timestamp -->
-      <span class="text-xs text-muted/50">&middot;</span>
-      <span class="text-xs text-muted/50">{{ groupTimeAgo(group.time) }}</span>
+      <template v-if="props.showTime !== false">
+        <span class="text-xs text-muted/50">&middot;</span>
+        <span class="text-xs text-muted/50">{{ groupTimeAgo(group.time) }}</span>
+      </template>
     </div>
   </div>
 </template>
