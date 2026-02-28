@@ -1884,6 +1884,18 @@
             },
             "empty": {
               "type": "string"
+            },
+            "favorites": {
+              "type": "string"
+            },
+            "favorite": {
+              "type": "string"
+            },
+            "unfavorite": {
+              "type": "string"
+            },
+            "renamed": {
+              "type": "string"
             }
           },
           "additionalProperties": false
