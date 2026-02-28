@@ -4,7 +4,7 @@ const SYNC_INTERVAL = 5 * 60 * 1000 // 5 minutes
  * Periodically syncs tracked items (favorites + recent) with GitHub.
  * Detects title renames and updatedAt changes.
  *
- * Call once in the default layout — runs on app start, then every 6 min.
+ * Call once in the default layout — runs on app start, then every 5 min.
  */
 export function useRecentSync() {
   const store = useRecentStore()
@@ -39,7 +39,7 @@ export function useRecentSync() {
   function start() {
     // Sync immediately on start
     sync()
-    // Then every 15 minutes
+    // Then every 5 minutes
     intervalId = setInterval(sync, SYNC_INTERVAL)
   }
 

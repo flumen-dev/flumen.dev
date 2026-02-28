@@ -204,7 +204,7 @@ function recentItemToCommand(item: RecentItem): CommandPaletteItem {
     id: item.key,
     label: item.title,
     icon: isIssue ? 'i-lucide-circle-dot' : 'i-lucide-git-pull-request',
-    suffix: `${item.repo.split('/')[1]}#${item.number}`,
+    suffix: `${item.repo.includes('/') ? item.repo.split('/')[1] : item.repo}#${item.number}`,
     chip: recentStore.hasUpdate(item) ? { color: 'primary' as const } : undefined,
     onSelect: () => {
       recentStore.markSeen(item.key)
