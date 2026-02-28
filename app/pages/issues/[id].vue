@@ -1,4 +1,6 @@
 <script lang="ts" setup>
+import type { WorkItemDetail } from '~~/shared/types/work-item'
+
 definePageMeta({
   middleware: 'auth',
   titleKey: 'nav.issues',
@@ -49,10 +51,48 @@ const linkedPrs = computed(() => {
         title: item.source.title,
         url: item.source.url,
         state: item.source.state,
-        actor: item.actor,
       }
     })
-    .filter(Boolean) as Array<{ number: number, title: string, url: string, state: string, actor: string }>
+    .filter(Boolean) as Array<{ number: number, title: string, url: string, state: string }>
+})
+
+const workItemAdapter = computed<WorkItemDetail | null>(() => {
+  if (!issue.value || !repo.value) return null
+  const i = issue.value
+  return {
+    id: i.id,
+    type: 'issue',
+    primaryType: 'issue',
+    number: i.number,
+    title: i.title,
+    state: i.state,
+    htmlUrl: i.url,
+    createdAt: i.createdAt,
+    updatedAt: i.updatedAt,
+    author: i.author,
+    labels: i.labels,
+    assignees: i.assignees,
+    commentCount: i.timeline.filter(item => item.type === 'IssueComment').length,
+    isDraft: false,
+    reviewDecision: null,
+    ciStatus: null,
+    issue: null,
+    pull: null,
+    linkedPulls: linkedPrs.value.map(pr => ({
+      type: 'pull',
+      number: pr.number,
+      title: pr.title,
+      state: pr.state,
+      htmlUrl: pr.url,
+    })),
+    linkedIssues: [],
+    body: i.body,
+    bodyHTML: i.bodyHTML,
+    url: i.url,
+    repo: repo.value,
+    contributions: [],
+    timeline: [],
+  }
 })
 
 const mentionUsers = computed<MentionUser[]>(() => {
@@ -134,10 +174,10 @@ const toast = useToast()
 
     <div class="p-4">
       <WorkItemHeader
-        v-if="issue && repo"
-        :issue="issue"
+        v-if="workItemAdapter && repo"
+        :work-item="workItemAdapter"
         :repo="repo"
-        :linked-prs="linkedPrs"
+        :issue="issue"
       />
 
       <div

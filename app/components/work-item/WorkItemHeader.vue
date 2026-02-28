@@ -1,70 +1,114 @@
 <script lang="ts" setup>
+import type { CheckRunDetail } from '~~/shared/types/check-run'
 import type { IssueDetail } from '~~/shared/types/issue-detail'
+import type { WorkItemDetail } from '~~/shared/types/work-item'
 
-export interface LinkedPr {
-  number: number
-  title: string
-  url: string
-  state: string
-  actor: string
-}
-
-const props = withDefaults(defineProps<{
-  issue: IssueDetail
+const props = defineProps<{
+  workItem: WorkItemDetail
   repo: string
-  linkedPrs: LinkedPr[]
-  showCi?: boolean
-}>(), {
-  showCi: false,
-})
+  issue?: IssueDetail | null
+}>()
 
 const { t } = useI18n()
 const toast = useToast()
 const { open: openProfile } = useUserProfileDialog()
 
-const createdAgo = useTimeAgo(computed(() => props.issue.createdAt))
-const updatedAgo = useTimeAgo(computed(() => props.issue.updatedAt))
+const createdAgo = useTimeAgo(computed(() => props.workItem.createdAt))
+const updatedAgo = useTimeAgo(computed(() => props.workItem.updatedAt))
 
-const commentCount = computed(() =>
-  props.issue.timeline.filter(item => item.type === 'IssueComment').length,
-)
+// --- PR numbers for CI checks ---
+
+const prNumbers = computed<number[]>(() => {
+  const wi = props.workItem
+  if (wi.primaryType === 'pull') {
+    return [wi.number]
+  }
+  return wi.linkedPulls
+    .filter(p => !p.state || p.state === 'OPEN')
+    .map(p => p.number)
+})
+
+const [ownerRef, repoRef] = (() => {
+  const parts = props.repo.split('/')
+  return [
+    computed(() => parts[0] ?? ''),
+    computed(() => parts[1] ?? ''),
+  ]
+})()
+
+const emit = defineEmits<{
+  ciStatusChanged: []
+}>()
+
+const { result: checkResult, statusChanged } = useCheckRuns(ownerRef, repoRef, prNumbers)
+const ciExpanded = ref(false)
+
+watch(statusChanged, () => {
+  emit('ciStatusChanged')
+})
 
 // --- Row 1: State ---
 
 const stateIcon = computed(() => {
-  if (props.issue.state === 'OPEN') return 'i-lucide-circle-dot'
-  if (props.issue.stateReason === 'NOT_PLANNED') return 'i-lucide-circle-slash'
+  const wi = props.workItem
+  if (wi.primaryType === 'pull') {
+    if (wi.state === 'MERGED') return 'i-lucide-git-merge'
+    if (wi.state === 'CLOSED') return 'i-lucide-git-pull-request-closed'
+    if (wi.state === 'DRAFT') return 'i-lucide-git-pull-request-draft'
+    return 'i-lucide-git-pull-request'
+  }
+  if (wi.state === 'OPEN') return 'i-lucide-circle-dot'
   return 'i-lucide-check-circle'
 })
 
 const stateColor = computed(() => {
-  if (props.issue.state === 'OPEN') return 'text-emerald-500'
-  if (props.issue.stateReason === 'NOT_PLANNED') return 'text-neutral-400'
+  const wi = props.workItem
+  if (wi.primaryType === 'pull') {
+    if (wi.state === 'MERGED') return 'text-violet-500'
+    if (wi.state === 'CLOSED') return 'text-red-500'
+    return 'text-emerald-500'
+  }
+  if (wi.state === 'OPEN') return 'text-emerald-500'
   return 'text-violet-500'
 })
 
+const stateBg = computed(() => {
+  const wi = props.workItem
+  if (wi.primaryType === 'pull') {
+    if (wi.state === 'MERGED') return 'bg-violet-500/10'
+    if (wi.state === 'CLOSED') return 'bg-red-500/10'
+    return 'bg-emerald-500/10'
+  }
+  if (wi.state === 'OPEN') return 'bg-emerald-500/10'
+  return 'bg-violet-500/10'
+})
+
 const stateLabel = computed(() => {
-  if (props.issue.state === 'OPEN') return t('issues.open')
-  if (props.issue.stateReason === 'NOT_PLANNED') return t('issues.closedAsNotPlanned')
+  const wi = props.workItem
+  if (wi.primaryType === 'pull') {
+    if (wi.state === 'MERGED') return t('repos.workItem.state.merged')
+    if (wi.state === 'CLOSED') return t('repos.workItem.state.closed')
+    if (wi.state === 'DRAFT') return t('repos.workItem.state.draft')
+    return t('repos.workItem.state.open')
+  }
+  if (wi.state === 'OPEN') return t('issues.open')
   return t('issues.closedAs')
 })
 
 function copyLink() {
-  navigator.clipboard.writeText(props.issue.url)
+  navigator.clipboard.writeText(props.workItem.url)
   toast.add({ title: t('common.copied'), color: 'success' })
 }
 
 // --- Row 2: Assignees + PRs ---
 
-const assigneesWithPr = computed(() =>
-  props.issue.assignees.map(assignee => ({
-    ...assignee,
-    pr: props.linkedPrs.find(pr => pr.actor === assignee.login) ?? null,
+const linkedPrs = computed(() =>
+  props.workItem.linkedPulls.map(p => ({
+    number: p.number,
+    title: p.title,
+    url: p.htmlUrl,
+    state: p.state ?? '',
   })),
-)
-
-const unlinkedPrs = computed(() =>
-  props.linkedPrs.filter(pr => !props.issue.assignees.some(a => a.login === pr.actor)),
 )
 
 function prStateIcon(state: string) {
@@ -84,6 +128,64 @@ function prStateColor(state: string) {
     default: return 'text-muted'
   }
 }
+
+// --- Row 4: CI ---
+
+const failedChecks = computed(() => checkResult.value?.checks.filter(c => c.status === 'FAILURE') ?? [])
+const pendingChecks = computed(() => checkResult.value?.checks.filter(c => c.status === 'PENDING') ?? [])
+const passedChecks = computed(() => checkResult.value?.checks.filter(c => c.status === 'SUCCESS') ?? [])
+
+const failedExpanded = ref(true)
+const passedExpanded = ref(false)
+
+// --- Log dialog ---
+const logDialogOpen = ref(false)
+const logDialogCheck = ref<CheckRunDetail | null>(null)
+
+function openLogDialog(check: CheckRunDetail) {
+  logDialogCheck.value = check
+  logDialogOpen.value = true
+}
+
+function statusIcon(status: string | null) {
+  switch (status) {
+    case 'SUCCESS': return 'i-lucide-check-circle-2'
+    case 'FAILURE': return 'i-lucide-x-circle'
+    case 'PENDING': return 'i-lucide-loader-circle'
+    default: return 'i-lucide-circle-dashed'
+  }
+}
+
+function statusColor(status: string | null) {
+  switch (status) {
+    case 'SUCCESS': return 'text-emerald-500'
+    case 'FAILURE': return 'text-red-500'
+    case 'PENDING': return 'text-amber-500'
+    default: return 'text-muted'
+  }
+}
+
+const ciIcon = computed(() => statusIcon(checkResult.value?.rollupStatus ?? null))
+const ciColor = computed(() => statusColor(checkResult.value?.rollupStatus ?? null))
+
+const ciSummary = computed(() => {
+  if (!checkResult.value) return t('common.loading')
+  const r = checkResult.value
+  if (r.rollupStatus === 'SUCCESS' && r.total > 0) return t('workItems.ci.allPassed')
+  const parts: string[] = []
+  if (r.failed > 0) parts.push(t('workItems.ci.failedCount', { count: r.failed }))
+  if (r.pending > 0) parts.push(t('workItems.ci.pending', { count: r.pending }))
+  if (r.passed > 0) parts.push(t('workItems.ci.passedCount', { count: r.passed }))
+  return parts.join(' · ')
+})
+
+function formatDuration(seconds: number | null) {
+  if (seconds === null) return ''
+  if (seconds < 60) return t('workItems.ci.duration', { seconds })
+  const mins = Math.floor(seconds / 60)
+  const secs = seconds % 60
+  return `${mins}m ${secs}s`
+}
 </script>
 
 <template>
@@ -93,7 +195,7 @@ function prStateColor(state: string) {
       <UTooltip :text="stateLabel">
         <span
           class="inline-flex items-center justify-center size-7 rounded-full shrink-0"
-          :class="issue.state === 'OPEN' ? 'bg-emerald-500/10' : issue.stateReason === 'NOT_PLANNED' ? 'bg-neutral-500/10' : 'bg-violet-500/10'"
+          :class="stateBg"
         >
           <UIcon
             :name="stateIcon"
@@ -104,10 +206,10 @@ function prStateColor(state: string) {
       </UTooltip>
 
       <h1 class="flex-1 min-w-0 text-base sm:text-lg font-semibold text-highlighted truncate">
-        {{ issue.title }}
+        {{ workItem.title }}
       </h1>
 
-      <span class="font-mono text-muted text-xs sm:text-sm shrink-0">#{{ issue.number }}</span>
+      <span class="font-mono text-muted text-xs sm:text-sm shrink-0">#{{ workItem.number }}</span>
 
       <div class="flex items-center gap-0.5 shrink-0">
         <UTooltip :text="t('common.copyLink')">
@@ -125,7 +227,7 @@ function prStateColor(state: string) {
             variant="ghost"
             color="neutral"
             size="xs"
-            :to="issue.url"
+            :to="workItem.url"
             target="_blank"
           />
         </UTooltip>
@@ -138,16 +240,16 @@ function prStateColor(state: string) {
       <div class="flex flex-wrap items-center gap-2 flex-1 min-w-0">
         <!-- No assignees -->
         <UBadge
-          v-if="issue.assignees.length === 0"
+          v-if="workItem.assignees.length === 0"
           :label="t('issues.detail.needsOwner')"
           color="warning"
           variant="subtle"
           icon="i-lucide-user-x"
         />
 
-        <!-- Assignees with PR status -->
+        <!-- Assignees -->
         <div
-          v-for="assignee in assigneesWithPr"
+          v-for="assignee in workItem.assignees"
           :key="assignee.login"
           class="flex items-center gap-1.5"
         >
@@ -163,34 +265,13 @@ function prStateColor(state: string) {
             />
             <span class="text-sm font-medium text-highlighted hidden sm:inline">{{ assignee.login }}</span>
           </button>
-
-          <a
-            v-if="assignee.pr"
-            :href="assignee.pr.url"
-            target="_blank"
-            class="inline-flex items-center gap-1 rounded-full border border-default bg-elevated/50 px-2 py-0.5 text-xs hover:border-primary/50 transition-colors"
-          >
-            <UIcon
-              :name="prStateIcon(assignee.pr.state)"
-              class="size-3.5"
-              :class="prStateColor(assignee.pr.state)"
-            />
-            <span class="text-muted">#{{ assignee.pr.number }}</span>
-          </a>
-
-          <span
-            v-else
-            class="text-xs text-muted hidden sm:inline"
-          >
-            {{ t('issues.detail.noBranchYet') }}
-          </span>
         </div>
 
-        <!-- Unlinked PRs -->
+        <!-- Linked PRs -->
         <UTooltip
-          v-for="pr in unlinkedPrs"
+          v-for="pr in linkedPrs"
           :key="pr.number"
-          :text="`#${pr.number} ${pr.title} (${pr.actor})`"
+          :text="`#${pr.number} ${pr.title}`"
         >
           <a
             :href="pr.url"
@@ -207,8 +288,9 @@ function prStateColor(state: string) {
         </UTooltip>
       </div>
 
-      <!-- Right: Claims + Branch + Claim button -->
+      <!-- Right: Claims (only when issue detail is available) -->
       <IssueClaimFlow
+        v-if="issue"
         :issue="issue"
         :repo="repo"
       />
@@ -218,7 +300,7 @@ function prStateColor(state: string) {
     <div class="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-1.5 sm:py-2 border-t border-accented text-xs flex-wrap">
       <!-- Labels -->
       <UBadge
-        v-for="label in issue.labels"
+        v-for="label in workItem.labels"
         :key="label.name"
         variant="subtle"
         size="xs"
@@ -226,18 +308,6 @@ function prStateColor(state: string) {
       >
         {{ label.name }}
       </UBadge>
-
-      <!-- Milestone -->
-      <span
-        v-if="issue.milestone"
-        class="inline-flex items-center gap-1 text-muted"
-      >
-        <UIcon
-          name="i-lucide-milestone"
-          class="size-3.5"
-        />
-        {{ issue.milestone }}
-      </span>
 
       <!-- Spacer -->
       <div class="flex-1" />
@@ -247,15 +317,165 @@ function prStateColor(state: string) {
       <span class="text-muted/60 hidden sm:inline">&middot;</span>
       <span class="text-muted hidden sm:inline">{{ updatedAgo }}</span>
       <span
-        v-if="commentCount > 0"
+        v-if="workItem.commentCount > 0"
         class="inline-flex items-center gap-1 text-muted"
       >
         <UIcon
           name="i-lucide-message-square"
           class="size-3.5"
         />
-        {{ commentCount }}
+        {{ workItem.commentCount }}
       </span>
     </div>
+
+    <!-- Row 4: CI Checks -->
+    <div
+      v-if="prNumbers.length > 0"
+      class="border-t border-accented"
+    >
+      <!-- Summary bar (always visible) -->
+      <button
+        type="button"
+        class="flex items-center gap-2 w-full px-3 sm:px-4 py-1.5 sm:py-2 text-xs hover:bg-elevated/50 transition-colors"
+        @click="ciExpanded = !ciExpanded"
+      >
+        <UIcon
+          :name="ciIcon"
+          class="size-3.5 shrink-0"
+          :class="[ciColor, checkResult?.rollupStatus === 'PENDING' ? 'animate-spin' : '']"
+        />
+        <span class="text-muted truncate">{{ ciSummary }}</span>
+        <UIcon
+          :name="ciExpanded ? 'i-lucide-chevron-up' : 'i-lucide-chevron-down'"
+          class="size-3.5 text-muted shrink-0 ml-auto"
+        />
+      </button>
+
+      <!-- Expanded: categorized, scrollable -->
+      <div
+        v-if="ciExpanded && checkResult"
+        class="max-h-48 overflow-y-auto px-3 sm:px-4 pb-2 space-y-2"
+      >
+        <!-- Failed -->
+        <div v-if="failedChecks.length">
+          <button
+            type="button"
+            class="flex items-center gap-2 w-full text-[11px] font-medium text-red-500 uppercase tracking-wide mb-1 hover:text-red-400 transition-colors cursor-pointer"
+            @click="failedExpanded = !failedExpanded"
+          >
+            <UIcon
+              :name="failedExpanded ? 'i-lucide-chevron-down' : 'i-lucide-chevron-right'"
+              class="size-3 shrink-0"
+            />
+            {{ t('workItems.ci.failedCount', { count: failedChecks.length }) }}
+          </button>
+          <template v-if="failedExpanded">
+            <div
+              v-for="check in failedChecks"
+              :key="check.name"
+              class="flex items-center gap-2 text-xs py-0.5"
+            >
+              <UIcon
+                name="i-lucide-x-circle"
+                class="size-3.5 shrink-0 text-red-500"
+              />
+              <button
+                class="truncate flex-1 text-highlighted text-left hover:underline cursor-pointer"
+                @click="openLogDialog(check)"
+              >
+                {{ check.name }}
+              </button>
+              <span
+                v-if="check.durationSeconds !== null"
+                class="text-muted shrink-0"
+              >{{ formatDuration(check.durationSeconds) }}</span>
+              <button
+                v-if="check.jobId"
+                class="text-primary hover:underline shrink-0 cursor-pointer"
+                @click="openLogDialog(check)"
+              >
+                {{ t('workItems.ci.viewLog') }}
+              </button>
+              <a
+                v-else-if="check.detailsUrl"
+                :href="check.detailsUrl"
+                target="_blank"
+                class="text-primary hover:underline shrink-0"
+              >{{ t('workItems.ci.viewLog') }}</a>
+            </div>
+          </template>
+        </div>
+
+        <!-- Running -->
+        <div v-if="pendingChecks.length">
+          <p class="text-[11px] font-medium text-amber-500 uppercase tracking-wide mb-1">
+            {{ t('workItems.ci.pending', { count: pendingChecks.length }) }}
+          </p>
+          <div
+            v-for="check in pendingChecks"
+            :key="check.name"
+            class="flex items-center gap-2 text-xs py-0.5"
+          >
+            <UIcon
+              name="i-lucide-loader-circle"
+              class="size-3.5 shrink-0 text-amber-500 animate-spin"
+            />
+            <span class="truncate flex-1 text-highlighted">{{ check.name }}</span>
+          </div>
+        </div>
+
+        <!-- Passed (collapsed by default) -->
+        <div v-if="passedChecks.length">
+          <button
+            type="button"
+            class="flex items-center gap-2 w-full text-[11px] font-medium text-emerald-500 uppercase tracking-wide mb-1 hover:text-emerald-400 transition-colors cursor-pointer"
+            @click="passedExpanded = !passedExpanded"
+          >
+            <UIcon
+              :name="passedExpanded ? 'i-lucide-chevron-down' : 'i-lucide-chevron-right'"
+              class="size-3 shrink-0"
+            />
+            {{ t('workItems.ci.passedCount', { count: passedChecks.length }) }}
+          </button>
+          <template v-if="passedExpanded">
+            <div
+              v-for="check in passedChecks"
+              :key="check.name"
+              class="flex items-center gap-2 text-xs py-0.5"
+            >
+              <UIcon
+                name="i-lucide-check-circle-2"
+                class="size-3.5 shrink-0 text-emerald-500"
+              />
+              <button
+                class="truncate flex-1 text-muted text-left hover:underline cursor-pointer"
+                @click="openLogDialog(check)"
+              >
+                {{ check.name }}
+              </button>
+              <span
+                v-if="check.durationSeconds !== null"
+                class="text-muted shrink-0"
+              >{{ formatDuration(check.durationSeconds) }}</span>
+              <button
+                v-if="check.jobId"
+                class="text-primary hover:underline shrink-0 cursor-pointer"
+                @click="openLogDialog(check)"
+              >
+                {{ t('workItems.ci.viewLog') }}
+              </button>
+            </div>
+          </template>
+        </div>
+      </div>
+    </div>
+
+    <!-- CI Log Dialog -->
+    <WorkItemCiLogDialog
+      v-model:open="logDialogOpen"
+      :check="logDialogCheck"
+      :owner="ownerRef"
+      :repo="repoRef"
+    />
   </div>
 </template>

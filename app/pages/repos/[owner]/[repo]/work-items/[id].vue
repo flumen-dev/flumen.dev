@@ -25,7 +25,7 @@ const id = computed(() => route.params.id as string)
 const repo = computed(() => `${owner.value}/${repoName.value}`)
 const requestFetch = useRequestFetch()
 
-const { data: workItem, status: workItemStatus, error: workItemError } = await useAsyncData(
+const { data: workItem, status: workItemStatus, error: workItemError, refresh: refreshWorkItem } = await useAsyncData(
   () => `work-item-detail-${owner.value}-${repoName.value}-${id.value}`,
   () => requestFetch<WorkItemDetail>(`/api/repository/${owner.value}/${repoName.value}/work-items/${id.value}`),
   {
@@ -50,21 +50,8 @@ const issueNumber = computed(() => isIssuePrimary.value ? number.value : undefin
 
 const {
   issue,
-  status,
-  error,
   submitComment,
 } = useIssueDetail(repo, issueNumber)
-
-const linkedPrs = computed(() => {
-  const linkedPulls = workItem.value?.linkedPulls ?? []
-  return linkedPulls.map(pr => ({
-    number: pr.number,
-    title: pr.title,
-    url: pr.htmlUrl,
-    state: pr.state ?? '',
-    actor: '',
-  }))
-})
 
 const primarySubjectId = computed(() => {
   if (issue.value) return issue.value.id
@@ -612,25 +599,11 @@ function onTimelineReactionToggle(item: WorkItemTimelineUiItem, content: string,
 
       <template v-else-if="workItem">
         <WorkItemHeader
-          v-if="isIssuePrimary && issue"
-          :issue="issue"
+          :work-item="workItem"
           :repo="repo"
-          :linked-prs="linkedPrs"
+          :issue="isIssuePrimary ? issue : undefined"
+          @ci-status-changed="setTimeout(() => refreshWorkItem(), 10_000)"
         />
-
-        <div
-          v-else-if="isIssuePrimary && status === 'pending'"
-          class="py-8 text-center text-muted"
-        >
-          {{ $t('common.loading') }}
-        </div>
-
-        <div
-          v-else-if="isIssuePrimary && error"
-          class="py-8 text-center text-muted"
-        >
-          {{ error.message }}
-        </div>
 
         <div
           class="mt-4 lg:grid lg:grid-cols-[minmax(0,1fr)_260px] lg:gap-6 2xl:grid-cols-[44px_minmax(0,1fr)_260px]"

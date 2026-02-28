@@ -416,6 +416,20 @@
     "filter": {
       "all": "Alle"
     },
+    "ci": {
+      "checks": "CI-Checks",
+      "summary": "{passed}/{total} bestanden",
+      "allPassed": "Alle Checks bestanden",
+      "viewLog": "Log",
+      "viewOnGithub": "Auf GitHub öffnen",
+      "failing": "Fehlgeschlagen: {names}",
+      "failedCount": "{count} fehlgeschlagen",
+      "passedCount": "{count} bestanden",
+      "pending": "{count} laufen",
+      "duration": "{seconds}s",
+      "loadingLogs": "Logs werden geladen...",
+      "logError": "Logs konnten nicht geladen werden."
+    },
     "timeline": {
       "kind": {
         "comment": "Kommentar",
