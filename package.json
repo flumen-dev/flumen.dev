@@ -60,6 +60,7 @@
   },
   "devDependencies": {
     "@iconify-json/simple-icons": "^1.2.71",
+    "@iconify-json/lucide": "^1.2.95",
     "@types/sanitize-html": "^2.16.0",
     "@vitest/coverage-v8": "^4.0.18",
     "@vue/test-utils": "^2.4.6",
