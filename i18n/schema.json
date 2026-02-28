@@ -1255,6 +1255,48 @@
           },
           "additionalProperties": false
         },
+        "ci": {
+          "type": "object",
+          "properties": {
+            "checks": {
+              "type": "string"
+            },
+            "summary": {
+              "type": "string"
+            },
+            "allPassed": {
+              "type": "string"
+            },
+            "viewLog": {
+              "type": "string"
+            },
+            "viewOnGithub": {
+              "type": "string"
+            },
+            "failing": {
+              "type": "string"
+            },
+            "failedCount": {
+              "type": "string"
+            },
+            "passedCount": {
+              "type": "string"
+            },
+            "pending": {
+              "type": "string"
+            },
+            "duration": {
+              "type": "string"
+            },
+            "loadingLogs": {
+              "type": "string"
+            },
+            "logError": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
         "timeline": {
           "type": "object",
           "properties": {

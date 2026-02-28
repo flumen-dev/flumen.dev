@@ -7,6 +7,7 @@ export interface LogSection {
 const TIMESTAMP_RE = /^\d{4}-\d{2}-\d{2}T[\d:.]+Z\s?/
 
 export function parseActionsLog(raw: string): LogSection[] {
+  if (!raw.trim()) return []
   const lines = raw.split('\n')
   const sections: LogSection[] = []
   let current: LogSection | null = null
