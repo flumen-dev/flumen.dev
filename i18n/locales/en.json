@@ -321,7 +321,6 @@
     },
     "detail": {
       "needsOwner": "Needs owner",
-      "noBranchYet": "No branch yet",
       "claim": "Claim",
       "claimTitle": "Claim this issue",
       "claimDescFork": "We'll fork the repository, create a branch, and assign you to this issue.",
@@ -418,15 +417,12 @@
     },
     "ci": {
       "checks": "CI Checks",
-      "summary": "{passed}/{total} passed",
       "allPassed": "All checks passed",
       "viewLog": "Log",
       "viewOnGithub": "Open on GitHub",
-      "failing": "Failing: {names}",
       "failedCount": "{count} failed",
       "passedCount": "{count} passed",
       "pending": "{count} running",
-      "duration": "{seconds}s",
       "loadingLogs": "Loading logs...",
       "logError": "Could not load logs."
     },

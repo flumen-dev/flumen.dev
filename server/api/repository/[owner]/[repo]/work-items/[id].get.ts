@@ -462,6 +462,7 @@ const fetchWorkItemDetail = defineCachedFunction(
         number: number
         title: string
         state: string
+        isDraft: boolean
         htmlUrl: string
       }>()
 
@@ -475,6 +476,7 @@ const fetchWorkItemDetail = defineCachedFunction(
             number: pull.number,
             title: pull.title,
             state: pull.state,
+            isDraft: pull.isDraft ?? false,
             htmlUrl: pull.url,
           })
         }

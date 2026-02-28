@@ -970,9 +970,6 @@
             "needsOwner": {
               "type": "string"
             },
-            "noBranchYet": {
-              "type": "string"
-            },
             "claim": {
               "type": "string"
             },

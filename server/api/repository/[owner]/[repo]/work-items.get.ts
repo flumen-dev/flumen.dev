@@ -175,6 +175,7 @@ const fetchWorkItems = defineCachedFunction(
           number: pr.number,
           title: pr.title,
           state: pr.state,
+          isDraft: pr.draft,
           htmlUrl: pr.htmlUrl,
         })),
         linkedIssues: [],

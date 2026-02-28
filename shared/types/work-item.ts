@@ -10,6 +10,7 @@ export interface WorkItemRef {
   number: number
   title: string
   state?: string | null
+  isDraft?: boolean
   htmlUrl: string
 }
 

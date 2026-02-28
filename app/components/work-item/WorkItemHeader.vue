@@ -52,13 +52,13 @@ watch(statusChanged, () => {
 
 const stateIcon = computed(() => {
   const wi = props.workItem
-  if (wi.primaryType === 'pull') return getPRStateIcon(wi.state, wi.state === 'DRAFT')
+  if (wi.primaryType === 'pull') return getPRStateIcon(wi.state, wi.isDraft)
   return getIssueStateIcon(wi.state)
 })
 
 const stateColor = computed(() => {
   const wi = props.workItem
-  if (wi.primaryType === 'pull') return getPRStateColor(wi.state, wi.state === 'DRAFT')
+  if (wi.primaryType === 'pull') return getPRStateColor(wi.state, wi.isDraft)
   return getIssueStateColor(wi.state)
 })
 
@@ -89,6 +89,7 @@ const linkedPrs = computed(() =>
     title: p.title,
     url: p.htmlUrl,
     state: p.state ?? '',
+    isDraft: p.isDraft ?? false,
   })),
 )
 
@@ -217,9 +218,9 @@ const ciSummary = computed(() => {
             class="inline-flex items-center gap-1 rounded-full border border-default bg-elevated/50 px-2 py-0.5 text-xs hover:border-primary/50 transition-colors"
           >
             <UIcon
-              :name="getPRStateIcon(pr.state)"
+              :name="getPRStateIcon(pr.state, pr.isDraft)"
               class="size-3.5"
-              :class="getPRStateColor(pr.state)"
+              :class="getPRStateColor(pr.state, pr.isDraft)"
             />
             <span class="text-muted">#{{ pr.number }}</span>
           </a>
