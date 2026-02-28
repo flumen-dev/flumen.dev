@@ -498,10 +498,14 @@
   },
   "dashboard": {
     "description": "Was gerade deine Aufmerksamkeit braucht.",
+    "waitingOnMe": {
+      "collapsed": "{count} Einträge — Ø {days}T Wartezeit"
+    },
     "prHealth": {
       "title": "PR-Zustand",
       "empty": "Alle deine PRs sind gesund.",
       "summary": "{issues} Probleme: {ci} CI-Fehler, {conflicts} Merge-Konflikte",
+      "collapsed": "{count} Probleme — {ci} CI, {conflicts} Konflikte",
       "ageDays": "{days}T alt",
       "reason": {
         "ci-failing": "CI schlägt fehl",
@@ -523,7 +527,8 @@
       "resolved": "Erledigt",
       "prsMerged": "PRs gemerged",
       "issuesClosed": "Issues geschlossen",
-      "moreItems": "+{count} weitere"
+      "moreItems": "+{count} weitere",
+      "collapsed": "{ratio}x — {resolved} erledigt, {incoming} eingegangen"
     }
   },
   "focus": {

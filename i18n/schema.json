@@ -1501,6 +1501,15 @@
         "description": {
           "type": "string"
         },
+        "waitingOnMe": {
+          "type": "object",
+          "properties": {
+            "collapsed": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
         "prHealth": {
           "type": "object",
           "properties": {
@@ -1511,6 +1520,9 @@
               "type": "string"
             },
             "summary": {
+              "type": "string"
+            },
+            "collapsed": {
               "type": "string"
             },
             "ageDays": {
@@ -1577,6 +1589,9 @@
               "type": "string"
             },
             "moreItems": {
+              "type": "string"
+            },
+            "collapsed": {
               "type": "string"
             }
           },

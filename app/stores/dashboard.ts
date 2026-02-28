@@ -1,5 +1,23 @@
+export type DashboardPanel = 'waitingOnMe' | 'prHealth' | 'pulse'
+
 export const useDashboardStore = defineStore('dashboard', () => {
   const apiFetch = useRequestFetch()
+
+  // --- Collapsed panels ---
+  const collapsed = ref<Set<DashboardPanel>>(
+    new Set(import.meta.client ? JSON.parse(localStorage.getItem('dashboard-collapsed') ?? '[]') : []),
+  )
+
+  function togglePanel(key: DashboardPanel) {
+    if (collapsed.value.has(key)) collapsed.value.delete(key)
+    else collapsed.value.add(key)
+    if (import.meta.client)
+      localStorage.setItem('dashboard-collapsed', JSON.stringify([...collapsed.value]))
+  }
+
+  function isCollapsed(key: DashboardPanel) {
+    return collapsed.value.has(key)
+  }
 
   // --- Waiting On Me ---
   const waitingOnMe = ref<{
@@ -126,6 +144,9 @@ export const useDashboardStore = defineStore('dashboard', () => {
   }
 
   return {
+    collapsed,
+    togglePanel,
+    isCollapsed,
     waitingOnMe,
     fetchWaitingOnMe,
     loadMoreWaitingOnMe,

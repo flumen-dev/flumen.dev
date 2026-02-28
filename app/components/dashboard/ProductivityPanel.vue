@@ -115,6 +115,18 @@ const option = computed<ECBasicOption>(() => {
   }
 })
 
+const panelCollapsed = computed(() => store.isCollapsed('pulse'))
+
+const collapsedText = computed(() => {
+  const tt = totals.value
+  if (!tt) return ''
+  return t('dashboard.pulse.collapsed', {
+    ratio: tt.ratio,
+    resolved: tt.resolved,
+    incoming: tt.incoming,
+  })
+})
+
 const stats = computed(() => [
   { label: t('dashboard.pulse.incoming'), value: totals.value?.incoming ?? 0, icon: 'i-lucide-inbox', color: 'text-orange-500' },
   { label: t('dashboard.pulse.prsMerged'), value: totals.value?.prsMerged ?? 0, icon: 'i-lucide-git-merge', color: 'text-emerald-500' },
@@ -125,7 +137,10 @@ const stats = computed(() => [
 <template>
   <div class="rounded-lg border border-default overflow-hidden">
     <!-- Header -->
-    <div class="flex items-center gap-2.5 px-4 py-3">
+    <button
+      class="flex w-full items-center gap-2.5 px-4 py-3 cursor-pointer hover:bg-elevated transition-colors"
+      @click="store.togglePanel('pulse')"
+    >
       <UIcon
         name="i-lucide-activity"
         class="size-5 text-highlighted shrink-0"
@@ -140,187 +155,201 @@ const stats = computed(() => [
         variant="subtle"
         size="sm"
       />
-      <UIcon
-        v-if="store.pulse.loading"
-        name="i-lucide-loader-2"
-        class="size-4 text-dimmed animate-spin ml-auto"
-      />
-    </div>
+      <span
+        v-if="panelCollapsed && totals"
+        class="text-xs text-muted truncate"
+      >
+        {{ collapsedText }}
+      </span>
+      <div class="ml-auto flex items-center gap-2">
+        <UIcon
+          v-if="store.pulse.loading"
+          name="i-lucide-loader-2"
+          class="size-4 text-dimmed animate-spin"
+        />
+        <UIcon
+          :name="panelCollapsed ? 'i-lucide-chevron-down' : 'i-lucide-chevron-up'"
+          class="size-4 text-dimmed"
+        />
+      </div>
+    </button>
 
-    <!-- Loading -->
-    <div
-      v-if="store.pulse.loading && !store.pulse.fetchedAt"
-      class="p-8 flex items-center justify-center gap-2 text-sm text-muted"
-    >
-      <UIcon
-        name="i-lucide-loader-2"
-        class="size-4 animate-spin"
-      />
-      {{ t('common.loading') }}
-    </div>
+    <template v-if="!panelCollapsed">
+      <!-- Loading -->
+      <div
+        v-if="store.pulse.loading && !store.pulse.fetchedAt"
+        class="p-8 flex items-center justify-center gap-2 text-sm text-muted"
+      >
+        <UIcon
+          name="i-lucide-loader-2"
+          class="size-4 animate-spin"
+        />
+        {{ t('common.loading') }}
+      </div>
 
-    <!-- Error -->
-    <div
-      v-else-if="store.pulse.error"
-      class="p-8 text-center"
-    >
-      <p class="text-sm text-muted">
-        {{ t('common.retry') }}
-      </p>
-    </div>
-
-    <!-- Empty state -->
-    <div
-      v-else-if="store.pulse.fetchedAt && !hasActivity"
-      class="p-8 text-center"
-    >
-      <UIcon
-        name="i-lucide-calendar-off"
-        class="size-10 text-dimmed mx-auto mb-3"
-      />
-      <p class="text-sm font-medium text-muted">
-        {{ t('dashboard.pulse.empty') }}
-      </p>
-    </div>
-
-    <!-- Content -->
-    <template v-else-if="store.pulse.fetchedAt && totals">
-      <!-- Backlog ratio -->
-      <div class="px-4 pb-2">
-        <div class="flex items-baseline gap-2">
-          <span class="text-2xl font-bold text-highlighted">
-            {{ t('dashboard.pulse.ratio', { ratio: totals.ratio }) }}
-          </span>
-          <span class="text-sm text-muted">
-            {{ ratioLabel }}
-          </span>
-        </div>
-        <p class="text-xs text-dimmed mt-0.5">
-          {{ t('dashboard.pulse.summary', {
-            resolved: totals.resolved,
-            incoming: totals.incoming,
-          }) }}
+      <!-- Error -->
+      <div
+        v-else-if="store.pulse.error"
+        class="p-8 text-center"
+      >
+        <p class="text-sm text-muted">
+          {{ t('common.retry') }}
         </p>
       </div>
 
-      <!-- Bar chart -->
-      <div class="px-4">
-        <ClientOnly>
-          <VChart
-            :option="option"
-            :init-options="initOptions"
-            autoresize
-            class="w-full"
-            style="height: 120px"
-            @click="onChartClick"
-          />
-        </ClientOnly>
+      <!-- Empty state -->
+      <div
+        v-else-if="store.pulse.fetchedAt && !hasActivity"
+        class="p-8 text-center"
+      >
+        <UIcon
+          name="i-lucide-calendar-off"
+          class="size-10 text-dimmed mx-auto mb-3"
+        />
+        <p class="text-sm font-medium text-muted">
+          {{ t('dashboard.pulse.empty') }}
+        </p>
       </div>
 
-      <!-- Day detail (expanded on click) -->
-      <div
-        v-if="selectedDay"
-        class="border-t border-default"
-      >
-        <div class="flex items-center justify-between px-4 py-2 bg-elevated/50">
-          <span class="text-xs font-medium text-highlighted">{{ selectedDayLabel }}</span>
-          <button
-            class="text-dimmed hover:text-muted"
-            @click="selectedDayIndex = null"
+      <!-- Content -->
+      <template v-else-if="store.pulse.fetchedAt && totals">
+        <!-- Backlog ratio -->
+        <div class="px-4 pb-2">
+          <div class="flex items-baseline gap-2">
+            <span class="text-2xl font-bold text-highlighted">
+              {{ t('dashboard.pulse.ratio', { ratio: totals.ratio }) }}
+            </span>
+            <span class="text-sm text-muted">
+              {{ ratioLabel }}
+            </span>
+          </div>
+          <p class="text-xs text-dimmed mt-0.5">
+            {{ t('dashboard.pulse.summary', {
+              resolved: totals.resolved,
+              incoming: totals.incoming,
+            }) }}
+          </p>
+        </div>
+
+        <!-- Bar chart -->
+        <div class="px-4">
+          <ClientOnly>
+            <VChart
+              :option="option"
+              :init-options="initOptions"
+              autoresize
+              class="w-full"
+              style="height: 120px"
+              @click="onChartClick"
+            />
+          </ClientOnly>
+        </div>
+
+        <!-- Day detail (expanded on click) -->
+        <div
+          v-if="selectedDay"
+          class="border-t border-default"
+        >
+          <div class="flex items-center justify-between px-4 py-2 bg-elevated/50">
+            <span class="text-xs font-medium text-highlighted">{{ selectedDayLabel }}</span>
+            <button
+              class="text-dimmed hover:text-muted"
+              @click="selectedDayIndex = null"
+            >
+              <UIcon
+                name="i-lucide-x"
+                class="size-3.5"
+              />
+            </button>
+          </div>
+
+          <div class="px-4 py-2 space-y-3 max-h-64 overflow-y-auto">
+            <!-- Resolved items -->
+            <div v-if="selectedDay.resolvedItems.length > 0">
+              <div class="flex items-center gap-1.5 mb-1.5">
+                <span class="size-2 rounded-full bg-emerald-500" />
+                <span class="text-[11px] font-medium text-muted">
+                  {{ t('dashboard.pulse.resolved') }} ({{ selectedDay.resolved }})
+                </span>
+              </div>
+              <div class="space-y-1">
+                <a
+                  v-for="item in selectedDay.resolvedItems"
+                  :key="item.url"
+                  :href="item.url"
+                  target="_blank"
+                  class="flex items-start gap-2 text-xs group py-0.5"
+                >
+                  <UIcon
+                    :name="item.type === 'pr' ? 'i-lucide-git-pull-request' : 'i-lucide-circle-dot'"
+                    class="size-3.5 shrink-0 mt-0.5 text-emerald-500"
+                  />
+                  <span class="text-muted group-hover:text-highlighted truncate">
+                    <span class="text-dimmed">{{ item.repo }}#{{ item.number }}</span>
+                    {{ item.title }}
+                  </span>
+                </a>
+              </div>
+              <p
+                v-if="selectedDay.resolved > selectedDay.resolvedItems.length"
+                class="text-[11px] text-dimmed mt-1"
+              >
+                {{ t('dashboard.pulse.moreItems', { count: selectedDay.resolved - selectedDay.resolvedItems.length }) }}
+              </p>
+            </div>
+
+            <!-- Incoming items -->
+            <div v-if="selectedDay.incomingItems.length > 0">
+              <div class="flex items-center gap-1.5 mb-1.5">
+                <span class="size-2 rounded-full bg-orange-500" />
+                <span class="text-[11px] font-medium text-muted">
+                  {{ t('dashboard.pulse.incoming') }} ({{ selectedDay.incoming }})
+                </span>
+              </div>
+              <div class="space-y-1">
+                <a
+                  v-for="item in selectedDay.incomingItems"
+                  :key="item.url"
+                  :href="item.url"
+                  target="_blank"
+                  class="flex items-start gap-2 text-xs group py-0.5"
+                >
+                  <UIcon
+                    :name="item.type === 'pr' ? 'i-lucide-git-pull-request' : 'i-lucide-circle-dot'"
+                    class="size-3.5 shrink-0 mt-0.5 text-orange-500"
+                  />
+                  <span class="text-muted group-hover:text-highlighted truncate">
+                    <span class="text-dimmed">{{ item.repo }}#{{ item.number }}</span>
+                    {{ item.title }}
+                  </span>
+                </a>
+              </div>
+              <p
+                v-if="selectedDay.incoming > selectedDay.incomingItems.length"
+                class="text-[11px] text-dimmed mt-1"
+              >
+                {{ t('dashboard.pulse.moreItems', { count: selectedDay.incoming - selectedDay.incomingItems.length }) }}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="flex items-center gap-3 px-4 py-3 border-t border-default">
+          <div
+            v-for="stat in stats"
+            :key="stat.label"
+            class="flex items-center gap-1.5 text-xs text-muted"
           >
             <UIcon
-              name="i-lucide-x"
-              class="size-3.5"
+              :name="stat.icon"
+              :class="['size-3.5 shrink-0', stat.color]"
             />
-          </button>
-        </div>
-
-        <div class="px-4 py-2 space-y-3 max-h-64 overflow-y-auto">
-          <!-- Resolved items -->
-          <div v-if="selectedDay.resolvedItems.length > 0">
-            <div class="flex items-center gap-1.5 mb-1.5">
-              <span class="size-2 rounded-full bg-emerald-500" />
-              <span class="text-[11px] font-medium text-muted">
-                {{ t('dashboard.pulse.resolved') }} ({{ selectedDay.resolved }})
-              </span>
-            </div>
-            <div class="space-y-1">
-              <a
-                v-for="item in selectedDay.resolvedItems"
-                :key="item.url"
-                :href="item.url"
-                target="_blank"
-                class="flex items-start gap-2 text-xs group py-0.5"
-              >
-                <UIcon
-                  :name="item.type === 'pr' ? 'i-lucide-git-pull-request' : 'i-lucide-circle-dot'"
-                  class="size-3.5 shrink-0 mt-0.5 text-emerald-500"
-                />
-                <span class="text-muted group-hover:text-highlighted truncate">
-                  <span class="text-dimmed">{{ item.repo }}#{{ item.number }}</span>
-                  {{ item.title }}
-                </span>
-              </a>
-            </div>
-            <p
-              v-if="selectedDay.resolved > selectedDay.resolvedItems.length"
-              class="text-[11px] text-dimmed mt-1"
-            >
-              {{ t('dashboard.pulse.moreItems', { count: selectedDay.resolved - selectedDay.resolvedItems.length }) }}
-            </p>
-          </div>
-
-          <!-- Incoming items -->
-          <div v-if="selectedDay.incomingItems.length > 0">
-            <div class="flex items-center gap-1.5 mb-1.5">
-              <span class="size-2 rounded-full bg-orange-500" />
-              <span class="text-[11px] font-medium text-muted">
-                {{ t('dashboard.pulse.incoming') }} ({{ selectedDay.incoming }})
-              </span>
-            </div>
-            <div class="space-y-1">
-              <a
-                v-for="item in selectedDay.incomingItems"
-                :key="item.url"
-                :href="item.url"
-                target="_blank"
-                class="flex items-start gap-2 text-xs group py-0.5"
-              >
-                <UIcon
-                  :name="item.type === 'pr' ? 'i-lucide-git-pull-request' : 'i-lucide-circle-dot'"
-                  class="size-3.5 shrink-0 mt-0.5 text-orange-500"
-                />
-                <span class="text-muted group-hover:text-highlighted truncate">
-                  <span class="text-dimmed">{{ item.repo }}#{{ item.number }}</span>
-                  {{ item.title }}
-                </span>
-              </a>
-            </div>
-            <p
-              v-if="selectedDay.incoming > selectedDay.incomingItems.length"
-              class="text-[11px] text-dimmed mt-1"
-            >
-              {{ t('dashboard.pulse.moreItems', { count: selectedDay.incoming - selectedDay.incomingItems.length }) }}
-            </p>
+            <span class="font-medium text-highlighted">{{ stat.value }}</span>
+            <span>{{ stat.label }}</span>
           </div>
         </div>
-      </div>
-
-      <!-- Stats -->
-      <div class="flex items-center gap-3 px-4 py-3 border-t border-default">
-        <div
-          v-for="stat in stats"
-          :key="stat.label"
-          class="flex items-center gap-1.5 text-xs text-muted"
-        >
-          <UIcon
-            :name="stat.icon"
-            :class="['size-3.5 shrink-0', stat.color]"
-          />
-          <span class="font-medium text-highlighted">{{ stat.value }}</span>
-          <span>{{ stat.label }}</span>
-        </div>
-      </div>
+      </template>
     </template>
   </div>
 </template>
