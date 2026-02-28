@@ -6,11 +6,6 @@ interface SyncInput {
   number: number
 }
 
-/** Sanitize string for safe GraphQL interpolation */
-function sanitizeGraphQL(value: string): string {
-  return value.replace(/[\\"\n\r]/g, '')
-}
-
 /**
  * Batch-fetch latest title + updatedAt for tracked items via GraphQL.
  * Chunks into groups of 100 to respect GitHub's complexity limits.

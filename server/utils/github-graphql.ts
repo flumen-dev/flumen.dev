@@ -86,3 +86,8 @@ export function chunkArray<T>(arr: T[], size: number): T[][] {
   }
   return chunks
 }
+
+/** Sanitize string for safe GraphQL interpolation */
+export function sanitizeGraphQL(value: string): string {
+  return value.replace(/[\\"\n\r]/g, '')
+}
