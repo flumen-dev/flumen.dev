@@ -21,8 +21,11 @@ export default defineEventHandler(async (event) => {
     workItemId: string
   }>(event)
 
-  if (!commentId || !body?.trim() || !owner || !repo || !pullNumber) {
-    throw createError({ statusCode: 400, message: 'Missing commentId, body, owner, repo, or pullNumber' })
+  if (!body?.trim() || !owner || !repo) {
+    throw createError({ statusCode: 400, message: 'Missing body, owner, or repo' })
+  }
+  if (!Number.isInteger(commentId) || commentId <= 0 || !Number.isInteger(pullNumber) || pullNumber <= 0) {
+    throw createError({ statusCode: 400, message: 'Invalid commentId or pullNumber' })
   }
 
   const { data } = await githubFetchWithToken<GitHubReviewCommentResponse>(
@@ -37,6 +40,7 @@ export default defineEventHandler(async (event) => {
 
   return {
     id: data.node_id,
+    databaseId: data.id,
     body: data.body,
     path: data.path,
     line: data.line,

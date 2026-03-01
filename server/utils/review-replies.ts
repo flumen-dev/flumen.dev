@@ -19,7 +19,7 @@ export interface ReviewThreadNode {
   }
 }
 
-function mapReactionGroups(groups: ReviewThreadCommentNode['reactionGroups']): ReactionGroup[] {
+export function mapReactionGroups(groups: ReviewThreadCommentNode['reactionGroups']): ReactionGroup[] {
   if (!groups) return []
   return groups.map(g => ({
     content: g.content,

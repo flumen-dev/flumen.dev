@@ -5,6 +5,7 @@ const props = defineProps<{
   repo: string
   issueNumber: number
   pullCommentId?: number
+  workItemId?: string
 }>()
 
 const emit = defineEmits<{
@@ -51,7 +52,8 @@ async function toggle(content: string, currentlyReacted: boolean) {
         remove: currentlyReacted,
         repo: props.repo,
         issueNumber: props.issueNumber,
-        ...(props.pullCommentId ? { pullCommentId: props.pullCommentId } : {}),
+        pullCommentId: props.pullCommentId,
+        workItemId: props.workItemId,
       },
     })
     emit('toggle', content, !currentlyReacted)

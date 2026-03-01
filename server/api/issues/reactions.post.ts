@@ -18,12 +18,13 @@ const REACTION_MAP: Record<string, string> = {
 
 export default defineEventHandler(async (event) => {
   const { token, login } = await getSessionToken(event)
-  const { content, remove, repo, issueNumber, pullCommentId } = await readBody<{
+  const { content, remove, repo, issueNumber, pullCommentId, workItemId } = await readBody<{
     content: string
     remove: boolean
     repo: string
     issueNumber: number
     pullCommentId?: number
+    workItemId?: string
   }>(event)
 
   if (!content || !repo || !issueNumber) {
@@ -68,5 +69,11 @@ export default defineEventHandler(async (event) => {
   }
 
   await invalidateIssueDetailCache(login, repo, issueNumber)
+  if (workItemId) {
+    const [ownerPart, repoPart] = repo.split('/')
+    if (ownerPart && repoPart) {
+      await invalidateWorkItemDetailCache(login, ownerPart, repoPart, workItemId)
+    }
+  }
   return { ok: true }
 })

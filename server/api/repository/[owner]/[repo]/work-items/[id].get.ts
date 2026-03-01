@@ -3,7 +3,7 @@ import { githubGraphQL } from '~~/server/utils/github-graphql'
 import { getRepoParams, getSessionToken } from '~~/server/utils/github'
 import { mapCiStatus } from '~~/server/utils/focus-created'
 import { parseWorkItemId } from '~~/server/utils/work-items'
-import { buildReplyMap, injectReplies } from '~~/server/utils/review-replies'
+import { buildReplyMap, injectReplies, mapReactionGroups } from '~~/server/utils/review-replies'
 import type { ReviewThreadNode } from '~~/server/utils/review-replies'
 
 const ISSUE_DETAIL_QUERY = `
@@ -318,16 +318,6 @@ interface PullDetailNode {
   timelineItems?: { nodes?: TimelineNode[] }
   reviewThreads?: { nodes?: Array<ReviewThreadNode> }
   closingIssuesReferences: { nodes: Array<{ number: number, title: string, state: string, url: string }> }
-}
-
-function mapReactionGroups(groups: Array<{ content: string, viewerHasReacted: boolean, reactors: { totalCount: number } }> | undefined) {
-  if (!groups) return []
-
-  return groups.map(group => ({
-    content: group.content,
-    count: group.reactors?.totalCount ?? 0,
-    viewerHasReacted: group.viewerHasReacted,
-  }))
 }
 
 function normalizeAuthor(actor: TimelineActor | null | undefined) {

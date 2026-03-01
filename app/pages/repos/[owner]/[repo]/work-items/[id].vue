@@ -528,6 +528,7 @@ async function submitReply(reviewComment: ReviewComment, pullNumber: number) {
     if (!reviewComment.replies) reviewComment.replies = []
     reviewComment.replies.push({
       id: result.id,
+      databaseId: result.databaseId,
       body: result.body,
       path: result.path,
       line: result.line,
@@ -582,16 +583,12 @@ watch(
   { immediate: true },
 )
 
-function getTimelineReactions(item: WorkItemTimelineUiItem) {
-  return timelineLocalReactions.value[item.id] ?? []
+function getLocalReactions(id: string) {
+  return timelineLocalReactions.value[id] ?? []
 }
 
-function getReviewCommentReactions(rc: ReviewComment) {
-  return timelineLocalReactions.value[rc.id] ?? []
-}
-
-function onReviewCommentReactionToggle(rc: ReviewComment, content: string, added: boolean) {
-  const reactions = [...getReviewCommentReactions(rc)]
+function onReactionToggle(id: string, content: string, added: boolean) {
+  const reactions = [...getLocalReactions(id)]
   const index = reactions.findIndex(r => r.content === content)
 
   if (added && index === -1) {
@@ -606,7 +603,7 @@ function onReviewCommentReactionToggle(rc: ReviewComment, content: string, added
     else reactions[index] = { ...current, count: current.count - 1, viewerHasReacted: false }
   }
 
-  timelineLocalReactions.value = { ...timelineLocalReactions.value, [rc.id]: reactions }
+  timelineLocalReactions.value = { ...timelineLocalReactions.value, [id]: reactions }
 }
 
 function getTimelineSubjectId(item: WorkItemTimelineUiItem): string | undefined {
@@ -621,40 +618,6 @@ function getTimelineSubjectId(item: WorkItemTimelineUiItem): string | undefined 
   }
 
   return undefined
-}
-
-function onTimelineReactionToggle(item: WorkItemTimelineUiItem, content: string, added: boolean) {
-  const reactions = [...getTimelineReactions(item)]
-  const index = reactions.findIndex(reaction => reaction.content === content)
-
-  if (added && index === -1) {
-    reactions.push({ content, count: 1, viewerHasReacted: true })
-  }
-  else if (added && index >= 0) {
-    reactions[index] = {
-      ...reactions[index]!,
-      count: reactions[index]!.count + 1,
-      viewerHasReacted: true,
-    }
-  }
-  else if (!added && index >= 0) {
-    const current = reactions[index]!
-    if (current.count <= 1) {
-      reactions.splice(index, 1)
-    }
-    else {
-      reactions[index] = {
-        ...current,
-        count: current.count - 1,
-        viewerHasReacted: false,
-      }
-    }
-  }
-
-  timelineLocalReactions.value = {
-    ...timelineLocalReactions.value,
-    [item.id]: reactions,
-  }
 }
 </script>
 
@@ -833,12 +796,13 @@ function onTimelineReactionToggle(item: WorkItemTimelineUiItem, content: string,
 
                       <IssueReactions
                         v-if="number !== undefined && getTimelineSubjectId(item)"
-                        :reactions="getTimelineReactions(item)"
+                        :reactions="getLocalReactions(item.id)"
                         :subject-id="getTimelineSubjectId(item)!"
                         :repo="repo"
                         :issue-number="number"
+                        :work-item-id="id"
                         class="mt-3"
-                        @toggle="(content, added) => onTimelineReactionToggle(item, content, added)"
+                        @toggle="(content, added) => onReactionToggle(item.id, content, added)"
                       />
 
                       <div
@@ -883,13 +847,14 @@ function onTimelineReactionToggle(item: WorkItemTimelineUiItem, content: string,
 
                             <IssueReactions
                               v-if="number !== undefined && rc.databaseId"
-                              :reactions="getReviewCommentReactions(rc)"
+                              :reactions="getLocalReactions(rc.id)"
                               :subject-id="rc.id"
                               :repo="repo"
                               :issue-number="number"
                               :pull-comment-id="rc.databaseId"
+                              :work-item-id="id"
                               class="mt-2"
-                              @toggle="(content, added) => onReviewCommentReactionToggle(rc, content, added)"
+                              @toggle="(content, added) => onReactionToggle(rc.id, content, added)"
                             />
 
                             <!-- Existing replies -->
@@ -911,13 +876,14 @@ function onTimelineReactionToggle(item: WorkItemTimelineUiItem, content: string,
                                 />
                                 <IssueReactions
                                   v-if="number !== undefined && reply.databaseId"
-                                  :reactions="getReviewCommentReactions(reply)"
+                                  :reactions="getLocalReactions(reply.id)"
                                   :subject-id="reply.id"
                                   :repo="repo"
                                   :issue-number="number"
                                   :pull-comment-id="reply.databaseId"
+                                  :work-item-id="id"
                                   class="mt-1"
-                                  @toggle="(content, added) => onReviewCommentReactionToggle(reply, content, added)"
+                                  @toggle="(content, added) => onReactionToggle(reply.id, content, added)"
                                 />
                               </div>
                             </div>
