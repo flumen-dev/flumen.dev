@@ -107,8 +107,7 @@ async function submitIssue(issueBody: string) {
       },
     })
     toast.add({ title: t('issues.create.success'), color: 'success' })
-    const workItemPath = buildWorkItemPath(repo.value, result.number)
-    await router.push(workItemPath ? localePath(workItemPath) : localePath({ path: `/issues/${result.number}`, query: { repo: repo.value } }))
+    await router.push(localePath(buildWorkItemPath(repo.value, result.number)!))
     return true
   }
   catch {

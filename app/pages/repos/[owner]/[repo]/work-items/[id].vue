@@ -102,6 +102,18 @@ const mentionUsers = computed<MentionUser[]>(() => {
     }))
 })
 
+const recentStore = useRecentStore()
+watch(workItem, (val) => {
+  if (!val) return
+  recentStore.track({
+    type: val.primaryType === 'issue' ? 'issue' : 'pr',
+    repo: repo.value,
+    number: val.number,
+    title: val.title,
+    url: val.htmlUrl,
+  })
+}, { immediate: true })
+
 const { t, locale } = useI18n()
 const { loggedIn, user } = useUserSession()
 const commentFormRef = ref<{ active: boolean }>()

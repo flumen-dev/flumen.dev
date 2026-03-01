@@ -16,8 +16,7 @@ const stateIcon = computed(() => getIssueStateIcon(props.issue.state, props.issu
 const stateColor = computed(() => getIssueStateColor(props.issue.state, props.issue.stateReason))
 
 const issueLink = computed(() => {
-  const path = buildWorkItemPath(props.issue.repository.nameWithOwner, props.issue.number)
-  return path ? localePath(path) : localePath({ path: `/issues/${props.issue.number}`, query: { repo: props.issue.repository.nameWithOwner } })
+  return localePath(buildWorkItemPath(props.issue.repository.nameWithOwner, props.issue.number)!)
 })
 </script>
 

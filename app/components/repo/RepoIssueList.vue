@@ -26,8 +26,7 @@ const { data: issues, status } = useLazyFetch<RepoIssue[]>(
 const localePath = useLocalePath()
 
 function issueTo(issue: RepoIssue) {
-  const path = buildWorkItemPath(`${props.owner}/${props.repo}`, issue.number)
-  return localePath(path ?? `/repos/${props.owner}/${props.repo}/issues/${issue.number}`)
+  return localePath(buildWorkItemPath(`${props.owner}/${props.repo}`, issue.number)!)
 }
 </script>
 

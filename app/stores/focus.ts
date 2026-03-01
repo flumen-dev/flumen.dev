@@ -446,20 +446,8 @@ export const useFocusStore = defineStore('focus', () => {
   function openHighlighted() {
     const item = highlightedItem.value
     if (!item) return
-    const workItemPath = buildWorkItemPath(item.repo, item.number, item.type)
-    if (workItemPath) {
-      const lp = useLocalePath()
-      navigateTo(lp(workItemPath))
-      return
-    }
-
-    if (item.type === 'pr') {
-      window.open(item.url, '_blank')
-    }
-    else {
-      const lp = useLocalePath()
-      navigateTo(lp({ path: `/issues/${item.number}`, query: { repo: item.repo } }))
-    }
+    const lp = useLocalePath()
+    navigateTo(lp(buildWorkItemPath(item.repo, item.number, item.type)!))
   }
 
   function dismissItem(key: string) {
