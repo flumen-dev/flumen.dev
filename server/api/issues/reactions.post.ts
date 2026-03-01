@@ -18,11 +18,12 @@ const REACTION_MAP: Record<string, string> = {
 
 export default defineEventHandler(async (event) => {
   const { token, login } = await getSessionToken(event)
-  const { content, remove, repo, issueNumber } = await readBody<{
+  const { content, remove, repo, issueNumber, pullCommentId } = await readBody<{
     content: string
     remove: boolean
     repo: string
     issueNumber: number
+    pullCommentId?: number
   }>(event)
 
   if (!content || !repo || !issueNumber) {
@@ -32,16 +33,21 @@ export default defineEventHandler(async (event) => {
   const restContent = REACTION_MAP[content] || content.toLowerCase()
   const [owner, repoName] = repo.split('/')
 
+  // Review comment reactions use a different endpoint
+  const reactionsPath = pullCommentId
+    ? `/repos/${owner}/${repoName}/pulls/comments/${pullCommentId}/reactions`
+    : `/repos/${owner}/${repoName}/issues/${issueNumber}/reactions`
+
   if (remove) {
     // Find the reaction ID to delete (first 100 reactions — sufficient for typical issues)
     const { data: reactions } = await githubFetchWithToken<Array<{ id: number, content: string, user: { login: string } }>>(
       token,
-      `/repos/${owner}/${repoName}/issues/${issueNumber}/reactions`,
+      reactionsPath,
       { params: { per_page: 100 } },
     )
     const mine = reactions.find(r => r.content === restContent && r.user.login === login)
     if (mine) {
-      const res = await fetch(`https://api.github.com/repos/${owner}/${repoName}/issues/${issueNumber}/reactions/${mine.id}`, {
+      const res = await fetch(`https://api.github.com${reactionsPath}/${mine.id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `token ${token}`,
@@ -55,7 +61,7 @@ export default defineEventHandler(async (event) => {
     }
   }
   else {
-    await githubFetchWithToken(token, `/repos/${owner}/${repoName}/issues/${issueNumber}/reactions`, {
+    await githubFetchWithToken(token, reactionsPath, {
       method: 'POST',
       body: { content: restContent },
     })

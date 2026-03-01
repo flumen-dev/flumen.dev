@@ -503,6 +503,50 @@ onBeforeUnmount(() => {
   }
 })
 
+const replyingToCommentId = ref<string | null>(null)
+const replyBody = ref('')
+const replySubmitting = ref(false)
+
+async function submitReply(reviewComment: ReviewComment, pullNumber: number) {
+  if (!replyBody.value.trim() || replySubmitting.value || !reviewComment.databaseId) return
+
+  replySubmitting.value = true
+  try {
+    const result = await $fetch('/api/pull-requests/review-comments', {
+      method: 'POST',
+      body: {
+        commentId: reviewComment.databaseId,
+        body: replyBody.value,
+        owner: owner.value,
+        repo: repoName.value,
+        pullNumber,
+        workItemId: id.value,
+      },
+    })
+
+    // Optimistically add reply
+    if (!reviewComment.replies) reviewComment.replies = []
+    reviewComment.replies.push({
+      id: result.id,
+      body: result.body,
+      path: result.path,
+      line: result.line,
+      author: result.author,
+      authorAvatarUrl: result.authorAvatarUrl,
+      createdAt: result.createdAt,
+    })
+
+    replyBody.value = ''
+    replyingToCommentId.value = null
+  }
+  catch {
+    toast.add({ title: t('workItems.timeline.replyError'), color: 'error' })
+  }
+  finally {
+    replySubmitting.value = false
+  }
+}
+
 const expandedReviewComments = ref<Record<string, boolean>>({})
 
 function isReviewCommentsExpanded(item: WorkItemTimelineUiItem) {
@@ -526,6 +570,12 @@ watch(
     const next: Record<string, ReactionGroup[]> = {}
     for (const item of items) {
       next[item.id] = timelineLocalReactions.value[item.id] ?? [...(item.reactionGroups ?? [])]
+      for (const rc of item.reviewComments ?? []) {
+        next[rc.id] = timelineLocalReactions.value[rc.id] ?? [...(rc.reactionGroups ?? [])]
+        for (const reply of rc.replies ?? []) {
+          next[reply.id] = timelineLocalReactions.value[reply.id] ?? [...(reply.reactionGroups ?? [])]
+        }
+      }
     }
     timelineLocalReactions.value = next
   },
@@ -534,6 +584,29 @@ watch(
 
 function getTimelineReactions(item: WorkItemTimelineUiItem) {
   return timelineLocalReactions.value[item.id] ?? []
+}
+
+function getReviewCommentReactions(rc: ReviewComment) {
+  return timelineLocalReactions.value[rc.id] ?? []
+}
+
+function onReviewCommentReactionToggle(rc: ReviewComment, content: string, added: boolean) {
+  const reactions = [...getReviewCommentReactions(rc)]
+  const index = reactions.findIndex(r => r.content === content)
+
+  if (added && index === -1) {
+    reactions.push({ content, count: 1, viewerHasReacted: true })
+  }
+  else if (added && index >= 0) {
+    reactions[index] = { ...reactions[index]!, count: reactions[index]!.count + 1, viewerHasReacted: true }
+  }
+  else if (!added && index >= 0) {
+    const current = reactions[index]!
+    if (current.count <= 1) reactions.splice(index, 1)
+    else reactions[index] = { ...current, count: current.count - 1, viewerHasReacted: false }
+  }
+
+  timelineLocalReactions.value = { ...timelineLocalReactions.value, [rc.id]: reactions }
 }
 
 function getTimelineSubjectId(item: WorkItemTimelineUiItem): string | undefined {
@@ -807,6 +880,93 @@ function onTimelineReactionToggle(item: WorkItemTimelineUiItem, content: string,
                               :source="rc.body"
                               :repo-context="repo"
                             />
+
+                            <IssueReactions
+                              v-if="number !== undefined && rc.databaseId"
+                              :reactions="getReviewCommentReactions(rc)"
+                              :subject-id="rc.id"
+                              :repo="repo"
+                              :issue-number="number"
+                              :pull-comment-id="rc.databaseId"
+                              class="mt-2"
+                              @toggle="(content, added) => onReviewCommentReactionToggle(rc, content, added)"
+                            />
+
+                            <!-- Existing replies -->
+                            <div
+                              v-if="rc.replies?.length"
+                              class="mt-2 space-y-2 border-l-2 border-default pl-3"
+                            >
+                              <div
+                                v-for="reply in rc.replies"
+                                :key="reply.id"
+                                class="text-sm"
+                              >
+                                <span class="font-medium text-highlighted">{{ reply.author }}</span>
+                                <span class="text-dimmed text-xs ml-1">{{ timeAgo(reply.createdAt) }}</span>
+                                <UiMarkdownRenderer
+                                  :source="reply.body"
+                                  :repo-context="repo"
+                                  class="mt-0.5"
+                                />
+                                <IssueReactions
+                                  v-if="number !== undefined && reply.databaseId"
+                                  :reactions="getReviewCommentReactions(reply)"
+                                  :subject-id="reply.id"
+                                  :repo="repo"
+                                  :issue-number="number"
+                                  :pull-comment-id="reply.databaseId"
+                                  class="mt-1"
+                                  @toggle="(content, added) => onReviewCommentReactionToggle(reply, content, added)"
+                                />
+                              </div>
+                            </div>
+
+                            <!-- Reply button & form -->
+                            <div
+                              v-if="loggedIn && rc.databaseId"
+                              class="mt-2"
+                            >
+                              <button
+                                v-if="replyingToCommentId !== rc.id"
+                                type="button"
+                                class="text-xs text-muted hover:text-highlighted transition-colors"
+                                @click="replyingToCommentId = rc.id; replyBody = ''"
+                              >
+                                {{ t('workItems.timeline.reply') }}
+                              </button>
+
+                              <div
+                                v-else
+                                class="flex flex-col gap-2"
+                              >
+                                <UTextarea
+                                  v-model="replyBody"
+                                  :placeholder="t('workItems.timeline.replyPlaceholder')"
+                                  autoresize
+                                  :rows="2"
+                                  size="sm"
+                                />
+                                <div class="flex gap-2">
+                                  <UButton
+                                    size="xs"
+                                    :loading="replySubmitting"
+                                    :disabled="!replyBody.trim()"
+                                    @click="submitReply(rc, item.sourceNumber)"
+                                  >
+                                    {{ t('workItems.timeline.reply') }}
+                                  </UButton>
+                                  <UButton
+                                    size="xs"
+                                    color="neutral"
+                                    variant="ghost"
+                                    @click="replyingToCommentId = null"
+                                  >
+                                    {{ t('common.close') }}
+                                  </UButton>
+                                </div>
+                              </div>
+                            </div>
                           </div>
                         </div>
                       </div>

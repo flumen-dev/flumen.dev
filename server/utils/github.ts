@@ -11,6 +11,15 @@ export async function invalidateIssueDetailCache(login: string, repo: string, is
   await useStorage('cache').removeItem(cacheKey)
 }
 
+/**
+ * Invalidate the server-side work item detail cache after mutations.
+ * Matches the key format used by defineCachedFunction in work-items/[id].get.ts
+ */
+export async function invalidateWorkItemDetailCache(login: string, owner: string, repo: string, id: string) {
+  const cacheKey = `nitro:functions:repo-work-item-detail:${login}:${owner}/${repo}:${id}.json`
+  await useStorage('cache').removeItem(cacheKey)
+}
+
 const GITHUB_API = 'https://api.github.com'
 
 export interface GitHubRequestOptions {

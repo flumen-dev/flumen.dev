@@ -53,6 +53,7 @@ export interface WorkItemContribution {
 
 export interface ReviewComment {
   id: string
+  databaseId?: number
   path: string
   line: number | null
   body: string
@@ -60,6 +61,7 @@ export interface ReviewComment {
   authorAvatarUrl?: string
   createdAt: string
   reactionGroups?: ReactionGroup[]
+  replies?: ReviewComment[]
 }
 
 export type WorkItemTimelineSource = 'issue' | 'pull'
