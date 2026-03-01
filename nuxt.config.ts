@@ -59,6 +59,23 @@ export default defineNuxtConfig({
       ],
     },
   },
+
+  // Temporary workaround: https://github.com/nuxt/ui/issues/6118
+  hooks: {
+    'imports:extend'(imports) {
+      for (let i = imports.length - 1; i >= 0; i--) {
+        const e = imports[i]
+        if (
+          e?.name === 'options'
+          && typeof e.from === 'string'
+          && e.from.includes('@nuxt/ui/dist/runtime/composables/useResizable')
+        ) {
+          imports.splice(i, 1)
+        }
+      }
+    },
+  },
+
   echarts: {
     renderer: 'svg',
     charts: ['LineChart', 'BarChart'],
