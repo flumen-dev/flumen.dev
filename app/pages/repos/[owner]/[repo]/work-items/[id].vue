@@ -103,7 +103,7 @@ const mentionUsers = computed<MentionUser[]>(() => {
 })
 
 const { t, locale } = useI18n()
-const { loggedIn } = useUserSession()
+const { loggedIn, user } = useUserSession()
 const commentFormRef = ref<{ active: boolean }>()
 const toast = useToast()
 
@@ -161,6 +161,7 @@ type WorkItemTimelineUiItem = NuxtTimelineItem & {
   sourceNumber: number
   action: string
   issueEvent?: IssueNonCommentEvent
+  reviewState?: string
 }
 
 type TimelineRailEntry = {
@@ -308,6 +309,7 @@ const timelineItems = computed<WorkItemTimelineUiItem[]>(() => {
     source: entry.source,
     sourceNumber: entry.sourceNumber,
     action: timelineAction(entry),
+    reviewState: entry.reviewState,
     issueEvent: toIssueEvent(entry) ?? undefined,
     ui: entry.source === 'pull'
       ? {
@@ -517,7 +519,7 @@ async function submitReply(reviewComment: ReviewComment, pullNumber: number) {
 
   replySubmitting.value = true
   try {
-    const result = await $fetch('/api/pull-requests/review-comments', {
+    const result = await $fetch<ReviewComment>('/api/pull-requests/review-comments', {
       method: 'POST',
       body: {
         commentId: reviewComment.databaseId,
@@ -747,14 +749,17 @@ function getTimelineSubjectId(item: WorkItemTimelineUiItem): string | undefined 
                 <template #title="{ item }">
                   <div
                     :id="timelineDomId(item.id)"
-                    class="flex gap-1 rounded-md px-1 py-0.5 transition-colors duration-700 w-fit"
+                    class="rounded-md px-1 py-0.5 transition-colors duration-700 w-fit"
                     :class="[
                       item.source === 'pull' ? 'justify-self-end' : '',
                       flashTimelineTargetId === timelineDomId(item.id) ? 'bg-primary/10 ring-1 ring-primary/40' : '',
                     ]"
                   >
-                    <template
-                      v-if="item.issueEvent"
+                    <template v-if="item.kind === 'comment' || item.kind === 'review'" />
+
+                    <div
+                      v-else-if="item.issueEvent"
+                      class="flex gap-1"
                     >
                       <IssueEventGroup
                         :class="item.source === 'pull' ? 'flex justify-end' : ''"
@@ -762,9 +767,12 @@ function getTimelineSubjectId(item: WorkItemTimelineUiItem): string | undefined 
                         :show-time="false"
                         compact
                       />
-                    </template>
+                    </div>
 
-                    <template v-else>
+                    <div
+                      v-else
+                      class="flex gap-1"
+                    >
                       <span>{{ item.title }}</span>
                       <UBadge
                         v-if="item.title && isBotAuthor(item.title)"
@@ -776,176 +784,81 @@ function getTimelineSubjectId(item: WorkItemTimelineUiItem): string | undefined 
                       </UBadge>
                       <span class="font-normal text-muted">{{ item.action }}</span>
                       <span class="text-dimmed text-xs/5">{{ timeAgo(item.date as string) }}</span>
-                    </template>
+                    </div>
                   </div>
                 </template>
 
                 <template #description="{ item }">
-                  <div
+                  <TimelineCommentCard
                     v-if="item.kind === 'comment' || item.kind === 'review'"
-                    class="w-full"
-                    :class="item.source === 'pull' ? 'flex justify-end' : ''"
+                    :author="item.title ?? ''"
+                    :author-avatar-url="item.authorAvatarUrl"
+                    :action="item.action"
+                    :created-at="(item.date as string)"
+                    :body="item.body"
+                    :fallback-description="item.description"
+                    :is-bot="item.title ? isBotAuthor(item.title) : false"
+                    :is-own-comment="item.title === user?.login"
+                    :is-initial="item.isInitial"
+                    :review-state="item.kind === 'review' ? (item.reviewState as any) : undefined"
+                    :source="item.source"
+                    :repo-context="repo"
+                    :reactions="getLocalReactions(item.id)"
+                    :subject-id="getTimelineSubjectId(item)"
+                    :issue-number="number"
+                    :work-item-id="id"
+                    @reaction-toggle="(content, added) => onReactionToggle(item.id, content, added)"
                   >
-                    <div class="w-full rounded-md border border-default px-3 py-2 min-w-[16rem] sm:min-w-[20rem] md:min-w-md max-w-full md:max-w-[85%]">
-                      <UiMarkdownRenderer
-                        v-if="item.body"
-                        :source="item.body"
-                        :repo-context="repo"
-                      />
-                      <span
-                        v-else
-                        class="text-sm text-muted"
-                      >
-                        {{ item.description }}
-                      </span>
-
-                      <IssueReactions
-                        v-if="number !== undefined && getTimelineSubjectId(item)"
-                        :reactions="getLocalReactions(item.id)"
-                        :subject-id="getTimelineSubjectId(item)!"
-                        :repo="repo"
-                        :issue-number="number"
-                        :work-item-id="id"
-                        class="mt-3"
-                        @toggle="(content, added) => onReactionToggle(item.id, content, added)"
-                      />
-
+                    <template #review-comments>
                       <div
                         v-if="item.reviewComments?.length"
-                        class="mt-3 border-t border-default pt-3"
+                        class="px-3 pb-2"
                       >
-                        <button
-                          type="button"
-                          class="flex items-center gap-1.5 text-sm text-muted hover:text-highlighted transition-colors"
-                          :aria-expanded="isReviewCommentsExpanded(item)"
-                          :aria-controls="`review-comments-${item.id}`"
-                          @click="toggleReviewComments(item)"
-                        >
-                          <UIcon
-                            :name="isReviewCommentsExpanded(item) ? 'i-lucide-chevron-down' : 'i-lucide-chevron-right'"
-                            class="size-4"
-                          />
-                          <span>{{ t('workItems.timeline.reviewComment', item.reviewComments.length) }}</span>
-                        </button>
-
-                        <div
-                          v-if="isReviewCommentsExpanded(item)"
-                          :id="`review-comments-${item.id}`"
-                          class="mt-2 space-y-3"
-                        >
-                          <div
-                            v-for="rc in item.reviewComments"
-                            :key="rc.id"
-                            class="rounded-md border border-default bg-elevated/50 px-3 py-2"
+                        <div class="border-t border-default pt-2">
+                          <button
+                            type="button"
+                            class="flex items-center gap-1.5 text-sm text-muted hover:text-highlighted transition-colors"
+                            :aria-expanded="isReviewCommentsExpanded(item)"
+                            :aria-controls="`review-comments-${item.id}`"
+                            @click="toggleReviewComments(item)"
                           >
-                            <div class="flex items-center gap-2 mb-1.5">
-                              <UBadge
-                                size="xs"
-                                color="neutral"
-                                variant="subtle"
-                                class="font-mono"
-                              >
-                                {{ rc.path }}{{ rc.line != null ? `:${rc.line}` : '' }}
-                              </UBadge>
-                            </div>
-                            <UiMarkdownRenderer
-                              :source="rc.body"
+                            <UIcon
+                              :name="isReviewCommentsExpanded(item) ? 'i-lucide-chevron-down' : 'i-lucide-chevron-right'"
+                              class="size-4"
+                            />
+                            <span>{{ t('workItems.timeline.reviewComment', item.reviewComments.length) }}</span>
+                          </button>
+
+                          <div
+                            v-if="isReviewCommentsExpanded(item)"
+                            :id="`review-comments-${item.id}`"
+                            class="mt-2 space-y-3"
+                          >
+                            <TimelineReviewCommentThread
+                              v-for="rc in item.reviewComments"
+                              :key="rc.id"
+                              :comment="rc"
                               :repo-context="repo"
-                            />
-
-                            <IssueReactions
-                              v-if="number !== undefined && rc.databaseId"
-                              :reactions="getLocalReactions(rc.id)"
-                              :subject-id="rc.id"
-                              :repo="repo"
                               :issue-number="number"
-                              :pull-comment-id="rc.databaseId"
                               :work-item-id="id"
-                              class="mt-2"
-                              @toggle="(content, added) => onReactionToggle(rc.id, content, added)"
+                              :current-user-login="user?.login"
+                              :reactions="getLocalReactions(rc.id)"
+                              :reply-reactions="Object.fromEntries((rc.replies ?? []).map(r => [r.id, getLocalReactions(r.id)]))"
+                              :is-replying="replyingToCommentId === rc.id"
+                              :reply-body="replyBody"
+                              :reply-submitting="replySubmitting"
+                              @reaction-toggle="(content, added) => onReactionToggle(rc.id, content, added)"
+                              @reply-reaction-toggle="(replyId, content, added) => onReactionToggle(replyId, content, added)"
+                              @start-reply="startReply(rc.id)"
+                              @cancel-reply="replyingToCommentId = null"
+                              @update:reply-body="replyBody = $event"
+                              @submit-reply="submitReply(rc, item.sourceNumber)"
                             />
-
-                            <!-- Existing replies -->
-                            <div
-                              v-if="rc.replies?.length"
-                              class="mt-2 space-y-2 border-l-2 border-default pl-3"
-                            >
-                              <div
-                                v-for="reply in rc.replies"
-                                :key="reply.id"
-                                class="text-sm"
-                              >
-                                <span class="font-medium text-highlighted">{{ reply.author }}</span>
-                                <span class="text-dimmed text-xs ml-1">{{ timeAgo(reply.createdAt) }}</span>
-                                <UiMarkdownRenderer
-                                  :source="reply.body"
-                                  :repo-context="repo"
-                                  class="mt-0.5"
-                                />
-                                <IssueReactions
-                                  v-if="number !== undefined && reply.databaseId"
-                                  :reactions="getLocalReactions(reply.id)"
-                                  :subject-id="reply.id"
-                                  :repo="repo"
-                                  :issue-number="number"
-                                  :pull-comment-id="reply.databaseId"
-                                  :work-item-id="id"
-                                  class="mt-1"
-                                  @toggle="(content, added) => onReactionToggle(reply.id, content, added)"
-                                />
-                              </div>
-                            </div>
-
-                            <!-- Reply button & form -->
-                            <div
-                              v-if="loggedIn && rc.databaseId"
-                              class="mt-2"
-                            >
-                              <button
-                                v-if="replyingToCommentId !== rc.id"
-                                type="button"
-                                class="text-xs text-muted hover:text-highlighted transition-colors"
-                                @click="startReply(rc.id)"
-                              >
-                                {{ t('workItems.timeline.reply') }}
-                              </button>
-
-                              <div
-                                v-else
-                                class="flex flex-col gap-2"
-                              >
-                                <UTextarea
-                                  v-model="replyBody"
-                                  :placeholder="t('workItems.timeline.replyPlaceholder')"
-                                  autoresize
-                                  :rows="2"
-                                  size="sm"
-                                />
-                                <div class="flex gap-2">
-                                  <UButton
-                                    size="xs"
-                                    :loading="replySubmitting"
-                                    :disabled="!replyBody.trim()"
-                                    @click="submitReply(rc, item.sourceNumber)"
-                                  >
-                                    {{ t('workItems.timeline.reply') }}
-                                  </UButton>
-                                  <UButton
-                                    size="xs"
-                                    color="neutral"
-                                    variant="ghost"
-                                    @click="replyingToCommentId = null"
-                                  >
-                                    {{ t('common.close') }}
-                                  </UButton>
-                                </div>
-                              </div>
-                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  </div>
+                    </template>
+                  </TimelineCommentCard>
                 </template>
               </UTimeline>
             </div>
