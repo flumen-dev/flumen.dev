@@ -17,13 +17,13 @@ const apiFetch = useRequestFetch()
 const toast = useToast()
 const pending = ref<string | null>(null)
 
-const quickEmojis: { key: string, emoji: string }[] = [
-  { key: 'THUMBS_UP', emoji: '\uD83D\uDC4D' },
-  { key: 'THUMBS_DOWN', emoji: '\uD83D\uDC4E' },
-  { key: 'LAUGH', emoji: '\uD83D\uDE04' },
-  { key: 'HOORAY', emoji: '\uD83C\uDF89' },
-  { key: 'HEART', emoji: '\u2764\uFE0F' },
-  { key: 'ROCKET', emoji: '\uD83D\uDE80' },
+const quickEmojis: { key: string, emoji: string, label: string }[] = [
+  { key: 'THUMBS_UP', emoji: '\uD83D\uDC4D', label: 'thumbs up' },
+  { key: 'THUMBS_DOWN', emoji: '\uD83D\uDC4E', label: 'thumbs down' },
+  { key: 'LAUGH', emoji: '\uD83D\uDE04', label: 'laugh' },
+  { key: 'HOORAY', emoji: '\uD83C\uDF89', label: 'hooray' },
+  { key: 'HEART', emoji: '\u2764\uFE0F', label: 'heart' },
+  { key: 'ROCKET', emoji: '\uD83D\uDE80', label: 'rocket' },
 ]
 
 function isReacted(key: string) {
@@ -63,9 +63,10 @@ async function toggle(key: string) {
 <template>
   <div class="flex items-center gap-0.5 rounded-full border border-default bg-default/90 backdrop-blur-sm px-1 py-0.5 shadow-sm">
     <button
-      v-for="{ key, emoji } in quickEmojis"
+      v-for="{ key, emoji, label } in quickEmojis"
       :key="key"
       type="button"
+      :aria-label="`React with ${label}`"
       class="rounded-full p-1 text-sm leading-none transition-all cursor-pointer"
       :class="[
         isReacted(key)

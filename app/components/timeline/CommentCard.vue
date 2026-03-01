@@ -52,6 +52,10 @@ const hasReactions = computed(() => {
   return props.reactions?.some(r => r.count > 0) ?? false
 })
 
+const hasFooterContent = computed(() => {
+  return hasReactions.value || (props.issueNumber !== undefined && props.subjectId)
+})
+
 const showQuickReactions = computed(() => {
   return loggedIn.value && hovered.value && props.subjectId && props.issueNumber !== undefined
 })
@@ -135,7 +139,7 @@ const showQuickReactions = computed(() => {
 
       <!-- Footer -->
       <div
-        v-if="hasReactions || subjectId"
+        v-if="hasFooterContent"
         class="flex items-center gap-2 px-3 py-1.5 border-t border-default"
       >
         <IssueReactions

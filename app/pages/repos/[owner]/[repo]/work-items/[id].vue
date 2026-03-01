@@ -161,7 +161,7 @@ type WorkItemTimelineUiItem = NuxtTimelineItem & {
   sourceNumber: number
   action: string
   issueEvent?: IssueNonCommentEvent
-  reviewState?: string
+  reviewState?: 'APPROVED' | 'CHANGES_REQUESTED' | 'COMMENTED' | 'DISMISSED' | 'PENDING'
 }
 
 type TimelineRailEntry = {
@@ -309,7 +309,7 @@ const timelineItems = computed<WorkItemTimelineUiItem[]>(() => {
     source: entry.source,
     sourceNumber: entry.sourceNumber,
     action: timelineAction(entry),
-    reviewState: entry.reviewState,
+    reviewState: entry.reviewState as WorkItemTimelineUiItem['reviewState'],
     issueEvent: toIssueEvent(entry) ?? undefined,
     ui: entry.source === 'pull'
       ? {
@@ -508,10 +508,18 @@ onBeforeUnmount(() => {
 const replyingToCommentId = ref<string | null>(null)
 const replyBody = ref('')
 const replySubmitting = ref(false)
+const timelineLocalReplies = ref<Record<string, ReviewComment[]>>({})
 
 function startReply(commentId: string) {
   replyingToCommentId.value = commentId
   replyBody.value = ''
+}
+
+function getLocalReplies(commentId: string, serverReplies?: ReviewComment[]): ReviewComment[] {
+  const optimistic = timelineLocalReplies.value[commentId] ?? []
+  const server = serverReplies ?? []
+  const serverIds = new Set(server.map(r => r.id))
+  return [...server, ...optimistic.filter(r => !serverIds.has(r.id))]
 }
 
 async function submitReply(reviewComment: ReviewComment, pullNumber: number) {
@@ -531,18 +539,20 @@ async function submitReply(reviewComment: ReviewComment, pullNumber: number) {
       },
     })
 
-    // Optimistically add reply
-    if (!reviewComment.replies) reviewComment.replies = []
-    reviewComment.replies.push({
-      id: result.id,
-      databaseId: result.databaseId,
-      body: result.body,
-      path: result.path,
-      line: result.line,
-      author: result.author,
-      authorAvatarUrl: result.authorAvatarUrl,
-      createdAt: result.createdAt,
-    })
+    const existing = timelineLocalReplies.value[reviewComment.id] ?? []
+    timelineLocalReplies.value = {
+      ...timelineLocalReplies.value,
+      [reviewComment.id]: [...existing, {
+        id: result.id,
+        databaseId: result.databaseId,
+        body: result.body,
+        path: result.path,
+        line: result.line,
+        author: result.author,
+        authorAvatarUrl: result.authorAvatarUrl,
+        createdAt: result.createdAt,
+      }],
+    }
 
     replyBody.value = ''
     replyingToCommentId.value = null
@@ -580,7 +590,7 @@ watch(
       next[item.id] = timelineLocalReactions.value[item.id] ?? [...(item.reactionGroups ?? [])]
       for (const rc of item.reviewComments ?? []) {
         next[rc.id] = timelineLocalReactions.value[rc.id] ?? [...(rc.reactionGroups ?? [])]
-        for (const reply of rc.replies ?? []) {
+        for (const reply of getLocalReplies(rc.id, rc.replies)) {
           next[reply.id] = timelineLocalReactions.value[reply.id] ?? [...(reply.reactionGroups ?? [])]
         }
       }
@@ -800,7 +810,7 @@ function getTimelineSubjectId(item: WorkItemTimelineUiItem): string | undefined 
                     :is-bot="item.title ? isBotAuthor(item.title) : false"
                     :is-own-comment="item.title === user?.login"
                     :is-initial="item.isInitial"
-                    :review-state="item.kind === 'review' ? (item.reviewState as any) : undefined"
+                    :review-state="item.kind === 'review' ? item.reviewState : undefined"
                     :source="item.source"
                     :repo-context="repo"
                     :reactions="getLocalReactions(item.id)"
@@ -838,12 +848,13 @@ function getTimelineSubjectId(item: WorkItemTimelineUiItem): string | undefined 
                               v-for="rc in item.reviewComments"
                               :key="rc.id"
                               :comment="rc"
+                              :replies="getLocalReplies(rc.id, rc.replies)"
                               :repo-context="repo"
                               :issue-number="number"
                               :work-item-id="id"
                               :current-user-login="user?.login"
                               :reactions="getLocalReactions(rc.id)"
-                              :reply-reactions="Object.fromEntries((rc.replies ?? []).map(r => [r.id, getLocalReactions(r.id)]))"
+                              :reply-reactions="Object.fromEntries(getLocalReplies(rc.id, rc.replies).map(r => [r.id, getLocalReactions(r.id)]))"
                               :is-replying="replyingToCommentId === rc.id"
                               :reply-body="replyBody"
                               :reply-submitting="replySubmitting"

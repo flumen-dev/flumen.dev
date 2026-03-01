@@ -3,6 +3,7 @@ import type { ReviewComment } from '~~/shared/types/work-item'
 
 const props = defineProps<{
   comment: ReviewComment
+  replies?: ReviewComment[]
   repoContext: string
   issueNumber?: number
   workItemId: string
@@ -13,6 +14,8 @@ const props = defineProps<{
   replyBody: string
   replySubmitting: boolean
 }>()
+
+const effectiveReplies = computed(() => props.replies ?? props.comment.replies ?? [])
 
 const emit = defineEmits<{
   'reactionToggle': [content: string, added: boolean]
@@ -70,11 +73,11 @@ const hoveredReplyId = ref<string | null>(null)
 
     <!-- Replies -->
     <div
-      v-if="comment.replies?.length"
+      v-if="effectiveReplies?.length"
       class="mt-3 space-y-2 border-l-2 border-primary/20 pl-3"
     >
       <div
-        v-for="reply in comment.replies"
+        v-for="reply in effectiveReplies"
         :key="reply.id"
         class="relative rounded-md border border-default overflow-visible"
         :class="reply.author === currentUserLogin ? 'border-primary/30' : ''"
@@ -177,7 +180,7 @@ const hoveredReplyId = ref<string | null>(null)
           <UButton
             size="xs"
             :loading="replySubmitting"
-            :disabled="!replyBody.trim()"
+            :disabled="!replyModel.trim()"
             @click="emit('submitReply')"
           >
             {{ t('workItems.timeline.reply') }}
