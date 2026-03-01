@@ -191,6 +191,21 @@ describe('injectReplies', () => {
     expect(timeline[0]!.reviewComments).toEqual([])
   })
 
+  it('skips review entries with undefined reviewComments', () => {
+    const entry: WorkItemTimelineEntry = {
+      id: 'entry-1',
+      source: 'pull',
+      sourceNumber: 1,
+      kind: 'review',
+      author: 'alice',
+      createdAt: '2026-01-01T00:00:00Z',
+    }
+    const timeline = [entry]
+    const replyMap = new Map([['rc-1', [makeReviewComment({ id: 'reply-1' })]]])
+    injectReplies(timeline, replyMap)
+    expect(entry.reviewComments).toBeUndefined()
+  })
+
   it('injects replies into matching review comments', () => {
     const rc = makeReviewComment({ id: 'rc-1' })
     const timeline = [makeReviewEntry([rc])]

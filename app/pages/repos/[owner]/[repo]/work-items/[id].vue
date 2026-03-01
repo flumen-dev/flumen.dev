@@ -507,6 +507,11 @@ const replyingToCommentId = ref<string | null>(null)
 const replyBody = ref('')
 const replySubmitting = ref(false)
 
+function startReply(commentId: string) {
+  replyingToCommentId.value = commentId
+  replyBody.value = ''
+}
+
 async function submitReply(reviewComment: ReviewComment, pullNumber: number) {
   if (!replyBody.value.trim() || replySubmitting.value || !reviewComment.databaseId) return
 
@@ -812,6 +817,8 @@ function getTimelineSubjectId(item: WorkItemTimelineUiItem): string | undefined 
                         <button
                           type="button"
                           class="flex items-center gap-1.5 text-sm text-muted hover:text-highlighted transition-colors"
+                          :aria-expanded="isReviewCommentsExpanded(item)"
+                          :aria-controls="`review-comments-${item.id}`"
                           @click="toggleReviewComments(item)"
                         >
                           <UIcon
@@ -823,6 +830,7 @@ function getTimelineSubjectId(item: WorkItemTimelineUiItem): string | undefined 
 
                         <div
                           v-if="isReviewCommentsExpanded(item)"
+                          :id="`review-comments-${item.id}`"
                           class="mt-2 space-y-3"
                         >
                           <div
@@ -897,7 +905,7 @@ function getTimelineSubjectId(item: WorkItemTimelineUiItem): string | undefined 
                                 v-if="replyingToCommentId !== rc.id"
                                 type="button"
                                 class="text-xs text-muted hover:text-highlighted transition-colors"
-                                @click="replyingToCommentId = rc.id; replyBody = ''"
+                                @click="startReply(rc.id)"
                               >
                                 {{ t('workItems.timeline.reply') }}
                               </button>

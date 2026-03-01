@@ -31,8 +31,15 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'Missing content, repo or issueNumber' })
   }
 
-  const restContent = REACTION_MAP[content] || content.toLowerCase()
   const [owner, repoName] = repo.split('/')
+  if (!owner || !repoName || repo.split('/').length !== 2) {
+    throw createError({ statusCode: 400, message: 'Invalid repo format, expected owner/repo' })
+  }
+  if (pullCommentId !== undefined && (!Number.isInteger(pullCommentId) || pullCommentId <= 0)) {
+    throw createError({ statusCode: 400, message: 'Invalid pullCommentId' })
+  }
+
+  const restContent = REACTION_MAP[content] || content.toLowerCase()
 
   // Review comment reactions use a different endpoint
   const reactionsPath = pullCommentId
