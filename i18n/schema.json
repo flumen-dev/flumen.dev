@@ -1452,6 +1452,21 @@
                 }
               },
               "additionalProperties": false
+            },
+            "reviewComment": {
+              "type": "string"
+            },
+            "showLess": {
+              "type": "string"
+            },
+            "reply": {
+              "type": "string"
+            },
+            "replyPlaceholder": {
+              "type": "string"
+            },
+            "replyError": {
+              "type": "string"
             }
           },
           "additionalProperties": false
