@@ -1456,9 +1456,6 @@
             "reviewComment": {
               "type": "string"
             },
-            "showLess": {
-              "type": "string"
-            },
             "reply": {
               "type": "string"
             },

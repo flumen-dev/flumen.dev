@@ -483,7 +483,6 @@
         "pull": "PR #{number}"
       },
       "reviewComment": "{count} Kommentar | {count} Kommentare",
-      "showLess": "Weniger anzeigen",
       "reply": "Antworten",
       "replyPlaceholder": "Antwort schreiben...",
       "replyError": "Antwort konnte nicht gesendet werden"

@@ -483,7 +483,6 @@
         "pull": "PR #{number}"
       },
       "reviewComment": "{count} comment | {count} comments",
-      "showLess": "Show less",
       "reply": "Reply",
       "replyPlaceholder": "Write a reply...",
       "replyError": "Could not submit reply"
