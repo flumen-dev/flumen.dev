@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import type { TimelineItem as NuxtTimelineItem } from '@nuxt/ui'
 import type { TimelineItem as IssueTimelineItem } from '~~/shared/types/issue-detail'
-import type { WorkItemDetail, WorkItemTimelineEntry } from '~~/shared/types/work-item'
+import type { ReviewComment, WorkItemDetail, WorkItemTimelineEntry } from '~~/shared/types/work-item'
 
 definePageMeta({
   middleware: 'auth',
@@ -153,6 +153,7 @@ type WorkItemTimelineUiItem = NuxtTimelineItem & {
   subjectId?: string
   body?: string
   reactionGroups?: ReactionGroup[]
+  reviewComments?: ReviewComment[]
   kind: WorkItemTimelineEntry['kind']
   isInitial?: boolean
   authorAvatarUrl?: string
@@ -299,6 +300,7 @@ const timelineItems = computed<WorkItemTimelineUiItem[]>(() => {
     description: timelineDescription(entry),
     body: entry.body,
     reactionGroups: entry.reactionGroups,
+    reviewComments: entry.reviewComments,
     kind: entry.kind,
     isInitial: entry.isInitial,
     authorAvatarUrl: entry.authorAvatarUrl,
@@ -500,6 +502,21 @@ onBeforeUnmount(() => {
     flashTimeout = null
   }
 })
+
+const expandedReviewComments = ref<Record<string, boolean>>({})
+
+function isReviewCommentsExpanded(item: WorkItemTimelineUiItem) {
+  const count = item.reviewComments?.length ?? 0
+  if (count === 0) return false
+  return expandedReviewComments.value[item.id] ?? count <= 3
+}
+
+function toggleReviewComments(item: WorkItemTimelineUiItem) {
+  expandedReviewComments.value = {
+    ...expandedReviewComments.value,
+    [item.id]: !isReviewCommentsExpanded(item),
+  }
+}
 
 const timelineLocalReactions = ref<Record<string, ReactionGroup[]>>({})
 
@@ -750,6 +767,49 @@ function onTimelineReactionToggle(item: WorkItemTimelineUiItem, content: string,
                         class="mt-3"
                         @toggle="(content, added) => onTimelineReactionToggle(item, content, added)"
                       />
+
+                      <div
+                        v-if="item.reviewComments?.length"
+                        class="mt-3 border-t border-default pt-3"
+                      >
+                        <button
+                          type="button"
+                          class="flex items-center gap-1.5 text-sm text-muted hover:text-highlighted transition-colors"
+                          @click="toggleReviewComments(item)"
+                        >
+                          <UIcon
+                            :name="isReviewCommentsExpanded(item) ? 'i-lucide-chevron-down' : 'i-lucide-chevron-right'"
+                            class="size-4"
+                          />
+                          <span>{{ t('workItems.timeline.reviewComment', item.reviewComments.length) }}</span>
+                        </button>
+
+                        <div
+                          v-if="isReviewCommentsExpanded(item)"
+                          class="mt-2 space-y-3"
+                        >
+                          <div
+                            v-for="rc in item.reviewComments"
+                            :key="rc.id"
+                            class="rounded-md border border-default bg-elevated/50 px-3 py-2"
+                          >
+                            <div class="flex items-center gap-2 mb-1.5">
+                              <UBadge
+                                size="xs"
+                                color="neutral"
+                                variant="subtle"
+                                class="font-mono"
+                              >
+                                {{ rc.path }}{{ rc.line != null ? `:${rc.line}` : '' }}
+                              </UBadge>
+                            </div>
+                            <UiMarkdownRenderer
+                              :source="rc.body"
+                              :repo-context="repo"
+                            />
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </template>

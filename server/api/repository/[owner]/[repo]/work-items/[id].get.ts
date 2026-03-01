@@ -1,4 +1,4 @@
-import type { WorkItemContribution, WorkItemDetail, WorkItemTimelineEntry } from '~~/shared/types/work-item'
+import type { ReviewComment, WorkItemContribution, WorkItemDetail, WorkItemTimelineEntry } from '~~/shared/types/work-item'
 import { githubGraphQL } from '~~/server/utils/github-graphql'
 import { getRepoParams, getSessionToken } from '~~/server/utils/github'
 import { mapCiStatus } from '~~/server/utils/focus-created'
@@ -152,6 +152,21 @@ query($owner: String!, $repo: String!, $number: Int!) {
               viewerHasReacted
               reactors { totalCount }
             }
+            comments(first: 50) {
+              nodes {
+                id
+                body
+                path
+                line
+                createdAt
+                author { login avatarUrl }
+                reactionGroups {
+                  content
+                  viewerHasReacted
+                  reactors { totalCount }
+                }
+              }
+            }
           }
           ... on ClosedEvent {
             createdAt
@@ -223,6 +238,17 @@ interface TimelineNode {
   assignee?: { login?: string } | null
   source?: PullDetailNode | null
   reactionGroups?: Array<{ content: string, viewerHasReacted: boolean, reactors: { totalCount: number } }>
+  comments?: {
+    nodes?: Array<{
+      id: string
+      body: string
+      path: string
+      line: number | null
+      createdAt: string
+      author: TimelineActor | null
+      reactionGroups?: Array<{ content: string, viewerHasReacted: boolean, reactors: { totalCount: number } }>
+    }>
+  }
 }
 
 interface IssueDetailNode {
@@ -359,6 +385,17 @@ function mapPullTimeline(node: TimelineNode, pullNumber: number): WorkItemTimeli
   }
 
   if (node.__typename === 'PullRequestReview') {
+    const reviewComments: ReviewComment[] = (node.comments?.nodes ?? []).map(comment => ({
+      id: comment.id,
+      path: comment.path,
+      line: comment.line,
+      body: comment.body,
+      author: comment.author?.login ?? 'ghost',
+      authorAvatarUrl: comment.author?.avatarUrl,
+      createdAt: comment.createdAt,
+      reactionGroups: mapReactionGroups(comment.reactionGroups),
+    }))
+
     return {
       ...base,
       subjectId: node.id,
@@ -367,6 +404,7 @@ function mapPullTimeline(node: TimelineNode, pullNumber: number): WorkItemTimeli
       reactionGroups: mapReactionGroups(node.reactionGroups),
       reviewState: node.state,
       state: node.state,
+      ...(reviewComments.length > 0 ? { reviewComments } : {}),
     }
   }
 

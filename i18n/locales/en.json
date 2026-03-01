@@ -481,7 +481,9 @@
       "source": {
         "issue": "Issue",
         "pull": "PR #{number}"
-      }
+      },
+      "reviewComment": "{count} comment | {count} comments",
+      "showLess": "Show less"
     }
   },
   "user": {

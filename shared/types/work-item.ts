@@ -51,6 +51,17 @@ export interface WorkItemContribution {
   updatedAt: string
 }
 
+export interface ReviewComment {
+  id: string
+  path: string
+  line: number | null
+  body: string
+  author: string
+  authorAvatarUrl?: string
+  createdAt: string
+  reactionGroups?: ReactionGroup[]
+}
+
 export type WorkItemTimelineSource = 'issue' | 'pull'
 export type WorkItemTimelineKind = 'comment' | 'review' | 'state' | 'assignment' | 'label' | 'event'
 
@@ -70,6 +81,7 @@ export interface WorkItemTimelineEntry {
   reviewState?: string
   labelName?: string
   assignee?: string
+  reviewComments?: ReviewComment[]
 }
 
 export interface WorkItemDetail extends WorkItem {
