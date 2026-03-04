@@ -423,6 +423,9 @@
       "failedCount": "{count} fehlgeschlagen",
       "passedCount": "{count} bestanden",
       "pending": "{count} laufen",
+      "failed": "fehlgeschlagen",
+      "running": "laufen",
+      "passed": "bestanden",
       "loadingLogs": "Logs werden geladen...",
       "logError": "Logs konnten nicht geladen werden."
     },

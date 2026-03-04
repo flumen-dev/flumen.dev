@@ -423,6 +423,9 @@
       "failedCount": "{count} failed",
       "passedCount": "{count} passed",
       "pending": "{count} running",
+      "failed": "failed",
+      "running": "running",
+      "passed": "passed",
       "loadingLogs": "Loading logs...",
       "logError": "Could not load logs."
     },

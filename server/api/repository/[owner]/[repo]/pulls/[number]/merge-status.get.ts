@@ -14,7 +14,7 @@ query($owner: String!, $repo: String!, $number: Int!) {
       mergeStateStatus
       headRefName
       baseRefName
-      commits(last: 1) { totalCount nodes { oid } }
+      commits(last: 1) { totalCount nodes { commit { oid } } }
       title
       body
     }
@@ -33,7 +33,7 @@ interface GraphQLResult {
       mergeStateStatus: MergeStateStatus
       headRefName: string
       baseRefName: string
-      commits: { totalCount: number, nodes: { oid: string }[] }
+      commits: { totalCount: number, nodes: { commit: { oid: string } }[] }
       title: string
       body: string
     } | null
@@ -89,6 +89,6 @@ export default defineEventHandler(async (event) => {
     commitCount: pr.commits.totalCount,
     defaultTitle,
     defaultBody: pr.body ?? '',
-    headSha: pr.commits.nodes[0]?.oid ?? '',
+    headSha: pr.commits.nodes[0]?.commit.oid ?? '',
   } satisfies MergeStatusResult
 })

@@ -664,6 +664,15 @@ function getTimelineSubjectId(item: WorkItemTimelineUiItem): string | undefined 
       </div>
     </Teleport>
 
+    <WorkItemHeader
+      v-if="workItem"
+      :work-item="workItem"
+      :repo="repo"
+      :issue="isIssuePrimary ? issue : undefined"
+      @ci-status-changed="delayedRefreshWorkItem"
+      @merged="delayedRefreshWorkItem"
+    />
+
     <div class="p-4">
       <div
         v-if="workItemStatus === 'pending'"
@@ -680,14 +689,6 @@ function getTimelineSubjectId(item: WorkItemTimelineUiItem): string | undefined 
       </div>
 
       <template v-else-if="workItem">
-        <WorkItemHeader
-          :work-item="workItem"
-          :repo="repo"
-          :issue="isIssuePrimary ? issue : undefined"
-          @ci-status-changed="delayedRefreshWorkItem"
-          @merged="delayedRefreshWorkItem"
-        />
-
         <div
           class="mt-4 lg:grid lg:grid-cols-[minmax(0,1fr)_260px] lg:gap-6 2xl:grid-cols-[44px_minmax(0,1fr)_260px]"
         >

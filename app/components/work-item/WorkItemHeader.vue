@@ -112,19 +112,6 @@ function openLogDialog(check: CheckRunDetail) {
   logDialogOpen.value = true
 }
 
-const ciMeta = computed(() => getCIIcon(checkResult.value?.rollupStatus) ?? { name: 'i-lucide-circle-dashed', color: 'text-muted' })
-
-const ciSummary = computed(() => {
-  if (!checkResult.value) return ''
-  const r = checkResult.value
-  if (r.rollupStatus === 'SUCCESS' && r.total > 0) return t('workItems.ci.allPassed')
-  const parts: string[] = []
-  if (r.failed > 0) parts.push(t('workItems.ci.failedCount', { count: r.failed }))
-  if (r.pending > 0) parts.push(t('workItems.ci.pending', { count: r.pending }))
-  if (r.passed > 0) parts.push(t('workItems.ci.passedCount', { count: r.passed }))
-  return parts.join(' \u00b7 ')
-})
-
 // --- Row 5: Merge ---
 
 const mergeExpanded = ref(false)
@@ -153,24 +140,17 @@ watch(mergeStatus, (ms) => {
   if (!mergeTitle.value) mergeTitle.value = ms.defaultTitle
 })
 
-const STRATEGY_VISUALS = {
-  merge: ['i-lucide-circle', 'i-lucide-circle', 'i-lucide-circle', 'i-lucide-git-merge', 'i-lucide-arrow-right'],
-  squash: ['i-lucide-circle', 'i-lucide-circle', 'i-lucide-circle', 'i-lucide-chevrons-right', 'i-lucide-git-commit-horizontal'],
-  rebase: ['i-lucide-arrow-right', 'i-lucide-circle', 'i-lucide-circle', 'i-lucide-circle', 'i-lucide-arrow-right'],
-} as const
-
 const KNOWN_STRATEGIES = new Set<string>(['merge', 'squash', 'rebase'])
 
 const mergeStrategies = computed(() => {
   const allowed = (mergeStatus.value?.allowedStrategies ?? ['merge', 'squash', 'rebase']).filter(v => KNOWN_STRATEGIES.has(v))
   const count = mergeStatus.value?.commitCount ?? 0
   return allowed.map((value) => {
-    const base = { value, visual: STRATEGY_VISUALS[value] }
     switch (value) {
-      case 'merge': return { ...base, label: t('workItems.merge.keepAll'), desc: t('workItems.merge.keepAllDesc', { count }), techName: 'merge commit', icon: 'i-lucide-git-merge' }
-      case 'squash': return { ...base, label: t('workItems.merge.combineIntoOne'), desc: t('workItems.merge.combineIntoOneDesc', { count }), techName: 'squash', icon: 'i-lucide-git-commit-horizontal' }
-      case 'rebase': return { ...base, label: t('workItems.merge.replayOnTop'), desc: t('workItems.merge.replayOnTopDesc', { count }), techName: 'rebase', icon: 'i-lucide-git-branch' }
-      default: return { ...base, label: value, desc: '', techName: value, icon: 'i-lucide-git-merge' }
+      case 'merge': return { value, label: t('workItems.merge.keepAll'), desc: t('workItems.merge.keepAllDesc', { count }), techName: 'merge commit', icon: 'i-lucide-git-merge' }
+      case 'squash': return { value, label: t('workItems.merge.combineIntoOne'), desc: t('workItems.merge.combineIntoOneDesc', { count }), techName: 'squash', icon: 'i-lucide-git-commit-horizontal' }
+      case 'rebase': return { value, label: t('workItems.merge.replayOnTop'), desc: t('workItems.merge.replayOnTopDesc', { count }), techName: 'rebase', icon: 'i-lucide-git-branch' }
+      default: return { value, label: value, desc: '', techName: value, icon: 'i-lucide-git-merge' }
     }
   })
 })
@@ -209,9 +189,12 @@ async function handleMerge() {
 </script>
 
 <template>
-  <div class="sticky top-0 z-10 border border-default rounded-xl sm:rounded-2xl bg-elevated/95 shadow-sm backdrop-blur">
+  <div class="sticky -top-4 sm:-top-6 z-20 bg-elevated/95 backdrop-blur -mx-4 sm:-mx-6 -mt-4 sm:-mt-6">
     <!-- Row 1: State + Title + Actions -->
-    <div class="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2.5 sm:py-3">
+    <div
+      class="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2.5 sm:py-3 bg-default/60 border-b-2"
+      :class="stateColor.replace('text-', 'border-')"
+    >
       <UTooltip :text="stateLabel">
         <span
           class="inline-flex items-center justify-center size-7 rounded-full shrink-0"
@@ -256,76 +239,63 @@ async function handleMerge() {
       </div>
     </div>
 
-    <!-- Row 2: Assignment Zone -->
-    <div class="flex flex-wrap items-center gap-x-2 gap-y-1.5 sm:gap-x-3 px-3 sm:px-4 py-2 border-t border-accented">
-      <!-- Left: Assignees + PRs -->
-      <div class="flex flex-wrap items-center gap-2 flex-1 min-w-0">
-        <!-- No assignees -->
-        <UBadge
-          v-if="workItem.assignees.length === 0"
-          :label="t('issues.detail.needsOwner')"
-          color="warning"
-          variant="subtle"
-          icon="i-lucide-user-x"
-        />
+    <!-- Row 2: Assignees, Labels, Timestamps -->
+    <div class="flex flex-wrap items-center gap-x-2 gap-y-1.5 sm:gap-x-3 px-3 sm:px-4 py-1.5 sm:py-2 border-t border-accented text-xs">
+      <!-- No assignees -->
+      <UBadge
+        v-if="workItem.assignees.length === 0"
+        :label="t('issues.detail.needsOwner')"
+        color="warning"
+        variant="subtle"
+        icon="i-lucide-user-x"
+      />
 
-        <!-- Assignees -->
-        <div
-          v-for="assignee in workItem.assignees"
-          :key="assignee.login"
-          class="flex items-center gap-1.5"
+      <!-- Assignees -->
+      <div
+        v-for="assignee in workItem.assignees"
+        :key="assignee.login"
+        class="flex items-center gap-1.5"
+      >
+        <button
+          type="button"
+          class="inline-flex items-center gap-1.5 cursor-pointer hover:underline"
+          @click="openProfile(assignee.login)"
         >
-          <button
-            type="button"
-            class="inline-flex items-center gap-1.5 cursor-pointer hover:underline"
-            @click="openProfile(assignee.login)"
-          >
-            <UAvatar
-              :src="assignee.avatarUrl"
-              :alt="assignee.login"
-              size="2xs"
-            />
-            <span class="text-sm font-medium text-highlighted hidden sm:inline">{{ assignee.login }}</span>
-          </button>
-        </div>
-
-        <!-- Linked PRs -->
-        <UTooltip
-          v-for="pr in linkedPrs"
-          :key="pr.number"
-          :text="`#${pr.number} ${pr.title}`"
-        >
-          <a
-            :href="pr.url"
-            target="_blank"
-            class="inline-flex items-center gap-1 rounded-full border border-default bg-elevated/50 px-2 py-0.5 text-xs hover:border-primary/50 transition-colors"
-          >
-            <UIcon
-              :name="getPRStateIcon(pr.state, pr.isDraft)"
-              class="size-3.5"
-              :class="getPRStateColor(pr.state, pr.isDraft)"
-            />
-            <span class="text-muted">#{{ pr.number }}</span>
-          </a>
-        </UTooltip>
+          <UAvatar
+            :src="assignee.avatarUrl"
+            :alt="assignee.login"
+            size="2xs"
+          />
+          <span class="text-sm font-medium text-highlighted hidden sm:inline">{{ assignee.login }}</span>
+        </button>
       </div>
 
-      <!-- Right: Claims (only when issue detail is available) -->
-      <IssueClaimFlow
-        v-if="issue"
-        :issue="issue"
-        :repo="repo"
-      />
-    </div>
+      <!-- Linked PRs -->
+      <UTooltip
+        v-for="pr in linkedPrs"
+        :key="pr.number"
+        :text="`#${pr.number} ${pr.title}`"
+      >
+        <a
+          :href="pr.url"
+          target="_blank"
+          class="inline-flex items-center gap-1 rounded-full border border-default bg-elevated/50 px-2 py-0.5 text-xs hover:border-primary/50 transition-colors"
+        >
+          <UIcon
+            :name="getPRStateIcon(pr.state, pr.isDraft)"
+            class="size-3.5"
+            :class="getPRStateColor(pr.state, pr.isDraft)"
+          />
+          <span class="text-muted">#{{ pr.number }}</span>
+        </a>
+      </UTooltip>
 
-    <!-- Row 3: Labels, Milestone, Timestamps -->
-    <div class="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-1.5 sm:py-2 border-t border-accented text-xs flex-wrap">
       <!-- Labels -->
       <UBadge
         v-for="label in workItem.labels"
         :key="label.name"
         variant="subtle"
-        size="xs"
+        size="sm"
         :style="{ backgroundColor: `#${label.color}20`, color: `#${label.color}` }"
       >
         {{ label.name }}
@@ -333,6 +303,13 @@ async function handleMerge() {
 
       <!-- Spacer -->
       <div class="flex-1" />
+
+      <!-- Claims -->
+      <IssueClaimFlow
+        v-if="issue"
+        :issue="issue"
+        :repo="repo"
+      />
 
       <!-- Timestamps + comment count -->
       <span class="text-muted">{{ createdAgo }}</span>
@@ -355,87 +332,121 @@ async function handleMerge() {
       v-if="prNumbers.length > 0"
       class="border-t border-accented"
     >
-      <!-- Summary bar (always visible) -->
-      <button
-        type="button"
-        class="flex items-center gap-2 w-full px-3 sm:px-4 py-1.5 sm:py-2 text-xs hover:bg-elevated/50 transition-colors"
-        :aria-label="t('workItems.ci.checks')"
-        :aria-expanded="ciExpanded"
-        @click="ciExpanded = !ciExpanded"
-      >
-        <UIcon
-          :name="ciMeta.name"
-          class="size-3.5 shrink-0"
-          :class="[ciMeta.color, ciMeta.spin ? 'animate-spin' : '']"
-        />
-        <span class="text-muted truncate">{{ ciSummary }}</span>
-        <UIcon
-          :name="ciExpanded ? 'i-lucide-chevron-up' : 'i-lucide-chevron-down'"
-          class="size-3.5 text-muted shrink-0 ml-auto"
-        />
-      </button>
+      <!-- Summary bar: category badges side by side -->
+      <div class="flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 flex-wrap">
+        <!-- Failed -->
+        <button
+          v-if="failedChecks.length"
+          type="button"
+          class="inline-flex items-center gap-1.5 rounded-md px-2 py-0.5 text-xs font-medium transition-colors cursor-pointer"
+          :class="ciExpanded && failedExpanded ? 'bg-red-500/15 text-red-500' : 'bg-red-500/10 text-red-500/80 hover:bg-red-500/15 hover:text-red-500'"
+          @click="ciExpanded = true; failedExpanded = !failedExpanded"
+        >
+          <UIcon
+            :name="getCIIcon('FAILURE')!.name"
+            class="size-3.5"
+          />
+          {{ failedChecks.length }}
+          {{ t('workItems.ci.failed') }}
+        </button>
 
-      <!-- Expanded: categorized, scrollable -->
+        <!-- Pending -->
+        <button
+          v-if="pendingChecks.length"
+          type="button"
+          class="inline-flex items-center gap-1.5 rounded-md px-2 py-0.5 text-xs font-medium transition-colors cursor-pointer"
+          :class="ciExpanded ? 'bg-amber-500/15 text-amber-500' : 'bg-amber-500/10 text-amber-500/80 hover:bg-amber-500/15 hover:text-amber-500'"
+          @click="ciExpanded = !ciExpanded"
+        >
+          <UIcon
+            :name="getCIIcon('PENDING')!.name"
+            class="size-3.5 animate-spin"
+          />
+          {{ pendingChecks.length }}
+          {{ t('workItems.ci.running') }}
+        </button>
+
+        <!-- Passed -->
+        <button
+          v-if="passedChecks.length"
+          type="button"
+          class="inline-flex items-center gap-1.5 rounded-md px-2 py-0.5 text-xs font-medium transition-colors cursor-pointer"
+          :class="ciExpanded && passedExpanded ? 'bg-emerald-500/15 text-emerald-500' : 'bg-emerald-500/10 text-emerald-500/80 hover:bg-emerald-500/15 hover:text-emerald-500'"
+          @click="ciExpanded = true; passedExpanded = !passedExpanded"
+        >
+          <UIcon
+            :name="getCIIcon('SUCCESS')!.name"
+            class="size-3.5"
+          />
+          {{ passedChecks.length }}
+          {{ t('workItems.ci.passed') }}
+        </button>
+
+        <!-- All passed (no failures/pending) -->
+        <span
+          v-if="checkResult && !failedChecks.length && !pendingChecks.length && passedChecks.length"
+          class="text-xs text-emerald-500"
+        >
+          {{ t('workItems.ci.allPassed') }}
+        </span>
+
+        <!-- Loading -->
+        <span
+          v-if="!checkResult"
+          class="text-xs text-muted"
+        >
+          <UIcon
+            name="i-lucide-loader-2"
+            class="size-3.5 animate-spin align-text-bottom"
+          />
+        </span>
+      </div>
+
+      <!-- Expanded: check details -->
       <div
         v-if="ciExpanded && checkResult"
-        class="max-h-48 overflow-y-auto px-3 sm:px-4 pb-2 space-y-2"
+        class="max-h-48 overflow-y-auto px-3 sm:px-4 pb-2 space-y-1.5"
       >
-        <!-- Failed -->
-        <div v-if="failedChecks.length">
-          <button
-            type="button"
-            class="flex items-center gap-2 w-full text-[11px] font-medium text-red-500 uppercase tracking-wide mb-1 hover:text-red-400 transition-colors cursor-pointer"
-            @click="failedExpanded = !failedExpanded"
+        <!-- Failed checks -->
+        <template v-if="failedExpanded && failedChecks.length">
+          <div
+            v-for="check in failedChecks"
+            :key="check.name"
+            class="flex items-center gap-2 text-xs py-0.5"
           >
             <UIcon
-              :name="failedExpanded ? 'i-lucide-chevron-down' : 'i-lucide-chevron-right'"
-              class="size-3 shrink-0"
+              :name="getCIIcon('FAILURE')!.name"
+              class="size-3.5 shrink-0"
+              :class="getCIIcon('FAILURE')!.color"
             />
-            {{ t('workItems.ci.failedCount', { count: failedChecks.length }) }}
-          </button>
-          <template v-if="failedExpanded">
-            <div
-              v-for="check in failedChecks"
-              :key="check.name"
-              class="flex items-center gap-2 text-xs py-0.5"
+            <button
+              class="truncate flex-1 text-highlighted text-left hover:underline cursor-pointer"
+              @click="openLogDialog(check)"
             >
-              <UIcon
-                :name="getCIIcon('FAILURE')!.name"
-                class="size-3.5 shrink-0"
-                :class="getCIIcon('FAILURE')!.color"
-              />
-              <button
-                class="truncate flex-1 text-highlighted text-left hover:underline cursor-pointer"
-                @click="openLogDialog(check)"
-              >
-                {{ check.name }}
-              </button>
-              <span
-                v-if="check.durationSeconds !== null"
-                class="text-muted shrink-0"
-              >{{ formatDuration(check.durationSeconds) }}</span>
-              <button
-                v-if="check.jobId"
-                class="text-primary hover:underline shrink-0 cursor-pointer"
-                @click="openLogDialog(check)"
-              >
-                {{ t('workItems.ci.viewLog') }}
-              </button>
-              <a
-                v-else-if="check.detailsUrl"
-                :href="check.detailsUrl"
-                target="_blank"
-                class="text-primary hover:underline shrink-0"
-              >{{ t('workItems.ci.viewLog') }}</a>
-            </div>
-          </template>
-        </div>
+              {{ check.name }}
+            </button>
+            <span
+              v-if="check.durationSeconds !== null"
+              class="text-muted shrink-0"
+            >{{ formatDuration(check.durationSeconds) }}</span>
+            <button
+              v-if="check.jobId"
+              class="text-primary hover:underline shrink-0 cursor-pointer"
+              @click="openLogDialog(check)"
+            >
+              {{ t('workItems.ci.viewLog') }}
+            </button>
+            <a
+              v-else-if="check.detailsUrl"
+              :href="check.detailsUrl"
+              target="_blank"
+              class="text-primary hover:underline shrink-0"
+            >{{ t('workItems.ci.viewLog') }}</a>
+          </div>
+        </template>
 
-        <!-- Running -->
-        <div v-if="pendingChecks.length">
-          <p class="text-[11px] font-medium text-amber-500 uppercase tracking-wide mb-1">
-            {{ t('workItems.ci.pending', { count: pendingChecks.length }) }}
-          </p>
+        <!-- Pending checks -->
+        <template v-if="pendingChecks.length">
           <div
             v-for="check in pendingChecks"
             :key="check.name"
@@ -448,59 +459,46 @@ async function handleMerge() {
             />
             <span class="truncate flex-1 text-highlighted">{{ check.name }}</span>
           </div>
-        </div>
+        </template>
 
-        <!-- Passed (collapsed by default) -->
-        <div v-if="passedChecks.length">
-          <button
-            type="button"
-            class="flex items-center gap-2 w-full text-[11px] font-medium text-emerald-500 uppercase tracking-wide mb-1 hover:text-emerald-400 transition-colors cursor-pointer"
-            @click="passedExpanded = !passedExpanded"
+        <!-- Passed checks -->
+        <template v-if="passedExpanded && passedChecks.length">
+          <div
+            v-for="check in passedChecks"
+            :key="check.name"
+            class="flex items-center gap-2 text-xs py-0.5"
           >
             <UIcon
-              :name="passedExpanded ? 'i-lucide-chevron-down' : 'i-lucide-chevron-right'"
-              class="size-3 shrink-0"
+              :name="getCIIcon('SUCCESS')!.name"
+              class="size-3.5 shrink-0"
+              :class="getCIIcon('SUCCESS')!.color"
             />
-            {{ t('workItems.ci.passedCount', { count: passedChecks.length }) }}
-          </button>
-          <template v-if="passedExpanded">
-            <div
-              v-for="check in passedChecks"
-              :key="check.name"
-              class="flex items-center gap-2 text-xs py-0.5"
+            <button
+              class="truncate flex-1 text-muted text-left hover:underline cursor-pointer"
+              @click="openLogDialog(check)"
             >
-              <UIcon
-                :name="getCIIcon('SUCCESS')!.name"
-                class="size-3.5 shrink-0"
-                :class="getCIIcon('SUCCESS')!.color"
-              />
-              <button
-                class="truncate flex-1 text-muted text-left hover:underline cursor-pointer"
-                @click="openLogDialog(check)"
-              >
-                {{ check.name }}
-              </button>
-              <span
-                v-if="check.durationSeconds !== null"
-                class="text-muted shrink-0"
-              >{{ formatDuration(check.durationSeconds) }}</span>
-              <button
-                v-if="check.jobId"
-                class="text-primary hover:underline shrink-0 cursor-pointer"
-                @click="openLogDialog(check)"
-              >
-                {{ t('workItems.ci.viewLog') }}
-              </button>
-            </div>
-          </template>
-        </div>
+              {{ check.name }}
+            </button>
+            <span
+              v-if="check.durationSeconds !== null"
+              class="text-muted shrink-0"
+            >{{ formatDuration(check.durationSeconds) }}</span>
+            <button
+              v-if="check.jobId"
+              class="text-primary hover:underline shrink-0 cursor-pointer"
+              @click="openLogDialog(check)"
+            >
+              {{ t('workItems.ci.viewLog') }}
+            </button>
+          </div>
+        </template>
       </div>
     </div>
 
     <!-- Row 5: Merge (PR only) -->
     <div
       v-if="isPR"
-      class="border-t border-accented"
+      class="border-t border-accented bg-primary/5"
     >
       <!-- Already merged (locally or after refresh) -->
       <div
@@ -587,89 +585,71 @@ async function handleMerge() {
           </div>
 
           <template v-else-if="mergeStatus">
-            <!-- Strategy cards -->
-            <div
-              class="grid gap-1.5"
-              :class="mergeStrategies.length === 1 ? 'grid-cols-1' : mergeStrategies.length === 2 ? 'grid-cols-2' : 'grid-cols-3'"
-            >
-              <button
-                v-for="strategy in mergeStrategies"
-                :key="strategy.value"
-                type="button"
-                class="group relative flex flex-col items-center gap-1 rounded-lg border px-2 py-2 transition-all duration-200"
-                :class="[
-                  mergeStrategy === strategy.value
-                    ? 'border-primary bg-primary/5 ring-1 ring-primary/30'
-                    : 'border-default hover:border-primary/40 hover:bg-elevated/50',
-                  merging ? 'pointer-events-none opacity-50' : 'cursor-pointer',
-                ]"
-                :disabled="merging"
-                @click="mergeStrategy = strategy.value"
-              >
-                <!-- Visual: mini git graph -->
-                <div class="flex items-center gap-0.5 h-4">
-                  <template
-                    v-for="(icon, i) in strategy.visual"
-                    :key="i"
-                  >
-                    <UIcon
-                      :name="icon"
-                      class="size-2.5 transition-colors duration-200"
-                      :class="mergeStrategy === strategy.value ? 'text-primary' : 'text-muted/50 group-hover:text-muted'"
-                    />
-                  </template>
-                </div>
-
-                <!-- Label -->
-                <span
-                  class="text-[11px] font-medium text-center leading-tight transition-colors duration-200"
-                  :class="mergeStrategy === strategy.value ? 'text-primary' : 'text-highlighted'"
-                >
-                  {{ strategy.label }}
-                </span>
-
-                <!-- Tech name -->
-                <span class="text-[9px] text-muted/50 uppercase tracking-wider">
-                  {{ strategy.techName }}
-                </span>
-              </button>
-            </div>
-
-            <!-- Description of selected strategy -->
-            <p
-              v-if="activeStrategy"
-              class="text-xs text-muted leading-relaxed px-0.5"
-            >
-              {{ activeStrategy.desc }}
-            </p>
-
-            <!-- Commit fields (not for rebase) -->
-            <template v-if="showCommitFields">
+            <!-- Strategy picker + merge button -->
+            <div class="flex items-center gap-2 flex-wrap">
               <div
-                class="space-y-2 rounded-lg border border-default bg-default/50 p-3 transition-opacity"
+                class="inline-flex rounded-md border border-default overflow-hidden"
                 :class="merging ? 'opacity-50 pointer-events-none' : ''"
               >
-                <UInput
-                  v-model="mergeTitle"
-                  :placeholder="t('workItems.merge.commitTitle')"
-                  size="sm"
-                  variant="none"
-                  :disabled="merging"
-                  class="font-mono text-sm"
-                />
-                <div class="border-t border-accented" />
-                <UTextarea
-                  v-model="mergeMessage"
-                  :placeholder="t('workItems.merge.commitMessage')"
-                  size="sm"
-                  variant="none"
-                  :rows="2"
-                  :disabled="merging"
-                  autoresize
-                  class="font-mono text-xs"
-                />
+                <UTooltip
+                  v-for="strategy in mergeStrategies"
+                  :key="strategy.value"
+                  :text="strategy.label"
+                >
+                  <button
+                    type="button"
+                    class="flex items-center gap-1.5 px-2.5 py-1 text-xs transition-colors border-r border-default last:border-r-0"
+                    :class="[
+                      mergeStrategy === strategy.value
+                        ? 'bg-primary/10 text-primary font-medium'
+                        : 'text-muted hover:text-highlighted hover:bg-elevated/50',
+                    ]"
+                    :disabled="merging"
+                    @click="mergeStrategy = strategy.value"
+                  >
+                    <UIcon
+                      :name="strategy.icon"
+                      class="size-3.5"
+                    />
+                    {{ strategy.techName }}
+                  </button>
+                </UTooltip>
               </div>
-            </template>
+
+              <span
+                v-if="activeStrategy"
+                class="text-xs text-muted"
+              >
+                {{ activeStrategy.desc }}
+              </span>
+            </div>
+
+            <!-- Commit fields (not for rebase) -->
+            <div
+              v-if="showCommitFields"
+              class="space-y-2 rounded-md border border-default bg-default/50 p-2.5 transition-opacity"
+              :class="merging ? 'opacity-50 pointer-events-none' : ''"
+            >
+              <UInput
+                v-model="mergeTitle"
+                :placeholder="t('workItems.merge.commitTitle')"
+                size="sm"
+                variant="none"
+                :disabled="merging"
+                class="font-mono text-xs"
+              />
+              <div class="border-t border-accented" />
+              <UTextarea
+                v-model="mergeMessage"
+                :placeholder="t('workItems.merge.commitMessage')"
+                size="sm"
+                variant="none"
+                :rows="2"
+                :disabled="merging"
+                autoresize
+                class="font-mono text-xs"
+              />
+            </div>
 
             <!-- Merge button -->
             <UButton
@@ -679,13 +659,16 @@ async function handleMerge() {
               block
               :disabled="!canMerge || merging"
               :loading="merging"
-              size="md"
+              size="sm"
               @click="handleMerge"
             />
           </template>
         </div>
       </template>
     </div>
+
+    <!-- Inverted radius: content curves into the header -->
+    <div class="h-2.5 bg-default rounded-t-xl" />
 
     <!-- CI Log Dialog -->
     <WorkItemCiLogDialog
