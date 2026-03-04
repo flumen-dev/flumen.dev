@@ -279,6 +279,7 @@ async function handleMerge() {
         <a
           :href="pr.url"
           target="_blank"
+          rel="noopener noreferrer"
           class="inline-flex items-center gap-1 rounded-full border border-default bg-elevated/50 px-2 py-0.5 text-xs hover:border-primary/50 transition-colors"
         >
           <UIcon
@@ -340,7 +341,7 @@ async function handleMerge() {
           type="button"
           class="inline-flex items-center gap-1.5 rounded-md px-2 py-0.5 text-xs font-medium transition-colors cursor-pointer"
           :class="ciExpanded && failedExpanded ? 'bg-red-500/15 text-red-500' : 'bg-red-500/10 text-red-500/80 hover:bg-red-500/15 hover:text-red-500'"
-          @click="ciExpanded = true; failedExpanded = !failedExpanded"
+          @click="ciExpanded ? failedExpanded = !failedExpanded : (ciExpanded = true, failedExpanded = true)"
         >
           <UIcon
             :name="getCIIcon('FAILURE')!.name"
@@ -490,6 +491,13 @@ async function handleMerge() {
             >
               {{ t('workItems.ci.viewLog') }}
             </button>
+            <a
+              v-else-if="check.detailsUrl"
+              :href="check.detailsUrl"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="text-primary hover:underline shrink-0"
+            >{{ t('workItems.ci.viewLog') }}</a>
           </div>
         </template>
       </div>
