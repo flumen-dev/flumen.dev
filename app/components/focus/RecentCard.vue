@@ -39,19 +39,24 @@ const contextMenuItems = computed(() => {
     {
       label: t('focus.recent.openNewTab'),
       icon: 'i-lucide-external-link',
-      onSelect: () => window.open(link.value, '_blank'),
+      onSelect: () => window.open(link.value, '_blank', 'noopener,noreferrer'),
     },
     {
       label: t('focus.recent.openGithub'),
       icon: 'i-simple-icons-github',
-      onSelect: () => window.open(props.item.url, '_blank'),
+      onSelect: () => window.open(props.item.url, '_blank', 'noopener,noreferrer'),
     },
     {
       label: t('common.copyLink'),
       icon: 'i-lucide-link',
-      onSelect: () => {
-        navigator.clipboard.writeText(props.item.url)
-        toast.add({ title: t('common.copied'), color: 'success' })
+      onSelect: async () => {
+        try {
+          await navigator.clipboard.writeText(props.item.url)
+          toast.add({ title: t('common.copied'), color: 'success' })
+        }
+        catch {
+          toast.add({ title: t('common.copyFailed'), color: 'error' })
+        }
       },
     },
   ]
