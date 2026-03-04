@@ -526,9 +526,6 @@
             "workItems": {
               "type": "string"
             },
-            "linkedIssues": {
-              "type": "string"
-            },
             "recentIssues": {
               "type": "string"
             },
@@ -1255,9 +1252,6 @@
         "ci": {
           "type": "object",
           "properties": {
-            "checks": {
-              "type": "string"
-            },
             "allPassed": {
               "type": "string"
             },
@@ -1265,15 +1259,6 @@
               "type": "string"
             },
             "viewOnGithub": {
-              "type": "string"
-            },
-            "failedCount": {
-              "type": "string"
-            },
-            "passedCount": {
-              "type": "string"
-            },
-            "pending": {
               "type": "string"
             },
             "failed": {
