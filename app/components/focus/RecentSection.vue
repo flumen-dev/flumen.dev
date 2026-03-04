@@ -85,6 +85,7 @@ const isEmpty = computed(() => recentStore.items.length === 0 && recentStore.fav
                 :dragging="dragging"
                 variant="favorite"
                 @toggle-favorite="recentStore.removeFavorite(item.key)"
+                @remove="recentStore.remove(item.key)"
               />
             </template>
           </FreeformItem>
@@ -114,6 +115,7 @@ const isEmpty = computed(() => recentStore.items.length === 0 && recentStore.fav
             :dragging="dragging"
             variant="recent"
             @toggle-favorite="recentStore.addFavorite(item.key)"
+            @remove="recentStore.remove(item.key)"
           />
         </template>
       </FreeformItem>
