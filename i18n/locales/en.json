@@ -738,7 +738,10 @@
       "unfavorite": "Remove from favorites",
       "renamed": "renamed → {title}",
       "searchFavorites": "Favorites",
-      "searchRecent": "Recent"
+      "searchRecent": "Recent",
+      "openNewTab": "Open in new tab",
+      "openGithub": "Open on GitHub",
+      "remove": "Remove"
     }
   },
   "status": {

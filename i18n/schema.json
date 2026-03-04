@@ -2223,6 +2223,15 @@
             },
             "searchRecent": {
               "type": "string"
+            },
+            "openNewTab": {
+              "type": "string"
+            },
+            "openGithub": {
+              "type": "string"
+            },
+            "remove": {
+              "type": "string"
             }
           },
           "additionalProperties": false
