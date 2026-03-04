@@ -1276,6 +1276,15 @@
             "pending": {
               "type": "string"
             },
+            "failed": {
+              "type": "string"
+            },
+            "running": {
+              "type": "string"
+            },
+            "passed": {
+              "type": "string"
+            },
             "loadingLogs": {
               "type": "string"
             },

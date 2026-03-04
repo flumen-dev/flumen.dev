@@ -173,7 +173,6 @@
       "forkedFrom": "Geforkt von",
       "lists": "Listen",
       "workItems": "Work Items",
-      "linkedIssues": "Verknüpfte Issues",
       "recentIssues": "Aktuelle Issues",
       "recentPrs": "Aktuelle Pull Requests",
       "specialFiles": {
@@ -416,13 +415,9 @@
       "all": "Alle"
     },
     "ci": {
-      "checks": "CI-Checks",
       "allPassed": "Alle Checks bestanden",
       "viewLog": "Log",
       "viewOnGithub": "Auf GitHub öffnen",
-      "failedCount": "{count} fehlgeschlagen",
-      "passedCount": "{count} bestanden",
-      "pending": "{count} laufen",
       "failed": "fehlgeschlagen",
       "running": "laufen",
       "passed": "bestanden",

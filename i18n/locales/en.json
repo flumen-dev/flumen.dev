@@ -173,7 +173,6 @@
       "forkedFrom": "Forked from",
       "lists": "Lists",
       "workItems": "Work Items",
-      "linkedIssues": "Linked Issues",
       "recentIssues": "Recent Issues",
       "recentPrs": "Recent Pull Requests",
       "specialFiles": {
@@ -416,13 +415,9 @@
       "all": "All"
     },
     "ci": {
-      "checks": "CI Checks",
       "allPassed": "All checks passed",
       "viewLog": "Log",
       "viewOnGithub": "Open on GitHub",
-      "failedCount": "{count} failed",
-      "passedCount": "{count} passed",
-      "pending": "{count} running",
       "failed": "failed",
       "running": "running",
       "passed": "passed",
