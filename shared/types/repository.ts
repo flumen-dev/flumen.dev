@@ -1,3 +1,5 @@
+import type { PaginatedResponse } from './pagination'
+
 // #region GitHub API endpoint interfaces
 export interface GitHubRepo {
   id: number
@@ -155,6 +157,14 @@ export interface RepoNotification {
 export interface SearchResponse {
   total_count: number
   items: Array<{ repository_url: string }>
+}
+
+export interface RepoPageResponse extends PaginatedResponse<Repository> {
+  availableLanguages: string[]
+  prCounts: Record<string, number>
+  issueCounts: Record<string, number>
+  notificationCounts: Record<string, number>
+  activity: Record<string, RepoActivity>
 }
 
 // #region Repo detail types

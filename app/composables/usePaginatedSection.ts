@@ -21,11 +21,12 @@ export interface PaginatedSection<T> {
   isStale: () => boolean
 }
 
-export function usePaginatedSection<T>(
+export function usePaginatedSection<T, R extends PaginatedResponse<T> = PaginatedResponse<T>>(
   apiFetch: ReturnType<typeof useRequestFetch>,
   endpoint: string,
   pageSize: number,
   buildParams: () => Record<string, string | number>,
+  onResponse?: (res: R) => void,
 ): PaginatedSection<T> {
   const data = ref<T[]>([]) as Ref<T[]>
   const loading = ref(false)
@@ -37,8 +38,8 @@ export function usePaginatedSection<T>(
   const cursorHistory = ref<string[]>([])
   const paging = ref<'next' | 'prev' | null>(null)
 
-  // Page cache — keyed by cursor (null → '__first__')
-  const pageCache = new Map<string, { items: T[], endCursor: string | null, hasMore: boolean, totalCount: number }>()
+  // Page cache — keyed by cursor (null → '__first__'), stores full response
+  const pageCache = new Map<string, R>()
   function cacheKey(cursor?: string | null) {
     return cursor ?? '__first__'
   }
@@ -57,9 +58,10 @@ export function usePaginatedSection<T>(
     const cached = pageCache.get(key)
     if (!cached) return false
     data.value = cached.items
-    endCursor.value = cached.endCursor
-    _hasMore.value = cached.hasMore
+    endCursor.value = cached.pageInfo.endCursor
+    _hasMore.value = cached.pageInfo.hasNextPage
     totalCount.value = cached.totalCount
+    onResponse?.(cached)
     return true
   }
 
@@ -70,19 +72,15 @@ export function usePaginatedSection<T>(
       const params: Record<string, string | number> = { ...buildParams(), first: pageSize }
       if (after) params.after = after
 
-      const res = await apiFetch<PaginatedResponse<T>>(endpoint, { params })
+      const res = await apiFetch<R>(endpoint, { params })
       data.value = res.items
       fetchedAt.value = Date.now()
       totalCount.value = res.totalCount
       _hasMore.value = res.pageInfo.hasNextPage
       endCursor.value = res.pageInfo.endCursor
+      onResponse?.(res)
 
-      pageCache.set(cacheKey(after), {
-        items: res.items,
-        endCursor: res.pageInfo.endCursor,
-        hasMore: res.pageInfo.hasNextPage,
-        totalCount: res.totalCount,
-      })
+      pageCache.set(cacheKey(after), res)
 
       return true
     }

@@ -110,7 +110,7 @@ watch(open, (isOpen) => {
 
 // Restore from settings on mount
 onMounted(async () => {
-  await repoStore.fetchAll()
+  if (repoStore.isStale()) await repoStore.fetchRepos()
   const saved = settings.value?.selectedRepo
   if (saved) {
     await issueStore.selectRepo(saved)

@@ -43,10 +43,10 @@ export async function githubRepoCountsGraphQL(
   const prCounts: Record<string, number> = {}
   const issueCounts: Record<string, number> = {}
 
-  // GraphQL has a complexity limit — batch in chunks of 100
+  // GraphQL has a complexity limit — batch in chunks of 100, run in parallel
   const chunks = chunkArray(repos, 100)
 
-  for (const chunk of chunks) {
+  const results = await Promise.all(chunks.map(async (chunk) => {
     const fragments = chunk.map((repo, i) =>
       `r${i}: repository(owner: "${repo.owner}", name: "${repo.name}") {
         pullRequests(states: OPEN) { totalCount }
@@ -61,6 +61,10 @@ export async function githubRepoCountsGraphQL(
       issues: { totalCount: number }
     }>>(token, query)
 
+    return { chunk, data }
+  }))
+
+  for (const { chunk, data } of results) {
     for (let i = 0; i < chunk.length; i++) {
       const repo = chunk[i]!
       const result = data[`r${i}`]
