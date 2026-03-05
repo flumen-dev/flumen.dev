@@ -3,10 +3,11 @@ import type { Repository } from '~~/shared/types/repository'
 export const ACTIVITY_FILTER_KEYS = ['hasIssues', 'hasPrs', 'hasNotifications'] as const
 
 export function filterReposBySearch(repos: Repository[], query: string): Repository[] {
-  if (!query) return repos
+  const q = query.trim().toLowerCase()
+  if (!q) return repos
   return repos.filter(r =>
-    r.name.toLowerCase().includes(query)
-    || r.description?.toLowerCase().includes(query),
+    r.name.toLowerCase().includes(q)
+    || r.description?.toLowerCase().includes(q),
   )
 }
 
@@ -87,8 +88,9 @@ export function collectAvailableLanguages(repos: Repository[]): string[] {
 export function pickForRepos<T>(all: Record<string, T>, repos: Repository[]): Record<string, T> {
   const result: Record<string, T> = {}
   for (const repo of repos) {
-    const val = all[repo.fullName]
-    if (val) result[repo.fullName] = val
+    if (repo.fullName in all) {
+      result[repo.fullName] = all[repo.fullName]!
+    }
   }
   return result
 }

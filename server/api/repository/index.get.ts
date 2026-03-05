@@ -5,8 +5,9 @@ export default defineEventHandler(async (event) => {
   const query = getQuery(event)
   const org = getOrgQuery(event)
 
-  const first = Math.min(Number(query.first) || 20, 100)
-  const after = (query.after as string) || null
+  const first = Math.min(Math.max(1, Number(query.first) || 20), 100)
+  const afterRaw = (query.after as string) || null
+  const after = afterRaw && Number.isFinite(Number(afterRaw)) ? afterRaw : null
   const searchQ = ((query.search as string) || '').toLowerCase().trim()
   const sortBy = (query.sort as string) || 'pushed'
   const filtersRaw = (query.filters as string) || ''
@@ -47,7 +48,8 @@ export default defineEventHandler(async (event) => {
 
   if (needsAllCounts && repos.length) {
     const repoList = repos.map(r => ({ owner: r.owner.login, name: r.name }))
-    const cacheKey = `${login}:${org ?? '_user'}`
+    const repoHash = repoList.map(r => `${r.owner}/${r.name}`).sort().join(',')
+    const cacheKey = `${login}:${org ?? '_user'}:${repoHash}`
     const counts = await fetchRepoCounts(cacheKey, token, repoList)
     allPrCounts = counts.prCounts
     allIssueCounts = counts.issueCounts
@@ -73,7 +75,8 @@ export default defineEventHandler(async (event) => {
 
   if (!needsAllCounts && pageRepos.length) {
     const repoList = pageRepos.map(r => ({ owner: r.owner.login, name: r.name }))
-    const cacheKey = `${login}:${org ?? '_user'}:page${page}`
+    const repoHash = repoList.map(r => `${r.owner}/${r.name}`).sort().join(',')
+    const cacheKey = `${login}:${org ?? '_user'}:${repoHash}`
     const counts = await fetchRepoCounts(cacheKey, token, repoList)
     pagePrCounts = counts.prCounts
     pageIssueCounts = counts.issueCounts

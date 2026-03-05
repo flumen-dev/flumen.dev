@@ -31,7 +31,7 @@ export const fetchRepoActivity = defineCachedFunction(
         result[ev.repo.name] = { weeks: Array.from({ length: ACTIVITY_WEEKS }, () => 0) }
       }
       const entry = result[ev.repo.name]!
-      entry.weeks[bucket] = (entry.weeks[bucket] ?? 0) + (ev.payload.size || 1)
+      entry.weeks[bucket] = (entry.weeks[bucket] ?? 0) + (ev.payload.size ?? 1)
     }
 
     return result
