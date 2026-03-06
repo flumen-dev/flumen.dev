@@ -17,16 +17,32 @@ const props = defineProps<{
   issueNumber?: number
   pullCommentId?: number
   workItemId?: string
+  viewerCanUpdate?: boolean
+  viewerCanDelete?: boolean
+  isEditing?: boolean
+  editDisabled?: boolean
 }>()
 
 const emit = defineEmits<{
   reactionToggle: [content: string, added: boolean]
+  startEdit: []
+  cancelEdit: []
+  saveEdit: [body: string]
+  delete: []
 }>()
 
 const { t } = useI18n()
 const { loggedIn } = useUserSession()
 
 const hovered = ref(false)
+const editBody = ref('')
+const confirmDelete = ref(false)
+
+watch(() => props.isEditing, (editing) => {
+  if (editing) {
+    editBody.value = props.body ?? ''
+  }
+})
 
 const borderClass = computed(() => {
   if (props.isOwnComment) return 'border-primary/40'
@@ -59,6 +75,10 @@ const hasFooterContent = computed(() => {
 const showQuickReactions = computed(() => {
   return loggedIn.value && hovered.value && props.subjectId && props.issueNumber !== undefined
 })
+
+const hasActions = computed(() => {
+  return props.viewerCanUpdate || (props.viewerCanDelete && !props.isInitial)
+})
 </script>
 
 <template>
@@ -83,7 +103,8 @@ const showQuickReactions = computed(() => {
       >
         <div
           v-if="showQuickReactions"
-          class="absolute -top-3 right-2 z-10"
+          class="absolute -top-3 z-10"
+          :class="hasActions ? 'right-28' : 'right-2'"
         >
           <TimelineQuickReactions
             :subject-id="subjectId!"
@@ -116,22 +137,56 @@ const showQuickReactions = computed(() => {
           {{ t('workItems.badge.bot') }}
         </UBadge>
         <span class="text-sm text-muted">{{ action }}</span>
-        <span class="ml-auto text-xs text-dimmed whitespace-nowrap">{{ timeAgo(createdAt) }}</span>
+        <div class="ml-auto flex items-center gap-1">
+          <TimelineEditActions
+            :can-update="viewerCanUpdate"
+            :can-delete="viewerCanDelete && !isInitial"
+            :edit-disabled="editDisabled"
+            @edit="emit('startEdit')"
+            @delete="confirmDelete = true"
+          />
+          <span class="text-xs text-dimmed whitespace-nowrap">{{ timeAgo(createdAt) }}</span>
+        </div>
       </div>
 
       <!-- Body -->
       <div class="px-3 py-2.5">
-        <UiMarkdownRenderer
-          v-if="body"
-          :source="body"
-          :repo-context="repoContext"
-        />
-        <span
-          v-else-if="fallbackDescription"
-          class="text-sm text-muted"
-        >
-          {{ fallbackDescription }}
-        </span>
+        <template v-if="isEditing">
+          <EditorMarkdownEditor
+            v-model="editBody"
+            :repo-context="repoContext"
+          />
+          <div class="flex gap-2 mt-2">
+            <UButton
+              size="xs"
+              :disabled="!editBody.trim()"
+              @click="emit('saveEdit', editBody)"
+            >
+              {{ t('workItems.timeline.save') }}
+            </UButton>
+            <UButton
+              size="xs"
+              color="neutral"
+              variant="ghost"
+              @click="emit('cancelEdit')"
+            >
+              {{ t('common.cancel') }}
+            </UButton>
+          </div>
+        </template>
+        <template v-else>
+          <UiMarkdownRenderer
+            v-if="body"
+            :source="body"
+            :repo-context="repoContext"
+          />
+          <span
+            v-else-if="fallbackDescription"
+            class="text-sm text-muted"
+          >
+            {{ fallbackDescription }}
+          </span>
+        </template>
       </div>
 
       <!-- Review comments section -->
@@ -154,5 +209,10 @@ const showQuickReactions = computed(() => {
         />
       </div>
     </div>
+
+    <TimelineDeleteModal
+      v-model:open="confirmDelete"
+      @confirm="emit('delete')"
+    />
   </div>
 </template>

@@ -1530,6 +1530,33 @@
             },
             "outdated": {
               "type": "string"
+            },
+            "editComment": {
+              "type": "string"
+            },
+            "deleteComment": {
+              "type": "string"
+            },
+            "confirmDeleteTitle": {
+              "type": "string"
+            },
+            "confirmDeleteDescription": {
+              "type": "string"
+            },
+            "commentUpdated": {
+              "type": "string"
+            },
+            "commentDeleted": {
+              "type": "string"
+            },
+            "editError": {
+              "type": "string"
+            },
+            "deleteError": {
+              "type": "string"
+            },
+            "save": {
+              "type": "string"
             }
           },
           "additionalProperties": false

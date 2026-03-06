@@ -19,6 +19,7 @@ query($owner: String!, $repo: String!, $number: Int!) {
       bodyHTML
       createdAt
       updatedAt
+      viewerCanUpdate
       author { login avatarUrl }
       comments { totalCount }
       reactionGroups {
@@ -36,6 +37,8 @@ query($owner: String!, $repo: String!, $number: Int!) {
             body
             createdAt
             author { login avatarUrl }
+            viewerCanUpdate
+            viewerCanDelete
             reactionGroups {
               content
               viewerHasReacted
@@ -116,6 +119,7 @@ query($owner: String!, $repo: String!, $number: Int!) {
       bodyHTML
       createdAt
       updatedAt
+      viewerCanUpdate
       reviewDecision
       headRefName
       headRepository { owner { login } name }
@@ -139,6 +143,8 @@ query($owner: String!, $repo: String!, $number: Int!) {
             body
             createdAt
             author { login avatarUrl }
+            viewerCanUpdate
+            viewerCanDelete
             reactionGroups {
               content
               viewerHasReacted
@@ -151,6 +157,8 @@ query($owner: String!, $repo: String!, $number: Int!) {
             state
             submittedAt
             author { login avatarUrl }
+            viewerCanUpdate
+            viewerCanDelete
             reactionGroups {
               content
               viewerHasReacted
@@ -170,6 +178,8 @@ query($owner: String!, $repo: String!, $number: Int!) {
                 outdated
                 createdAt
                 author { login avatarUrl }
+                viewerCanUpdate
+                viewerCanDelete
                 replyTo { id }
                 reactionGroups {
                   content
@@ -230,6 +240,8 @@ query($owner: String!, $repo: String!, $number: Int!) {
               outdated
               createdAt
               author { login avatarUrl }
+              viewerCanUpdate
+              viewerCanDelete
               reactionGroups {
                 content
                 viewerHasReacted
@@ -288,6 +300,8 @@ interface TimelineNode {
   label?: { name?: string } | null
   assignee?: { login?: string } | null
   source?: PullDetailNode | null
+  viewerCanUpdate?: boolean
+  viewerCanDelete?: boolean
   reactionGroups?: Array<{ content: string, viewerHasReacted: boolean, reactors: { totalCount: number } }>
   comments?: {
     nodes?: Array<{
@@ -303,6 +317,8 @@ interface TimelineNode {
       createdAt: string
       author: TimelineActor | null
       databaseId?: number | null
+      viewerCanUpdate?: boolean
+      viewerCanDelete?: boolean
       replyTo?: { id: string } | null
       reactionGroups?: Array<{ content: string, viewerHasReacted: boolean, reactors: { totalCount: number } }>
     }>
@@ -319,6 +335,7 @@ interface IssueDetailNode {
   bodyHTML: string
   createdAt: string
   updatedAt: string
+  viewerCanUpdate?: boolean
   author: TimelineActor | null
   comments?: { totalCount?: number }
   reactionGroups?: Array<{ content: string, viewerHasReacted: boolean, reactors: { totalCount: number } }>
@@ -335,6 +352,7 @@ interface PullDetailNode {
   state: string
   url: string
   isDraft?: boolean
+  viewerCanUpdate?: boolean
   headRefName?: string
   headRepository?: { owner: { login: string }, name: string } | null
   body: string
@@ -382,6 +400,8 @@ function mapIssueTimeline(node: TimelineNode, issueNumber: number): WorkItemTime
       kind: 'comment',
       body: node.body,
       reactionGroups: mapReactionGroups(node.reactionGroups),
+      viewerCanUpdate: node.viewerCanUpdate,
+      viewerCanDelete: node.viewerCanDelete,
     }
   }
 
@@ -434,6 +454,8 @@ function mapPullTimeline(node: TimelineNode, pullNumber: number): WorkItemTimeli
       kind: 'comment',
       body: node.body,
       reactionGroups: mapReactionGroups(node.reactionGroups),
+      viewerCanUpdate: node.viewerCanUpdate,
+      viewerCanDelete: node.viewerCanDelete,
     }
   }
 
@@ -456,6 +478,8 @@ function mapPullTimeline(node: TimelineNode, pullNumber: number): WorkItemTimeli
         authorAvatarUrl: comment.author?.avatarUrl,
         createdAt: comment.createdAt,
         reactionGroups: mapReactionGroups(comment.reactionGroups),
+        viewerCanUpdate: comment.viewerCanUpdate,
+        viewerCanDelete: comment.viewerCanDelete,
       }))
 
     return {
@@ -516,6 +540,7 @@ function createInitialIssueEntry(issue: IssueDetailNode): WorkItemTimelineEntry 
     createdAt: issue.createdAt,
     body: issue.body,
     reactionGroups: mapReactionGroups(issue.reactionGroups),
+    viewerCanUpdate: issue.viewerCanUpdate,
   }
 }
 
@@ -532,6 +557,7 @@ function createInitialPullEntry(pull: PullDetailNode): WorkItemTimelineEntry {
     createdAt: pull.createdAt,
     body: pull.body,
     reactionGroups: mapReactionGroups(pull.reactionGroups),
+    viewerCanUpdate: pull.viewerCanUpdate,
   }
 }
 

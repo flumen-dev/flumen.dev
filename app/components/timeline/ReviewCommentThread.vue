@@ -24,6 +24,10 @@ const emit = defineEmits<{
   'cancelReply': []
   'update:replyBody': [value: string]
   'submitReply': []
+  'editComment': [id: string, databaseId: number, body: string]
+  'deleteComment': [id: string, databaseId: number]
+  'editReply': [id: string, databaseId: number, body: string]
+  'deleteReply': [id: string, databaseId: number]
 }>()
 
 const { t } = useI18n()
@@ -35,6 +39,50 @@ const replyModel = computed({
 })
 
 const hoveredReplyId = ref<string | null>(null)
+const editingCommentId = ref<string | null>(null)
+const editBody = ref('')
+const confirmDeleteOpen = ref(false)
+const pendingDelete = ref<{ id: string, databaseId: number, type: 'comment' | 'reply' } | null>(null)
+
+function startEditComment(comment: ReviewComment) {
+  editingCommentId.value = comment.id
+  editBody.value = comment.body
+}
+
+function cancelEdit() {
+  editingCommentId.value = null
+  editBody.value = ''
+}
+
+function saveEdit(comment: ReviewComment, type: 'comment' | 'reply') {
+  if (!editBody.value.trim() || !comment.databaseId) return
+  if (type === 'comment') {
+    emit('editComment', comment.id, comment.databaseId, editBody.value)
+  }
+  else {
+    emit('editReply', comment.id, comment.databaseId, editBody.value)
+  }
+  editingCommentId.value = null
+  editBody.value = ''
+}
+
+function requestDelete(comment: ReviewComment, type: 'comment' | 'reply') {
+  if (!comment.databaseId) return
+  pendingDelete.value = { id: comment.id, databaseId: comment.databaseId, type }
+  confirmDeleteOpen.value = true
+}
+
+function executeDelete() {
+  if (!pendingDelete.value) return
+  const { id, databaseId, type } = pendingDelete.value
+  if (type === 'comment') {
+    emit('deleteComment', id, databaseId)
+  }
+  else {
+    emit('deleteReply', id, databaseId)
+  }
+  pendingDelete.value = null
+}
 </script>
 
 <template>
@@ -42,6 +90,7 @@ const hoveredReplyId = ref<string | null>(null)
     class="rounded-md border border-default bg-elevated/50 px-3 py-2"
     :class="comment.outdated ? 'opacity-70' : ''"
   >
+    <!-- Root comment header -->
     <div class="flex items-center gap-2 mb-1.5">
       <UBadge
         size="sm"
@@ -59,6 +108,14 @@ const hoveredReplyId = ref<string | null>(null)
       >
         {{ t('workItems.timeline.outdated') }}
       </UBadge>
+      <TimelineEditActions
+        class="ml-auto"
+        :can-update="comment.viewerCanUpdate"
+        :can-delete="comment.viewerCanDelete"
+        :edit-disabled="editingCommentId !== null"
+        @edit="startEditComment(comment)"
+        @delete="requestDelete(comment, 'comment')"
+      />
     </div>
 
     <TimelineDiffHunkViewer
@@ -69,7 +126,32 @@ const hoveredReplyId = ref<string | null>(null)
       class="mb-2"
     />
 
+    <!-- Root comment body -->
+    <template v-if="editingCommentId === comment.id">
+      <EditorMarkdownEditor
+        v-model="editBody"
+        :repo-context="repoContext"
+      />
+      <div class="flex gap-2 mt-2">
+        <UButton
+          size="xs"
+          :disabled="!editBody.trim()"
+          @click="saveEdit(comment, 'comment')"
+        >
+          {{ t('workItems.timeline.save') }}
+        </UButton>
+        <UButton
+          size="xs"
+          color="neutral"
+          variant="ghost"
+          @click="cancelEdit()"
+        >
+          {{ t('common.cancel') }}
+        </UButton>
+      </div>
+    </template>
     <UiMarkdownRenderer
+      v-else
       :source="comment.body"
       :repo-context="repoContext"
     />
@@ -110,7 +192,8 @@ const hoveredReplyId = ref<string | null>(null)
         >
           <div
             v-if="loggedIn && hoveredReplyId === reply.id && issueNumber !== undefined && reply.databaseId"
-            class="absolute -top-3 right-2 z-10"
+            class="absolute -top-3 z-10"
+            :class="(reply.viewerCanUpdate || reply.viewerCanDelete) ? 'right-20' : 'right-2'"
           >
             <TimelineQuickReactions
               :subject-id="reply.id"
@@ -124,6 +207,7 @@ const hoveredReplyId = ref<string | null>(null)
           </div>
         </Transition>
 
+        <!-- Reply header: author — edit — delete — timestamp -->
         <div
           class="flex items-center gap-2 px-2.5 py-1 border-b border-default rounded-t-md"
           :class="reply.author === currentUserLogin ? 'bg-primary/5' : 'bg-elevated/40'"
@@ -141,14 +225,51 @@ const hoveredReplyId = ref<string | null>(null)
           >
             {{ t('workItems.badge.bot') }}
           </UBadge>
-          <span class="ml-auto text-[11px] text-dimmed whitespace-nowrap">{{ timeAgo(reply.createdAt) }}</span>
+          <div class="ml-auto flex items-center gap-1">
+            <TimelineEditActions
+              :can-update="reply.viewerCanUpdate"
+              :can-delete="reply.viewerCanDelete"
+              :edit-disabled="editingCommentId !== null"
+              size="xs"
+              @edit="startEditComment(reply)"
+              @delete="requestDelete(reply, 'reply')"
+            />
+            <span class="text-[11px] text-dimmed whitespace-nowrap">{{ timeAgo(reply.createdAt) }}</span>
+          </div>
         </div>
+
+        <!-- Reply body -->
         <div class="px-2.5 py-1.5 text-sm">
+          <template v-if="editingCommentId === reply.id">
+            <EditorMarkdownEditor
+              v-model="editBody"
+              :repo-context="repoContext"
+            />
+            <div class="flex gap-2 mt-2">
+              <UButton
+                size="xs"
+                :disabled="!editBody.trim()"
+                @click="saveEdit(reply, 'reply')"
+              >
+                {{ t('workItems.timeline.save') }}
+              </UButton>
+              <UButton
+                size="xs"
+                color="neutral"
+                variant="ghost"
+                @click="cancelEdit()"
+              >
+                {{ t('common.cancel') }}
+              </UButton>
+            </div>
+          </template>
           <UiMarkdownRenderer
+            v-else
             :source="reply.body"
             :repo-context="repoContext"
           />
         </div>
+
         <div
           v-if="issueNumber !== undefined && reply.databaseId && (replyReactions[reply.id]?.length ?? 0) > 0"
           class="px-2.5 py-1 border-t border-default"
@@ -211,5 +332,10 @@ const hoveredReplyId = ref<string | null>(null)
         </div>
       </div>
     </div>
+
+    <TimelineDeleteModal
+      v-model:open="confirmDeleteOpen"
+      @confirm="executeDelete()"
+    />
   </div>
 </template>

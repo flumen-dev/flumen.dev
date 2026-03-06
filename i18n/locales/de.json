@@ -507,7 +507,16 @@
       "reply": "Antworten",
       "replyPlaceholder": "Antwort schreiben...",
       "replyError": "Antwort konnte nicht gesendet werden",
-      "outdated": "Veraltet"
+      "outdated": "Veraltet",
+      "editComment": "Kommentar bearbeiten",
+      "deleteComment": "Kommentar löschen",
+      "confirmDeleteTitle": "Kommentar löschen",
+      "confirmDeleteDescription": "Möchtest du diesen Kommentar wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
+      "commentUpdated": "Kommentar aktualisiert",
+      "commentDeleted": "Kommentar gelöscht",
+      "editError": "Kommentar konnte nicht aktualisiert werden",
+      "deleteError": "Kommentar konnte nicht gelöscht werden",
+      "save": "Speichern"
     }
   },
   "user": {

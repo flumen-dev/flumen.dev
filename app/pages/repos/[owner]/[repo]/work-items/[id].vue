@@ -174,6 +174,8 @@ type WorkItemTimelineUiItem = NuxtTimelineItem & {
   action: string
   issueEvent?: IssueNonCommentEvent
   reviewState?: 'APPROVED' | 'CHANGES_REQUESTED' | 'COMMENTED' | 'DISMISSED' | 'PENDING'
+  viewerCanUpdate?: boolean
+  viewerCanDelete?: boolean
 }
 
 type TimelineRailEntry = {
@@ -319,6 +321,8 @@ const timelineItems = computed<WorkItemTimelineUiItem[]>(() => {
     action: timelineAction(entry),
     reviewState: entry.reviewState as WorkItemTimelineUiItem['reviewState'],
     issueEvent: toIssueEvent(entry) ?? undefined,
+    viewerCanUpdate: entry.viewerCanUpdate,
+    viewerCanDelete: entry.viewerCanDelete,
     ui: entry.source === 'pull'
       ? {
           item: 'flex-row-reverse',
@@ -644,6 +648,38 @@ function getTimelineSubjectId(item: WorkItemTimelineUiItem): string | undefined 
 
   return undefined
 }
+
+// --- Edit/Delete via composable ---
+
+const {
+  editingId: editingTimelineId,
+  startEdit: startTimelineEdit,
+  cancelEdit,
+  saveComment: saveTimelineComment,
+  deleteComment: deleteTimelineComment,
+  saveReviewComment,
+  deleteReviewComment,
+} = useWorkItemMutations({ workItem, owner, repoName, repo, id })
+
+function handleStartEdit(item: WorkItemTimelineUiItem) {
+  startTimelineEdit(item.id)
+}
+
+function handleSaveEdit(item: WorkItemTimelineUiItem, body: string) {
+  const subjectId = getTimelineSubjectId(item)
+  if (!subjectId) return
+  saveTimelineComment(item.id, subjectId, body, {
+    isInitial: item.isInitial,
+    source: item.source,
+    sourceNumber: item.sourceNumber,
+  })
+}
+
+function handleDelete(item: WorkItemTimelineUiItem) {
+  const subjectId = getTimelineSubjectId(item)
+  if (!subjectId) return
+  deleteTimelineComment(item.id, subjectId, { sourceNumber: item.sourceNumber })
+}
 </script>
 
 <template>
@@ -827,7 +863,15 @@ function getTimelineSubjectId(item: WorkItemTimelineUiItem): string | undefined 
                     :subject-id="getTimelineSubjectId(item)"
                     :issue-number="number"
                     :work-item-id="id"
+                    :viewer-can-update="item.viewerCanUpdate"
+                    :viewer-can-delete="item.viewerCanDelete"
+                    :is-editing="editingTimelineId === item.id"
+                    :edit-disabled="editingTimelineId !== null && editingTimelineId !== item.id"
                     @reaction-toggle="(content, added) => onReactionToggle(item.id, content, added)"
+                    @start-edit="handleStartEdit(item)"
+                    @cancel-edit="cancelEdit"
+                    @save-edit="(body) => handleSaveEdit(item, body)"
+                    @delete="handleDelete(item)"
                   >
                     <template #review-comments>
                       <div
@@ -874,6 +918,10 @@ function getTimelineSubjectId(item: WorkItemTimelineUiItem): string | undefined 
                               @cancel-reply="replyingToCommentId = null"
                               @update:reply-body="replyBody = $event"
                               @submit-reply="submitReply(rc, item.sourceNumber)"
+                              @edit-comment="(cId, dbId, body) => saveReviewComment(item.id, cId, dbId, body)"
+                              @delete-comment="(cId, dbId) => deleteReviewComment(item.id, cId, dbId)"
+                              @edit-reply="(cId, dbId, body) => saveReviewComment(item.id, cId, dbId, body)"
+                              @delete-reply="(cId, dbId) => deleteReviewComment(item.id, cId, dbId)"
                             />
                           </div>
                         </div>

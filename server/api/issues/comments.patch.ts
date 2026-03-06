@@ -13,11 +13,12 @@ mutation($id: ID!, $body: String!) {
 
 export default defineEventHandler(async (event) => {
   const { token, login } = await getSessionToken(event)
-  const { id, body, repo, issueNumber } = await readBody<{
+  const { id, body, repo, issueNumber, workItemId } = await readBody<{
     id: string
     body: string
     repo: string
     issueNumber: number
+    workItemId?: string
   }>(event)
 
   if (!id || !body?.trim()) {
@@ -37,6 +38,13 @@ export default defineEventHandler(async (event) => {
 
   if (repo && issueNumber) {
     await invalidateIssueDetailCache(login, repo, issueNumber)
+  }
+
+  if (workItemId && repo) {
+    const [owner, repoName] = repo.split('/')
+    if (owner && repoName) {
+      await invalidateWorkItemDetailCache(login, owner, repoName, workItemId)
+    }
   }
 
   return result.updateIssueComment.issueComment

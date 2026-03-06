@@ -14,6 +14,8 @@ export interface ReviewThreadCommentNode {
   outdated?: boolean | null
   createdAt: string
   author: { login?: string, avatarUrl?: string } | null
+  viewerCanUpdate?: boolean
+  viewerCanDelete?: boolean
   reactionGroups?: Array<{ content: string, viewerHasReacted: boolean, reactors: { totalCount: number } }>
 }
 
@@ -58,6 +60,8 @@ export function buildReplyMap(threads: ReviewThreadNode[]): Map<string, ReviewCo
       authorAvatarUrl: c.author?.avatarUrl,
       createdAt: c.createdAt,
       reactionGroups: mapReactionGroups(c.reactionGroups),
+      viewerCanUpdate: c.viewerCanUpdate,
+      viewerCanDelete: c.viewerCanDelete,
     }))
 
     replyMap.set(rootId, replies)

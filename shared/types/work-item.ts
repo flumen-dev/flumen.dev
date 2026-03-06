@@ -65,6 +65,8 @@ export interface ReviewComment {
   createdAt: string
   reactionGroups?: ReactionGroup[]
   replies?: ReviewComment[]
+  viewerCanUpdate?: boolean
+  viewerCanDelete?: boolean
 }
 
 export type WorkItemTimelineSource = 'issue' | 'pull'
@@ -87,6 +89,8 @@ export interface WorkItemTimelineEntry {
   labelName?: string
   assignee?: string
   reviewComments?: ReviewComment[]
+  viewerCanUpdate?: boolean
+  viewerCanDelete?: boolean
 }
 
 export type ReviewerState = 'APPROVED' | 'CHANGES_REQUESTED' | 'COMMENTED' | 'DISMISSED' | 'PENDING'
