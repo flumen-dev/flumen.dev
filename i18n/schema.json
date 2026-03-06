@@ -34,6 +34,9 @@
         "close": {
           "type": "string"
         },
+        "cancel": {
+          "type": "string"
+        },
         "bot": {
           "type": "string"
         }
@@ -1321,6 +1324,18 @@
             "mergeFailed": {
               "type": "string"
             },
+            "deleteBranch": {
+              "type": "string"
+            },
+            "branchDeleted": {
+              "type": "string"
+            },
+            "branchDeletedLabel": {
+              "type": "string"
+            },
+            "branchDeleteFailed": {
+              "type": "string"
+            },
             "error": {
               "type": "object",
               "properties": {
@@ -1331,6 +1346,93 @@
                   "type": "string"
                 },
                 "branchModified": {
+                  "type": "string"
+                },
+                "validationFailed": {
+                  "type": "string"
+                },
+                "unknown": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
+        },
+        "review": {
+          "type": "object",
+          "properties": {
+            "reviewers": {
+              "type": "string"
+            },
+            "noReviewers": {
+              "type": "string"
+            },
+            "approve": {
+              "type": "string"
+            },
+            "requestChanges": {
+              "type": "string"
+            },
+            "comment": {
+              "type": "string"
+            },
+            "dismiss": {
+              "type": "string"
+            },
+            "submitReview": {
+              "type": "string"
+            },
+            "bodyPlaceholder": {
+              "type": "string"
+            },
+            "bodyRequired": {
+              "type": "string"
+            },
+            "dismissReason": {
+              "type": "string"
+            },
+            "reviewSubmitted": {
+              "type": "string"
+            },
+            "reviewDismissed": {
+              "type": "string"
+            },
+            "reviewFailed": {
+              "type": "string"
+            },
+            "dismissFailed": {
+              "type": "string"
+            },
+            "state": {
+              "type": "object",
+              "properties": {
+                "APPROVED": {
+                  "type": "string"
+                },
+                "CHANGES_REQUESTED": {
+                  "type": "string"
+                },
+                "COMMENTED": {
+                  "type": "string"
+                },
+                "DISMISSED": {
+                  "type": "string"
+                },
+                "PENDING": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "forbidden": {
+                  "type": "string"
+                },
+                "notFound": {
                   "type": "string"
                 },
                 "validationFailed": {
@@ -1952,6 +2054,9 @@
                   "type": "string"
                 },
                 "changes-requested": {
+                  "type": "string"
+                },
+                "needs-review": {
                   "type": "string"
                 }
               },

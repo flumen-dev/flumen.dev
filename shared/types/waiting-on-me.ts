@@ -1,4 +1,4 @@
-export type WaitingCategory = 'review-requested' | 'needs-response' | 'changes-requested'
+export type WaitingCategory = 'review-requested' | 'needs-response' | 'changes-requested' | 'needs-review'
 
 export type CIStatus = 'SUCCESS' | 'FAILURE' | 'PENDING' | 'ERROR' | 'EXPECTED' | null
 
@@ -26,6 +26,7 @@ export interface WaitingOnMeCursors {
   review: string | null
   assigned: string | null
   changes: string | null
+  needsReview: string | null
 }
 
 export interface WaitingOnMeResponse {

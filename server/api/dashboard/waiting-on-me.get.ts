@@ -56,6 +56,31 @@ const ASSIGNED_ISSUES_QUERY = /* GraphQL */ `
   }
 `
 
+const NEEDS_REVIEW_QUERY = /* GraphQL */ `
+  query NeedsReview($query: String!, $first: Int!, $after: String) {
+    search(query: $query, type: ISSUE, first: $first, after: $after) {
+      pageInfo { hasNextPage endCursor }
+      nodes {
+        ... on PullRequest {
+          number
+          title
+          url
+          createdAt
+          updatedAt
+          isDraft
+          additions
+          deletions
+          repository { nameWithOwner }
+          author { login avatarUrl }
+          labels(first: 5) { nodes { name color } }
+          comments { totalCount }
+          commits(last: 1) { nodes { commit { statusCheckRollup { state } } } }
+        }
+      }
+    }
+  }
+`
+
 const CHANGES_REQUESTED_QUERY = /* GraphQL */ `
   query ChangesRequested($query: String!, $first: Int!, $after: String) {
     search(query: $query, type: ISSUE, first: $first, after: $after) {
@@ -181,12 +206,12 @@ const EMPTY_SEARCH = { search: { issueCount: 0, pageInfo: { hasNextPage: false, 
 async function fetchPage(
   token: string,
   login: string,
-  cursors: { review?: string | false, assigned?: string | false, changes?: string | false },
+  cursors: { review?: string | false, assigned?: string | false, changes?: string | false, needsReview?: string | false },
 ): Promise<WaitingOnMeResponse> {
   const now = new Date()
 
   // false = category exhausted, skip entirely. undefined = first page (no cursor).
-  const [reviewData, assignedData, changesData] = await Promise.all([
+  const [reviewData, assignedData, changesData, needsReviewData] = await Promise.all([
     cursors.review === false
       ? EMPTY_SEARCH as GQLSearchResult<ReviewRequestedNode>
       : githubGraphQL<GQLSearchResult<ReviewRequestedNode>>(
@@ -218,6 +243,17 @@ async function fetchPage(
             query: `is:pr is:open author:${login} review:changes_requested`,
             first: PAGE_SIZE,
             after: cursors.changes || null,
+          },
+        ),
+    cursors.needsReview === false
+      ? EMPTY_SEARCH as GQLSearchResult<ReviewRequestedNode>
+      : githubGraphQL<GQLSearchResult<ReviewRequestedNode>>(
+          token,
+          NEEDS_REVIEW_QUERY,
+          {
+            query: `is:pr is:open user:${login} -author:${login} review:none`,
+            first: PAGE_SIZE,
+            after: cursors.needsReview || null,
           },
         ),
   ])
@@ -313,12 +349,41 @@ async function fetchPage(
     })
   }
 
+  // 4. Unreviewed PRs in my repos (from others)
+  const reviewRequestedRepos = new Set(reviewData.search.nodes.map(n => `${n.repository.nameWithOwner}#${n.number}`))
+  for (const node of needsReviewData.search.nodes) {
+    if (!node.number) continue
+    // Skip if already in review-requested category
+    if (reviewRequestedRepos.has(`${node.repository.nameWithOwner}#${node.number}`)) continue
+
+    items.push({
+      category: 'needs-review',
+      type: 'pr',
+      number: node.number,
+      title: node.title,
+      url: node.url,
+      repo: node.repository.nameWithOwner,
+      createdAt: node.createdAt,
+      waitingSince: node.createdAt,
+      waitingDays: daysBetween(node.createdAt, now),
+      commentsCount: node.comments.totalCount,
+      isDraft: node.isDraft,
+      additions: node.additions,
+      deletions: node.deletions,
+      ciStatus: extractCIStatus(node),
+      author: node.author,
+      requester: node.author,
+      labels: node.labels.nodes,
+    })
+  }
+
   items.sort((a, b) => new Date(a.waitingSince).getTime() - new Date(b.waitingSince).getTime())
 
   const hasMore
     = reviewData.search.pageInfo.hasNextPage
       || assignedData.search.pageInfo.hasNextPage
       || changesData.search.pageInfo.hasNextPage
+      || needsReviewData.search.pageInfo.hasNextPage
 
   return {
     items,
@@ -328,6 +393,7 @@ async function fetchPage(
       review: reviewData.search.pageInfo.hasNextPage ? reviewData.search.pageInfo.endCursor : null,
       assigned: assignedData.search.pageInfo.hasNextPage ? assignedData.search.pageInfo.endCursor : null,
       changes: changesData.search.pageInfo.hasNextPage ? changesData.search.pageInfo.endCursor : null,
+      needsReview: needsReviewData.search.pageInfo.hasNextPage ? needsReviewData.search.pageInfo.endCursor : null,
     },
   }
 }
@@ -358,8 +424,9 @@ export default defineEventHandler(async (event) => {
   const cursorReview = query.cursorReview as string | undefined
   const cursorAssigned = query.cursorAssigned as string | undefined
   const cursorChanges = query.cursorChanges as string | undefined
+  const cursorNeedsReview = query.cursorNeedsReview as string | undefined
 
-  const hasCursors = cursorReview || cursorAssigned || cursorChanges
+  const hasCursors = cursorReview || cursorAssigned || cursorChanges || cursorNeedsReview
 
   if (!hasCursors) {
     return fetchFirstPage(token, login)
@@ -370,6 +437,7 @@ export default defineEventHandler(async (event) => {
     review: cursorReview || false,
     assigned: cursorAssigned || false,
     changes: cursorChanges || false,
+    needsReview: cursorNeedsReview || false,
   })
 
   // Read cached first page, merge with new items

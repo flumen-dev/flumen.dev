@@ -9,6 +9,7 @@
     "copyFailed": "Failed to copy",
     "viewOnGithub": "View on GitHub",
     "close": "Close",
+    "cancel": "Cancel",
     "bot": "Bot"
   },
   "nav": {
@@ -438,12 +439,34 @@
       "confirmMerge": "Merge this pull request",
       "mergeSuccess": "Pull request merged",
       "mergeFailed": "Merge failed",
+      "deleteBranch": "Delete branch",
+      "branchDeleted": "Branch deleted",
+      "branchDeletedLabel": "Branch deleted",
+      "branchDeleteFailed": "Failed to delete branch",
       "error": {
         "forbidden": "You don't have permission to merge this pull request",
         "notMergeable": "This pull request cannot be merged — checks, reviews, or branch protection may be blocking it",
         "branchModified": "The branch was modified in the meantime — please review and try again",
         "validationFailed": "Invalid merge parameters",
         "unknown": "An unexpected error occurred while merging"
+      }
+    },
+    "review": {
+      "noReviewers": "No reviewers",
+      "approve": "Approve",
+      "requestChanges": "Request changes",
+      "comment": "Comment",
+      "submitReview": "Submit review",
+      "bodyPlaceholder": "Leave a comment (optional)",
+      "bodyRequired": "Describe the changes you'd like",
+      "reviewSubmitted": "Review submitted",
+      "reviewFailed": "Could not submit review",
+      "state": {
+        "APPROVED": "Approved",
+        "CHANGES_REQUESTED": "Changes requested",
+        "COMMENTED": "Commented",
+        "DISMISSED": "Dismissed",
+        "PENDING": "Pending"
       }
     },
     "timeline": {
@@ -648,7 +671,8 @@
       "reason": {
         "review-requested": "{login} needs your review",
         "needs-response": "{login} is waiting for your reply",
-        "changes-requested": "{login} requested changes on your PR"
+        "changes-requested": "{login} requested changes on your PR",
+        "needs-review": "{login} opened a PR in your repo"
       },
       "waitingDays": "{days}d",
       "loadMore": "Load more"

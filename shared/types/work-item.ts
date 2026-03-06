@@ -89,6 +89,14 @@ export interface WorkItemTimelineEntry {
   reviewComments?: ReviewComment[]
 }
 
+export type ReviewerState = 'APPROVED' | 'CHANGES_REQUESTED' | 'COMMENTED' | 'DISMISSED' | 'PENDING'
+
+export interface Reviewer {
+  login: string
+  avatarUrl: string
+  state: ReviewerState
+}
+
 export interface WorkItemDetail extends WorkItem {
   primaryType: WorkItemType
   body: string
@@ -102,6 +110,9 @@ export interface WorkItemDetail extends WorkItem {
     changesRequested: number
     commented: number
   }
+  headBranch?: string | null
+  headBranchRepo?: string | null
+  reviewers?: Reviewer[]
 }
 
 export interface GraphQLWorkItemIssueNode {

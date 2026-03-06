@@ -9,6 +9,7 @@
     "copyFailed": "Kopieren fehlgeschlagen",
     "viewOnGithub": "Auf GitHub ansehen",
     "close": "Schließen",
+    "cancel": "Abbrechen",
     "bot": "Bot"
   },
   "nav": {
@@ -438,12 +439,34 @@
       "confirmMerge": "Pull Request mergen",
       "mergeSuccess": "Pull Request gemergt",
       "mergeFailed": "Merge fehlgeschlagen",
+      "deleteBranch": "Branch löschen",
+      "branchDeleted": "Branch gelöscht",
+      "branchDeletedLabel": "Branch gelöscht",
+      "branchDeleteFailed": "Branch konnte nicht gelöscht werden",
       "error": {
         "forbidden": "Du hast keine Berechtigung, diesen Pull Request zu mergen",
         "notMergeable": "Dieser Pull Request kann nicht gemergt werden — Checks, Reviews oder Branch-Schutzregeln blockieren den Merge",
         "branchModified": "Der Branch wurde zwischenzeitlich geändert — bitte prüfen und erneut versuchen",
         "validationFailed": "Ungültige Merge-Parameter",
         "unknown": "Beim Mergen ist ein unerwarteter Fehler aufgetreten"
+      }
+    },
+    "review": {
+      "noReviewers": "Keine Reviewer",
+      "approve": "Genehmigen",
+      "requestChanges": "Änderungen anfordern",
+      "comment": "Kommentieren",
+      "submitReview": "Review absenden",
+      "bodyPlaceholder": "Kommentar hinterlassen (optional)",
+      "bodyRequired": "Beschreibe die gewünschten Änderungen",
+      "reviewSubmitted": "Review abgesendet",
+      "reviewFailed": "Review konnte nicht abgesendet werden",
+      "state": {
+        "APPROVED": "Genehmigt",
+        "CHANGES_REQUESTED": "Änderungen angefordert",
+        "COMMENTED": "Kommentiert",
+        "DISMISSED": "Verworfen",
+        "PENDING": "Ausstehend"
       }
     },
     "timeline": {
@@ -649,7 +672,8 @@
       "reason": {
         "review-requested": "{login} braucht dein Review",
         "needs-response": "{login} wartet auf deine Antwort",
-        "changes-requested": "{login} hat Änderungen an deinem PR angefragt"
+        "changes-requested": "{login} hat Änderungen an deinem PR angefragt",
+        "needs-review": "{login} hat einen PR in deinem Repo eröffnet"
       },
       "loadMore": "Mehr anzeigen"
     },

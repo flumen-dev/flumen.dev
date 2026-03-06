@@ -671,6 +671,7 @@ function getTimelineSubjectId(item: WorkItemTimelineUiItem): string | undefined 
       :issue="isIssuePrimary ? issue : undefined"
       @ci-status-changed="delayedRefreshWorkItem"
       @merged="delayedRefreshWorkItem"
+      @reviewed="delayedRefreshWorkItem"
     />
 
     <div class="p-4">

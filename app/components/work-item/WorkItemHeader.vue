@@ -40,6 +40,7 @@ const [ownerRef, repoRef] = (() => {
 const emit = defineEmits<{
   ciStatusChanged: []
   merged: []
+  reviewed: []
 }>()
 
 const { result: checkResult, statusChanged } = useCheckRuns(ownerRef, repoRef, prNumbers)
@@ -120,9 +121,24 @@ const mergeTitle = ref('')
 const mergeMessage = ref('')
 const merging = ref(false)
 const justMerged = ref(false)
+const branchDeleted = ref(false)
+const deletingBranch = ref(false)
+
+const headBranch = computed(() => props.workItem.headBranch ?? mergeStatus.value?.headBranch ?? null)
+const isForkBranch = computed(() => {
+  const headRepo = props.workItem.headBranchRepo
+  return !!headRepo && headRepo !== props.repo
+})
+const showDeleteBranch = computed(() =>
+  (justMerged.value || props.workItem.state === 'MERGED')
+  && headBranch.value
+  && !branchDeleted.value
+  && !isForkBranch.value,
+)
 
 const isPR = computed(() => props.workItem.primaryType === 'pull')
-const isPROpen = computed(() => isPR.value && props.workItem.state === 'OPEN' && !justMerged.value)
+const isPRNotClosed = computed(() => isPR.value && props.workItem.state !== 'MERGED' && props.workItem.state !== 'CLOSED' && !justMerged.value)
+const isPROpen = computed(() => isPRNotClosed.value && props.workItem.state === 'OPEN')
 const mergeNumber = computed(() => isPROpen.value ? props.workItem.number : null)
 const { status: mergeStatus, loading: mergeLoading, error: mergeError, fetch: fetchMergeStatus, merge: executeMerge } = useMergeStatus(ownerRef, repoRef, mergeNumber)
 
@@ -184,6 +200,26 @@ async function handleMerge() {
   }
   finally {
     merging.value = false
+  }
+}
+
+async function handleDeleteBranch() {
+  if (!headBranch.value || deletingBranch.value) return
+  deletingBranch.value = true
+  try {
+    await $fetch(
+      `/api/repository/${ownerRef.value}/${repoRef.value}/pulls/${props.workItem.number}/delete-branch`,
+      { method: 'POST', body: { branch: headBranch.value, repo: props.workItem.headBranchRepo } },
+    )
+    branchDeleted.value = true
+    toast.add({ title: t('workItems.merge.branchDeleted'), color: 'success' })
+  }
+  catch (e: unknown) {
+    const msg = (e as { data?: { message?: string } })?.data?.message ?? ''
+    toast.add({ title: t('workItems.merge.branchDeleteFailed'), description: msg, color: 'error' })
+  }
+  finally {
+    deletingBranch.value = false
   }
 }
 </script>
@@ -503,7 +539,18 @@ async function handleMerge() {
       </div>
     </div>
 
-    <!-- Row 5: Merge (PR only) -->
+    <!-- Row 5: Review Actions (PR only, open) -->
+    <WorkItemReviewActions
+      v-if="isPRNotClosed"
+      :reviewers="workItem.reviewers ?? []"
+      :owner="ownerRef"
+      :repo="repoRef"
+      :pr-number="workItem.number"
+      :work-item-id="workItem.id"
+      @reviewed="emit('reviewed')"
+    />
+
+    <!-- Row 6: Merge (PR only) -->
     <div
       v-if="isPR"
       class="border-t border-accented bg-primary/5"
@@ -517,7 +564,27 @@ async function handleMerge() {
           name="i-lucide-git-merge"
           class="size-3.5 shrink-0 text-violet-500"
         />
-        <span class="text-xs text-violet-500 font-medium">{{ t('workItems.merge.mergeSuccess') }}</span>
+        <span class="text-xs text-violet-500 font-medium flex-1">{{ t('workItems.merge.mergeSuccess') }}</span>
+
+        <!-- Delete branch -->
+        <UButton
+          v-if="showDeleteBranch"
+          :label="t('workItems.merge.deleteBranch')"
+          icon="i-lucide-trash-2"
+          size="xs"
+          variant="soft"
+          color="error"
+          :loading="deletingBranch"
+          :disabled="deletingBranch"
+          class="shrink-0"
+          @click="handleDeleteBranch"
+        />
+        <span
+          v-else-if="branchDeleted"
+          class="text-xs text-muted"
+        >
+          {{ t('workItems.merge.branchDeletedLabel') }}
+        </span>
       </div>
 
       <!-- Open PR: merge controls -->

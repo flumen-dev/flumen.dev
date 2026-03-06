@@ -1,4 +1,4 @@
-import type { ReviewComment, WorkItemContribution, WorkItemDetail, WorkItemTimelineEntry } from '~~/shared/types/work-item'
+import type { ReviewComment, Reviewer, WorkItemContribution, WorkItemDetail, WorkItemTimelineEntry } from '~~/shared/types/work-item'
 import { githubGraphQL } from '~~/server/utils/github-graphql'
 import { getRepoParams, getSessionToken } from '~~/server/utils/github'
 import { mapCiStatus } from '~~/server/utils/focus-created'
@@ -117,6 +117,8 @@ query($owner: String!, $repo: String!, $number: Int!) {
       createdAt
       updatedAt
       reviewDecision
+      headRefName
+      headRepository { owner { login } name }
       author { login avatarUrl }
       comments { totalCount }
       reactionGroups {
@@ -237,6 +239,20 @@ query($owner: String!, $repo: String!, $number: Int!) {
           }
         }
       }
+      reviewRequests(first: 20) {
+        nodes {
+          requestedReviewer {
+            ... on User { login avatarUrl }
+            ... on Team { slug avatarUrl }
+          }
+        }
+      }
+      latestReviews(first: 20) {
+        nodes {
+          author { login avatarUrl }
+          state
+        }
+      }
       closingIssuesReferences(first: 20) {
         nodes {
           number
@@ -319,6 +335,8 @@ interface PullDetailNode {
   state: string
   url: string
   isDraft?: boolean
+  headRefName?: string
+  headRepository?: { owner: { login: string }, name: string } | null
   body: string
   bodyHTML: string
   createdAt: string
@@ -332,6 +350,8 @@ interface PullDetailNode {
   commits?: { nodes?: Array<{ commit?: { statusCheckRollup?: { state?: string } } }> }
   timelineItems?: { nodes?: TimelineNode[] }
   reviewThreads?: { nodes?: Array<ReviewThreadNode> }
+  reviewRequests?: { nodes?: Array<{ requestedReviewer?: { login?: string, slug?: string, avatarUrl?: string } | null }> }
+  latestReviews?: { nodes?: Array<{ author?: { login?: string, avatarUrl?: string } | null, state?: string }> }
   closingIssuesReferences: { nodes: Array<{ number: number, title: string, state: string, url: string }> }
 }
 
@@ -513,6 +533,37 @@ function createInitialPullEntry(pull: PullDetailNode): WorkItemTimelineEntry {
     body: pull.body,
     reactionGroups: mapReactionGroups(pull.reactionGroups),
   }
+}
+
+function mapReviewers(pull: PullDetailNode): Reviewer[] {
+  const reviewerMap = new Map<string, Reviewer>()
+
+  // Add reviewers who already submitted reviews (latest state wins)
+  for (const node of pull.latestReviews?.nodes ?? []) {
+    const login = node.author?.login
+    if (!login) continue
+    reviewerMap.set(login, {
+      login,
+      avatarUrl: node.author?.avatarUrl ?? '',
+      state: (node.state as Reviewer['state']) ?? 'COMMENTED',
+    })
+  }
+
+  // Add pending review requests (only if they haven't already reviewed)
+  for (const node of pull.reviewRequests?.nodes ?? []) {
+    const reviewer = node.requestedReviewer
+    const login = reviewer?.login ?? reviewer?.slug
+    if (!login) continue
+    if (!reviewerMap.has(login)) {
+      reviewerMap.set(login, {
+        login,
+        avatarUrl: reviewer?.avatarUrl ?? '',
+        state: 'PENDING',
+      })
+    }
+  }
+
+  return Array.from(reviewerMap.values())
 }
 
 const fetchWorkItemDetail = defineCachedFunction(
@@ -731,7 +782,10 @@ const fetchWorkItemDetail = defineCachedFunction(
       repo: `${owner}/${repo}`,
       contributions: [],
       timeline: unifiedPullTimeline,
+      headBranch: pull.headRefName ?? null,
+      headBranchRepo: pull.headRepository ? `${pull.headRepository.owner.login}/${pull.headRepository.name}` : null,
       reviewSummary,
+      reviewers: mapReviewers(pull),
     }
   },
   {

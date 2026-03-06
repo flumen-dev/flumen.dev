@@ -31,6 +31,12 @@ const categoryConfig = {
     bgColor: 'bg-orange-500/10',
     borderColor: 'border-orange-500/20',
   },
+  'needs-review': {
+    icon: 'i-lucide-eye',
+    iconColor: 'text-violet-500',
+    bgColor: 'bg-violet-500/10',
+    borderColor: 'border-violet-500/20',
+  },
 } as const
 
 const config = computed(() => categoryConfig[props.item.category])
