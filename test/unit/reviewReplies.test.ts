@@ -113,6 +113,28 @@ describe('buildReplyMap', () => {
     expect(result.get('root-1')![0]!.author).toBe('ghost')
   })
 
+  it('maps viewerCanUpdate and viewerCanDelete permissions', () => {
+    const root = makeThreadComment({ id: 'root-1' })
+    const reply = makeThreadComment({ id: 'reply-1', viewerCanUpdate: true, viewerCanDelete: false })
+    const thread = makeThread([root, reply])
+
+    const result = buildReplyMap([thread])
+    const replyResult = result.get('root-1')![0]!
+    expect(replyResult.viewerCanUpdate).toBe(true)
+    expect(replyResult.viewerCanDelete).toBe(false)
+  })
+
+  it('leaves permissions undefined when not provided', () => {
+    const root = makeThreadComment({ id: 'root-1' })
+    const reply = makeThreadComment({ id: 'reply-1' })
+    const thread = makeThread([root, reply])
+
+    const result = buildReplyMap([thread])
+    const replyResult = result.get('root-1')![0]!
+    expect(replyResult.viewerCanUpdate).toBeUndefined()
+    expect(replyResult.viewerCanDelete).toBeUndefined()
+  })
+
   it('maps databaseId from thread comments', () => {
     const root = makeThreadComment({ id: 'root-1' })
     const reply = makeThreadComment({ id: 'reply-1', databaseId: 12345 })
