@@ -30,6 +30,7 @@ const { t } = useI18n()
         variant="ghost"
         square
         :disabled="editDisabled"
+        :aria-label="t('workItems.timeline.editComment')"
         @click="emit('edit')"
       />
     </UTooltip>
@@ -43,6 +44,7 @@ const { t } = useI18n()
         color="error"
         variant="ghost"
         square
+        :aria-label="t('workItems.timeline.deleteComment')"
         @click="emit('delete')"
       />
     </UTooltip>

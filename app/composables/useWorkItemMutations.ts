@@ -1,4 +1,5 @@
 import type { WorkItemDetail, WorkItemTimelineEntry } from '~~/shared/types/work-item'
+import { editCommentBody, editReviewComment, removeComment, removeReviewComment } from '~~/shared/utils/timeline-mappers'
 
 interface WorkItemMutationContext {
   workItem: Ref<WorkItemDetail | null | undefined>
@@ -77,9 +78,7 @@ export function useWorkItemMutations(ctx: WorkItemMutationContext) {
         })
       }
 
-      updateTimeline(timeline =>
-        timeline.map(e => e.id === entryId ? { ...e, body: normalizedBody } : e),
-      )
+      updateTimeline(timeline => editCommentBody(timeline, entryId, normalizedBody))
 
       editingId.value = null
       toast.add({ title: t('workItems.timeline.commentUpdated'), color: 'success' })
@@ -105,7 +104,7 @@ export function useWorkItemMutations(ctx: WorkItemMutationContext) {
         },
       })
 
-      updateTimeline(timeline => timeline.filter(e => e.id !== entryId))
+      updateTimeline(timeline => removeComment(timeline, entryId))
       toast.add({ title: t('workItems.timeline.commentDeleted'), color: 'success' })
     }
     catch {
@@ -128,21 +127,7 @@ export function useWorkItemMutations(ctx: WorkItemMutationContext) {
         },
       })
 
-      updateTimeline(timeline =>
-        timeline.map((e) => {
-          if (e.id !== entryId) return e
-          return {
-            ...e,
-            reviewComments: e.reviewComments?.map((rc) => {
-              if (rc.id === commentId) return { ...rc, body: normalizedBody }
-              if (rc.replies?.some(r => r.id === commentId)) {
-                return { ...rc, replies: rc.replies.map(r => r.id === commentId ? { ...r, body: normalizedBody } : r) }
-              }
-              return rc
-            }),
-          }
-        }),
-      )
+      updateTimeline(timeline => editReviewComment(timeline, entryId, commentId, normalizedBody))
 
       toast.add({ title: t('workItems.timeline.commentUpdated'), color: 'success' })
     }
@@ -163,20 +148,7 @@ export function useWorkItemMutations(ctx: WorkItemMutationContext) {
         },
       })
 
-      updateTimeline(timeline =>
-        timeline.map((e) => {
-          if (e.id !== entryId) return e
-          return {
-            ...e,
-            reviewComments: e.reviewComments
-              ?.filter(rc => rc.id !== commentId)
-              .map(rc => ({
-                ...rc,
-                replies: rc.replies?.filter(r => r.id !== commentId),
-              })),
-          }
-        }),
-      )
+      updateTimeline(timeline => removeReviewComment(timeline, entryId, commentId))
 
       toast.add({ title: t('workItems.timeline.commentDeleted'), color: 'success' })
     }
