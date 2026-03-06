@@ -1363,9 +1363,6 @@
         "review": {
           "type": "object",
           "properties": {
-            "reviewers": {
-              "type": "string"
-            },
             "noReviewers": {
               "type": "string"
             },
@@ -1378,9 +1375,6 @@
             "comment": {
               "type": "string"
             },
-            "dismiss": {
-              "type": "string"
-            },
             "submitReview": {
               "type": "string"
             },
@@ -1390,19 +1384,10 @@
             "bodyRequired": {
               "type": "string"
             },
-            "dismissReason": {
-              "type": "string"
-            },
             "reviewSubmitted": {
               "type": "string"
             },
-            "reviewDismissed": {
-              "type": "string"
-            },
             "reviewFailed": {
-              "type": "string"
-            },
-            "dismissFailed": {
               "type": "string"
             },
             "state": {
@@ -1421,24 +1406,6 @@
                   "type": "string"
                 },
                 "PENDING": {
-                  "type": "string"
-                }
-              },
-              "additionalProperties": false
-            },
-            "error": {
-              "type": "object",
-              "properties": {
-                "forbidden": {
-                  "type": "string"
-                },
-                "notFound": {
-                  "type": "string"
-                },
-                "validationFailed": {
-                  "type": "string"
-                },
-                "unknown": {
                   "type": "string"
                 }
               },
