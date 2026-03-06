@@ -124,6 +124,12 @@ const justMerged = ref(false)
 const branchDeleted = ref(false)
 const deletingBranch = ref(false)
 
+watch(() => props.workItem.id, () => {
+  branchDeleted.value = false
+  deletingBranch.value = false
+  justMerged.value = false
+})
+
 const headBranch = computed(() => props.workItem.headBranch ?? mergeStatus.value?.headBranch ?? null)
 const isForkBranch = computed(() => {
   const headRepo = props.workItem.headBranchRepo

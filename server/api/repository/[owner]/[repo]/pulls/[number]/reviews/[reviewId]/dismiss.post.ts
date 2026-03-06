@@ -33,7 +33,8 @@ export default defineEventHandler(async (event) => {
 
   const body = await readBody<DismissRequest>(event)
 
-  if (!body?.message?.trim()) {
+  const trimmedMessage = typeof body?.message === 'string' ? body.message.trim() : ''
+  if (!trimmedMessage) {
     throw createError({ statusCode: 400, message: 'Dismiss message is required' })
   }
 
@@ -41,7 +42,7 @@ export default defineEventHandler(async (event) => {
     const result = await githubFetchWithToken<GitHubDismissResponse>(
       token,
       `/repos/${owner}/${repo}/pulls/${number}/reviews/${reviewId}/dismissals`,
-      { method: 'PUT', body: { message: body.message.trim() } },
+      { method: 'PUT', body: { message: trimmedMessage } },
     )
 
     if (body.workItemId) {

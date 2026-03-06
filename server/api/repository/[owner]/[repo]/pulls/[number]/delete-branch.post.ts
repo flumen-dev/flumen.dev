@@ -11,7 +11,8 @@ export default defineEventHandler(async (event) => {
 
   const body = await readBody<DeleteBranchRequest>(event)
 
-  if (!body?.branch?.trim()) {
+  const branch = typeof body?.branch === 'string' ? body.branch.trim() : ''
+  if (!branch) {
     throw createError({ statusCode: 400, message: 'Branch name is required' })
   }
 
@@ -19,7 +20,7 @@ export default defineEventHandler(async (event) => {
 
   try {
     const response = await fetch(
-      `https://api.github.com/repos/${targetRepo}/git/refs/heads/${body.branch}`,
+      `https://api.github.com/repos/${targetRepo}/git/refs/heads/${branch}`,
       {
         method: 'DELETE',
         headers: {
@@ -31,15 +32,19 @@ export default defineEventHandler(async (event) => {
     )
 
     if (response.status === 204 || response.status === 200) {
-      return { deleted: true, branch: body.branch }
-    }
-
-    // 422 = ref doesn't exist = already deleted
-    if (response.status === 422) {
-      return { deleted: true, branch: body.branch }
+      return { deleted: true, branch }
     }
 
     const responseText = await response.text()
+
+    if (response.status === 422) {
+      const isRefMissing = responseText.includes('Reference does not exist')
+        || responseText.includes('ref not found')
+      if (isRefMissing) {
+        return { deleted: true, branch }
+      }
+    }
+
     throw createError({
       statusCode: response.status,
       message: `Delete failed (${response.status}): ${responseText}`,

@@ -40,7 +40,9 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'Invalid review event' })
   }
 
-  if (body.event === 'REQUEST_CHANGES' && !body.body?.trim()) {
+  const trimmedBody = typeof body.body === 'string' ? body.body.trim() : ''
+
+  if (body.event === 'REQUEST_CHANGES' && !trimmedBody) {
     throw createError({ statusCode: 400, message: 'Body is required for REQUEST_CHANGES' })
   }
 
@@ -48,8 +50,8 @@ export default defineEventHandler(async (event) => {
     event: body.event,
   }
 
-  if (body.body?.trim()) {
-    reviewBody.body = body.body.trim()
+  if (trimmedBody) {
+    reviewBody.body = trimmedBody
   }
 
   try {

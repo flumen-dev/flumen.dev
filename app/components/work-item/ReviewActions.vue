@@ -69,6 +69,12 @@ function getEventLabel(event: string): string {
   }
 }
 
+const approvalSummary = computed(() => {
+  if (!props.reviewers.length) return null
+  const approved = props.reviewers.filter(r => r.state === 'APPROVED').length
+  return `${approved}/${props.reviewers.length}`
+})
+
 function getReviewerStateLabel(state: ReviewerState): string {
   return t(`workItems.review.state.${state}`)
 }
@@ -132,6 +138,13 @@ async function handleSubmit() {
             </span>
           </button>
         </UTooltip>
+
+        <span
+          v-if="approvalSummary"
+          class="text-xs text-muted shrink-0 ml-1"
+        >
+          {{ approvalSummary }}
+        </span>
       </div>
 
       <!-- Review toggle button -->
