@@ -1,10 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { ReviewComment, WorkItemTimelineEntry } from '../../shared/types/work-item'
-
-/**
- * These tests verify the pure timeline mutation logic used by useWorkItemMutations.
- * The composable applies immutable updates via mapper functions — we test those patterns directly.
- */
+import { editCommentBody, editReviewComment, removeComment, removeReviewComment } from '../../shared/utils/timeline-mappers'
 
 function makeEntry(overrides: Partial<WorkItemTimelineEntry> = {}): WorkItemTimelineEntry {
   return {
@@ -34,47 +30,6 @@ function makeReviewComment(overrides: Partial<ReviewComment> = {}): ReviewCommen
   }
 }
 
-// --- Mutation patterns extracted from useWorkItemMutations ---
-
-function editCommentBody(timeline: WorkItemTimelineEntry[], entryId: string, newBody: string): WorkItemTimelineEntry[] {
-  return timeline.map(e => e.id === entryId ? { ...e, body: newBody } : e)
-}
-
-function deleteComment(timeline: WorkItemTimelineEntry[], entryId: string): WorkItemTimelineEntry[] {
-  return timeline.filter(e => e.id !== entryId)
-}
-
-function editReviewComment(timeline: WorkItemTimelineEntry[], entryId: string, commentId: string, newBody: string): WorkItemTimelineEntry[] {
-  return timeline.map((e) => {
-    if (e.id !== entryId) return e
-    return {
-      ...e,
-      reviewComments: e.reviewComments?.map((rc) => {
-        if (rc.id === commentId) return { ...rc, body: newBody }
-        if (rc.replies?.some(r => r.id === commentId)) {
-          return { ...rc, replies: rc.replies.map(r => r.id === commentId ? { ...r, body: newBody } : r) }
-        }
-        return rc
-      }),
-    }
-  })
-}
-
-function deleteReviewComment(timeline: WorkItemTimelineEntry[], entryId: string, commentId: string): WorkItemTimelineEntry[] {
-  return timeline.map((e) => {
-    if (e.id !== entryId) return e
-    return {
-      ...e,
-      reviewComments: e.reviewComments
-        ?.filter(rc => rc.id !== commentId)
-        .map(rc => ({
-          ...rc,
-          replies: rc.replies?.filter(r => r.id !== commentId),
-        })),
-    }
-  })
-}
-
 describe('editCommentBody', () => {
   it('updates the body of the matching entry', () => {
     const timeline = [makeEntry({ id: 'e1', body: 'old' }), makeEntry({ id: 'e2', body: 'other' })]
@@ -101,10 +56,10 @@ describe('editCommentBody', () => {
   })
 })
 
-describe('deleteComment', () => {
+describe('removeComment', () => {
   it('removes the matching entry', () => {
     const timeline = [makeEntry({ id: 'e1' }), makeEntry({ id: 'e2' })]
-    const result = deleteComment(timeline, 'e1')
+    const result = removeComment(timeline, 'e1')
 
     expect(result).toHaveLength(1)
     expect(result[0]!.id).toBe('e2')
@@ -112,14 +67,14 @@ describe('deleteComment', () => {
 
   it('returns empty array when last entry is deleted', () => {
     const timeline = [makeEntry({ id: 'e1' })]
-    const result = deleteComment(timeline, 'e1')
+    const result = removeComment(timeline, 'e1')
 
     expect(result).toHaveLength(0)
   })
 
   it('does nothing when id does not match', () => {
     const timeline = [makeEntry({ id: 'e1' })]
-    const result = deleteComment(timeline, 'nonexistent')
+    const result = removeComment(timeline, 'nonexistent')
 
     expect(result).toHaveLength(1)
   })
@@ -166,13 +121,13 @@ describe('editReviewComment', () => {
   })
 })
 
-describe('deleteReviewComment', () => {
+describe('removeReviewComment', () => {
   it('removes a root review comment', () => {
     const rc1 = makeReviewComment({ id: 'rc-1' })
     const rc2 = makeReviewComment({ id: 'rc-2' })
     const entry = makeEntry({ id: 'e1', kind: 'review', source: 'pull', reviewComments: [rc1, rc2] })
 
-    const result = deleteReviewComment([entry], 'e1', 'rc-1')
+    const result = removeReviewComment([entry], 'e1', 'rc-1')
 
     expect(result[0]!.reviewComments).toHaveLength(1)
     expect(result[0]!.reviewComments![0]!.id).toBe('rc-2')
@@ -184,7 +139,7 @@ describe('deleteReviewComment', () => {
     const rc = makeReviewComment({ id: 'rc-1', replies: [reply1, reply2] })
     const entry = makeEntry({ id: 'e1', kind: 'review', source: 'pull', reviewComments: [rc] })
 
-    const result = deleteReviewComment([entry], 'e1', 'reply-1')
+    const result = removeReviewComment([entry], 'e1', 'reply-1')
 
     expect(result[0]!.reviewComments![0]!.replies).toHaveLength(1)
     expect(result[0]!.reviewComments![0]!.replies![0]!.id).toBe('reply-2')
@@ -194,7 +149,7 @@ describe('deleteReviewComment', () => {
     const rc = makeReviewComment({ id: 'rc-1' })
     const entry = makeEntry({ id: 'e1', kind: 'review', source: 'pull', reviewComments: [rc] })
 
-    const result = deleteReviewComment([entry], 'e1', 'rc-1')
+    const result = removeReviewComment([entry], 'e1', 'rc-1')
 
     expect(result[0]!.reviewComments).toHaveLength(0)
   })
@@ -204,7 +159,7 @@ describe('deleteReviewComment', () => {
     const entry = makeEntry({ id: 'e1', kind: 'review', source: 'pull', reviewComments: [rc] })
     const timeline = [entry]
 
-    deleteReviewComment(timeline, 'e1', 'rc-1')
+    removeReviewComment(timeline, 'e1', 'rc-1')
 
     expect(entry.reviewComments).toHaveLength(1) // original unchanged
   })
@@ -213,7 +168,7 @@ describe('deleteReviewComment', () => {
     const rc = makeReviewComment({ id: 'rc-1', replies: [makeReviewComment({ id: 'reply-1' })] })
     const entry = makeEntry({ id: 'e1', kind: 'review', source: 'pull', reviewComments: [rc] })
 
-    const result = deleteReviewComment([entry], 'e1', 'nonexistent')
+    const result = removeReviewComment([entry], 'e1', 'nonexistent')
 
     expect(result[0]!.reviewComments).toHaveLength(1)
     expect(result[0]!.reviewComments![0]!.replies).toHaveLength(1)
