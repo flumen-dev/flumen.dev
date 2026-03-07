@@ -63,7 +63,6 @@ type SearchResult = {
   }
 }
 
-
 export default defineEventHandler(async (event) => {
   const { token, login } = await getSessionToken(event)
 
