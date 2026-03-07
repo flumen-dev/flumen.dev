@@ -48,6 +48,9 @@
         },
         "error": {
           "type": "string"
+        },
+        "removeItem": {
+          "type": "string"
         }
       },
       "additionalProperties": false
