@@ -76,11 +76,12 @@ export const useFocusStore = defineStore('focus', () => {
   const inboxScope = ref<string>('') // org name or user login
   const inboxRepo = ref<string>('')
   const inboxSearch = ref<string>('')
+  const inboxSort = ref<'urgency' | 'age' | 'updated' | 'reviewState'>('urgency')
   const inboxPRStateFilter = ref<'open' | 'closed'>('open')
   const inboxIssueStateFilter = ref<'open' | 'closed'>('open')
 
   function inboxParams(category: 'pr' | 'issue', state: 'open' | 'closed') {
-    const p: Record<string, string> = { category, state, scope: inboxScope.value }
+    const p: Record<string, string> = { category, state, scope: inboxScope.value, sort: inboxSort.value }
     if (inboxRepo.value) p.repo = inboxRepo.value
     if (inboxSearch.value) p.search = inboxSearch.value
     return p
@@ -203,6 +204,17 @@ export const useFocusStore = defineStore('focus', () => {
     if (inboxRepo.value === repo) return
     inboxRepo.value = repo
     await reloadInbox()
+  }
+
+  async function setInboxSort(sort: typeof inboxSort.value) {
+    if (inboxSort.value === sort) return
+    inboxSort.value = sort
+    invalidateAllInboxCaches()
+    await fetchInbox()
+    apiFetch('/api/user/settings', {
+      method: 'PUT',
+      body: { inboxSort: sort },
+    }).catch(() => {})
   }
 
   async function setInboxSearch(search: string) {
@@ -393,7 +405,7 @@ export const useFocusStore = defineStore('focus', () => {
     }
   }
 
-  // --- Visible items (filtered by dismissed) ---
+  // --- Visible items (filtered by dismissed — server handles sort) ---
   const visiblePRs = computed(() =>
     activeInboxPRs.value.data.value.filter(item => !dismissedKeys.value.has(`${item.repo}#${item.number}`)),
   )
@@ -537,6 +549,12 @@ export const useFocusStore = defineStore('focus', () => {
     persistDismissed()
   }
 
+  function loadInboxSortFromSettings(sort: string) {
+    if (['urgency', 'age', 'updated', 'reviewState'].includes(sort)) {
+      inboxSort.value = sort as typeof inboxSort.value
+    }
+  }
+
   // Reset highlight + selection on filter/scope/page change
   watch(
     [inboxScope, inboxRepo, inboxSearch, inboxPRStateFilter, inboxIssueStateFilter],
@@ -559,6 +577,8 @@ export const useFocusStore = defineStore('focus', () => {
     setInboxScope,
     setInboxRepo,
     setInboxSearch,
+    inboxSort,
+    setInboxSort,
     inboxTotalCount,
     inboxPRStateFilter,
     inboxIssueStateFilter,
@@ -634,6 +654,7 @@ export const useFocusStore = defineStore('focus', () => {
     dismissItem,
     restoreItem,
     loadDismissedFromSettings,
+    loadInboxSortFromSettings,
     dismissedPRs,
     dismissedIssues,
     // Batch selection

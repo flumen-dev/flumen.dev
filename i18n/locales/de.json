@@ -746,6 +746,12 @@
         "changesRequested": "{count} Änderungen angefragt",
         "conflicts": "{count} Konflikt | {count} Konflikte"
       },
+      "sort": {
+        "urgency": "Dringlichkeit",
+        "age": "Älteste zuerst",
+        "updated": "Kürzlich aktualisiert",
+        "reviewState": "Review-Status"
+      },
       "shortcuts": {
         "title": "Tastenkürzel",
         "next": "Nächstes Element",

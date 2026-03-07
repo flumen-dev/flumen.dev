@@ -746,6 +746,12 @@
         "changesRequested": "{count} changes requested",
         "conflicts": "{count} conflict | {count} conflicts"
       },
+      "sort": {
+        "urgency": "Urgency",
+        "age": "Oldest first",
+        "updated": "Recently updated",
+        "reviewState": "Review state"
+      },
       "shortcuts": {
         "title": "Keyboard Shortcuts",
         "next": "Next item",

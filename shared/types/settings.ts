@@ -18,6 +18,7 @@ export interface UserSettings {
   contributionSkin: ContributionSkin
   pinnedHeight: number | null
   dismissedInbox: string[]
+  inboxSort: 'urgency' | 'age' | 'updated' | 'reviewState'
 }
 
 export const defaultUserSettings: UserSettings = {
@@ -31,6 +32,7 @@ export const defaultUserSettings: UserSettings = {
   contributionSkin: 'default',
   pinnedHeight: null,
   dismissedInbox: [],
+  inboxSort: 'urgency',
 }
 
 export const accentColors = [

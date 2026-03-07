@@ -2245,6 +2245,24 @@
               },
               "additionalProperties": false
             },
+            "sort": {
+              "type": "object",
+              "properties": {
+                "urgency": {
+                  "type": "string"
+                },
+                "age": {
+                  "type": "string"
+                },
+                "updated": {
+                  "type": "string"
+                },
+                "reviewState": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false
+            },
             "shortcuts": {
               "type": "object",
               "properties": {

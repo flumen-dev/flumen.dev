@@ -54,6 +54,40 @@ function buildPageQuery(category: 'pr' | 'issue'): string {
   `
 }
 
+type SearchResult = {
+  search: {
+    issueCount: number
+    pageInfo: { hasNextPage: boolean, endCursor: string | null }
+    nodes: Array<(GQLInboxPR | GQLInboxIssue) | null>
+  }
+}
+
+const REVIEW_ORDER: Record<string, number> = {
+  CHANGES_REQUESTED: 0,
+  REVIEW_REQUIRED: 1,
+  APPROVED: 2,
+}
+
+function urgencyScore(item: UnifiedInboxItem): number {
+  const staleDays = Math.max(0, Math.floor((Date.now() - new Date(item.updatedAt).getTime()) / 86_400_000))
+  let score = staleDays * 2
+  if (item.ciStatus === 'FAILURE') score += 5
+  if (item.reviewDecision === 'CHANGES_REQUESTED') score += 3
+  if (item.mergeable === 'CONFLICTING') score += 4
+  return score
+}
+
+function applySortToPage(items: UnifiedInboxItem[], sort: string): UnifiedInboxItem[] {
+  if (sort === 'updated' || sort === 'age') return items // GitHub already sorted
+  if (sort === 'urgency') return items.sort((a, b) => urgencyScore(b) - urgencyScore(a))
+  // reviewState
+  return items.sort((a, b) => {
+    const aOrder = a.reviewDecision ? (REVIEW_ORDER[a.reviewDecision] ?? 3) : 3
+    const bOrder = b.reviewDecision ? (REVIEW_ORDER[b.reviewDecision] ?? 3) : 3
+    return aOrder - bOrder
+  })
+}
+
 export default defineEventHandler(async (event) => {
   const { token, login } = await getSessionToken(event)
 
@@ -65,30 +99,26 @@ export default defineEventHandler(async (event) => {
   const repo = (query.repo as string) || ''
   const search = (query.search as string) || ''
   const state = (query.state as string) === 'closed' ? 'closed' : 'open'
+  const sort = (query.sort as string) || 'updated'
 
   // Build search query
   const scopeQualifier = repo
     ? `repo:${repo}`
     : scope === login ? `user:${login}` : `org:${scope}`
   const typeQualifier = category === 'pr' ? 'is:pr' : 'is:issue'
-  // For PRs, "closed" means merged; for issues, use is:closed
   const stateQualifier = state === 'closed'
     ? (category === 'pr' ? 'is:merged' : 'is:closed')
     : 'is:open'
   const parts = [`${typeQualifier} ${stateQualifier} ${scopeQualifier}`]
   if (search) parts.push(search)
-  parts.push('sort:updated-desc')
+
+  // GitHub-native sort: age → ascending, everything else → descending
+  parts.push(sort === 'age' ? 'sort:updated-asc' : 'sort:updated-desc')
   const searchQ = parts.join(' ')
 
-  // Fetch one page
+  // Fetch one page from GitHub
   const pageQuery = buildPageQuery(category)
-  const data = await githubGraphQL<{
-    search: {
-      issueCount: number
-      pageInfo: { hasNextPage: boolean, endCursor: string | null }
-      nodes: Array<(GQLInboxPR | GQLInboxIssue) | null>
-    }
-  }>(token, pageQuery, {
+  const data = await githubGraphQL<SearchResult>(token, pageQuery, {
     q: searchQ,
     first: pageSize,
     after,
@@ -100,6 +130,9 @@ export default defineEventHandler(async (event) => {
       ? mapPRNode(n as GQLInboxPR)
       : mapIssueNode(n as GQLInboxIssue),
     )
+
+  // Re-sort the page for urgency/reviewState
+  applySortToPage(items, sort)
 
   const pageInfo: PageInfo = {
     hasNextPage: data.search.pageInfo.hasNextPage,

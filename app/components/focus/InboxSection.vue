@@ -11,6 +11,25 @@ watchEffect(() => {
   }
 })
 
+// Load inbox sort from persisted settings
+watchEffect(() => {
+  if (settings.value?.inboxSort) {
+    store.loadInboxSortFromSettings(settings.value.inboxSort)
+  }
+})
+
+const sortOptions = computed(() => [
+  { label: t('focus.inbox.sort.urgency'), value: 'urgency' as const },
+  { label: t('focus.inbox.sort.age'), value: 'age' as const },
+  { label: t('focus.inbox.sort.updated'), value: 'updated' as const },
+  { label: t('focus.inbox.sort.reviewState'), value: 'reviewState' as const },
+])
+
+const selectedSort = computed({
+  get: () => store.inboxSort,
+  set: (val: string) => store.setInboxSort(val as 'urgency' | 'age' | 'updated' | 'reviewState'),
+})
+
 // Build scope options: user's own repos + each org
 const scopeOptions = computed(() => [
   {
@@ -166,6 +185,22 @@ onUnmounted(() => window.removeEventListener('keydown', onQuestionMark))
         class="flex-1"
         @update:model-value="onSearchInput"
       />
+
+      <USelectMenu
+        v-model="selectedSort"
+        :items="sortOptions"
+        value-key="value"
+        label-key="label"
+        class="w-44"
+        size="sm"
+      >
+        <template #leading>
+          <UIcon
+            name="i-lucide-arrow-up-down"
+            class="size-4 text-muted"
+          />
+        </template>
+      </USelectMenu>
 
       <button
         v-if="dismissedCount > 0"
