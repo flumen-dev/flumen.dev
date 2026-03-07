@@ -2,6 +2,7 @@ import type { GQLInboxPR, GQLInboxIssue } from '~~/server/utils/focus-inbox'
 import type { PageInfo } from '~~/shared/types/pagination'
 import type { UnifiedInboxItem } from '~~/shared/types/inbox'
 import { mapPRNode, mapIssueNode } from '~~/server/utils/focus-inbox'
+import { applySortToPage } from '~~/shared/utils/inboxSort'
 
 const PR_FIELDS = /* GraphQL */ `
   number title state url updatedAt isDraft
@@ -62,31 +63,6 @@ type SearchResult = {
   }
 }
 
-const REVIEW_ORDER: Record<string, number> = {
-  CHANGES_REQUESTED: 0,
-  REVIEW_REQUIRED: 1,
-  APPROVED: 2,
-}
-
-function urgencyScore(item: UnifiedInboxItem): number {
-  const staleDays = Math.max(0, Math.floor((Date.now() - new Date(item.updatedAt).getTime()) / 86_400_000))
-  let score = staleDays * 2
-  if (item.ciStatus === 'FAILURE') score += 5
-  if (item.reviewDecision === 'CHANGES_REQUESTED') score += 3
-  if (item.mergeable === 'CONFLICTING') score += 4
-  return score
-}
-
-function applySortToPage(items: UnifiedInboxItem[], sort: string): UnifiedInboxItem[] {
-  if (sort === 'updated' || sort === 'age') return items // GitHub already sorted
-  if (sort === 'urgency') return items.sort((a, b) => urgencyScore(b) - urgencyScore(a))
-  // reviewState
-  return items.sort((a, b) => {
-    const aOrder = a.reviewDecision ? (REVIEW_ORDER[a.reviewDecision] ?? 3) : 3
-    const bOrder = b.reviewDecision ? (REVIEW_ORDER[b.reviewDecision] ?? 3) : 3
-    return aOrder - bOrder
-  })
-}
 
 export default defineEventHandler(async (event) => {
   const { token, login } = await getSessionToken(event)
@@ -112,8 +88,8 @@ export default defineEventHandler(async (event) => {
   const parts = [`${typeQualifier} ${stateQualifier} ${scopeQualifier}`]
   if (search) parts.push(search)
 
-  // GitHub-native sort: age → ascending, everything else → descending
-  parts.push(sort === 'age' ? 'sort:updated-asc' : 'sort:updated-desc')
+  // GitHub-native sort: age → oldest created first, everything else → recently updated
+  parts.push(sort === 'age' ? 'sort:created-asc' : 'sort:updated-desc')
   const searchQ = parts.join(' ')
 
   // Fetch one page from GitHub

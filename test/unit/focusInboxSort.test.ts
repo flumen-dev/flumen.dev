@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { UnifiedInboxItem } from '../../shared/types/inbox'
-
-// Mirrors the server's urgencyScore + sortItemsServer functions
+import { urgencyScore, applySortToPage } from '../../shared/utils/inboxSort'
 
 function makeItem(
   number: number,
@@ -20,32 +19,6 @@ function makeItem(
     commentCount: 0,
     ...overrides,
   }
-}
-
-const REVIEW_ORDER: Record<string, number> = {
-  CHANGES_REQUESTED: 0,
-  REVIEW_REQUIRED: 1,
-  APPROVED: 2,
-}
-
-function urgencyScore(item: UnifiedInboxItem): number {
-  const staleDays = Math.max(0, Math.floor((Date.now() - new Date(item.updatedAt).getTime()) / 86_400_000))
-  let score = staleDays * 2
-  if (item.ciStatus === 'FAILURE') score += 5
-  if (item.reviewDecision === 'CHANGES_REQUESTED') score += 3
-  if (item.mergeable === 'CONFLICTING') score += 4
-  return score
-}
-
-function sortItems(items: UnifiedInboxItem[], sort: string): UnifiedInboxItem[] {
-  const sorted = [...items]
-  if (sort === 'urgency') return sorted.sort((a, b) => urgencyScore(b) - urgencyScore(a))
-  // reviewState
-  return sorted.sort((a, b) => {
-    const aOrder = a.reviewDecision ? (REVIEW_ORDER[a.reviewDecision] ?? 3) : 3
-    const bOrder = b.reviewDecision ? (REVIEW_ORDER[b.reviewDecision] ?? 3) : 3
-    return aOrder - bOrder
-  })
 }
 
 describe('urgency score', () => {
@@ -95,12 +68,12 @@ describe('sort order', () => {
   ]
 
   it('urgency puts failing + stale PRs first', () => {
-    const sorted = sortItems(items, 'urgency')
-    expect(sorted[0]!.number).toBe(2) // 7d stale + CI fail + changes requested
+    const sorted = applySortToPage([...items], 'urgency')
+    expect(sorted[0]!.number).toBe(2)
   })
 
   it('reviewState puts CHANGES_REQUESTED before REVIEW_REQUIRED before APPROVED', () => {
-    const sorted = sortItems(items, 'reviewState')
+    const sorted = applySortToPage([...items], 'reviewState')
     expect(sorted.map(i => i.reviewDecision)).toEqual([
       'CHANGES_REQUESTED',
       'REVIEW_REQUIRED',
@@ -110,7 +83,13 @@ describe('sort order', () => {
 
   it('reviewState puts items without reviewDecision last', () => {
     const withNull = [...items, makeItem(4, { reviewDecision: null })]
-    const sorted = sortItems(withNull, 'reviewState')
+    const sorted = applySortToPage([...withNull], 'reviewState')
     expect(sorted[sorted.length - 1]!.number).toBe(4)
+  })
+
+  it('updated and age return items unchanged', () => {
+    const original = [...items]
+    expect(applySortToPage([...items], 'updated').map(i => i.number)).toEqual(original.map(i => i.number))
+    expect(applySortToPage([...items], 'age').map(i => i.number)).toEqual(original.map(i => i.number))
   })
 })
