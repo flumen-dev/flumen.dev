@@ -110,7 +110,8 @@ async function addLabel(label: { name: string, color: string }) {
       <button
         v-if="!readonly"
         type="button"
-        class="inline-flex items-center justify-center max-w-0 overflow-hidden opacity-0 group-hover/label:max-w-4 group-hover/label:opacity-100 group-hover/label:ml-0.5 transition-all duration-150 cursor-pointer"
+        :aria-label="t('common.removeItem', { item: label.name })"
+        class="inline-flex items-center justify-center max-w-0 overflow-hidden opacity-0 group-hover/label:max-w-4 group-hover/label:opacity-100 group-hover/label:ml-0.5 focus-visible:max-w-4 focus-visible:opacity-100 focus-visible:ml-0.5 transition-all duration-150 cursor-pointer"
         :disabled="loading"
         @click.stop="removeLabel(label.name)"
       >

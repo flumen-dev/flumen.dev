@@ -13,7 +13,8 @@
     "bot": "Bot",
     "filterLabels": "Filter labels...",
     "noLabelsAvailable": "No labels available",
-    "error": "Error"
+    "error": "Error",
+    "removeItem": "Remove {item}"
   },
   "nav": {
     "dashboard": "Dashboard",

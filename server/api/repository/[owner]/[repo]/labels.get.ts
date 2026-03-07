@@ -1,9 +1,8 @@
 const fetchRepoLabels = defineCachedFunction(
   async (token: string, owner: string, repo: string) => {
-    const res = await githubFetchWithToken<Array<{ name: string, color: string, description: string | null }>>(
+    const res = await githubFetchAllWithToken<{ name: string, color: string, description: string | null }>(
       token,
       `/repos/${owner}/${repo}/labels`,
-      { params: { per_page: 100 } },
     )
     return res.data.map(l => ({ name: l.name, color: l.color, description: l.description }))
   },

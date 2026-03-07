@@ -43,8 +43,12 @@ function navigate() {
 
 <template>
   <div
+    role="link"
+    tabindex="0"
     class="flex items-start gap-3 px-4 py-3 hover:bg-elevated transition-colors cursor-pointer"
     @click="navigate"
+    @keydown.enter="navigate"
+    @keydown.space.prevent="navigate"
   >
     <!-- State icon -->
     <UIcon

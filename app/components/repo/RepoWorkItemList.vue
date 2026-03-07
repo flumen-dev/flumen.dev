@@ -98,8 +98,12 @@ function ciIcon(ciStatus: WorkItem['ciStatus']) {
       <div
         v-for="item in workItems"
         :key="item.id"
+        role="link"
+        tabindex="0"
         class="flex items-start gap-2.5 px-3 py-2.5 hover:bg-accented hover:border-l-2 hover:border-l-primary hover:pl-2.5 transition-all border-b border-default last:border-b-0 cursor-pointer"
         @click="navigateToItem(item)"
+        @keydown.enter="navigateToItem(item)"
+        @keydown.space.prevent="navigateToItem(item)"
       >
         <RepoWorkItemRow
           :item="item"

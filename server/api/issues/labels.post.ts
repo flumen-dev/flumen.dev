@@ -16,6 +16,10 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'Missing repo, number, or label' })
   }
 
+  if (action !== 'add' && action !== 'remove') {
+    throw createError({ statusCode: 400, message: 'Invalid action' })
+  }
+
   const [owner, repoName] = repo.split('/')
   if (!owner || !repoName) {
     throw createError({ statusCode: 400, message: 'Invalid repo format' })

@@ -13,7 +13,8 @@
     "bot": "Bot",
     "filterLabels": "Labels filtern...",
     "noLabelsAvailable": "Keine Labels verfügbar",
-    "error": "Fehler"
+    "error": "Fehler",
+    "removeItem": "{item} entfernen"
   },
   "nav": {
     "dashboard": "Dashboard",
