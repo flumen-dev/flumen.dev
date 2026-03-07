@@ -1,13 +1,16 @@
 <script setup lang="ts">
 import type { WorkItem } from '~~/shared/types/work-item'
 
-defineProps<{
+const props = defineProps<{
   item: WorkItem
+  repo: string
   stateBadgeColor: string
   stateBadgeLabel: string
   prStatusLabel: string | null
   ciIcon: { name: string, color: string, spin?: boolean } | null
 }>()
+
+const { localLabels, onLabelAdded, onLabelRemoved } = useLocalLabels(() => props.item.labels)
 </script>
 
 <template>
@@ -67,20 +70,13 @@ defineProps<{
         />
         {{ item.commentCount }}
       </span>
-      <div
-        v-if="item.labels.length"
-        class="flex items-center gap-1"
-      >
-        <UBadge
-          v-for="label in item.labels.slice(0, 3)"
-          :key="label.name"
-          variant="subtle"
-          size="xs"
-          :style="{ backgroundColor: `#${label.color}20`, color: `#${label.color}` }"
-        >
-          {{ label.name }}
-        </UBadge>
-      </div>
+      <UiLabelManager
+        :repo="repo"
+        :number="item.number"
+        :labels="localLabels"
+        @added="onLabelAdded"
+        @removed="onLabelRemoved"
+      />
       <div
         v-if="item.assignees.length"
         class="flex -space-x-1.5"

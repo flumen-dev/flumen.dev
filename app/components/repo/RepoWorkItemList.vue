@@ -24,10 +24,16 @@ const { data: workItems, status, error: fetchError } = useLazyFetch<WorkItem[]>(
   },
 )
 
+const router = useRouter()
 const localePath = useLocalePath()
 
-function workItemTo(item: WorkItem) {
-  return localePath(`/repos/${props.owner}/${props.repo}/work-items/${item.id}`)
+function navigateToItem(item: WorkItem) {
+  if (resolvedLinkMode.value === 'repo') {
+    router.push(localePath(`/repos/${props.owner}/${props.repo}/work-items/${item.id}`))
+  }
+  else {
+    window.open(item.htmlUrl, '_blank', 'noopener,noreferrer')
+  }
 }
 
 const STATE_COLOR: Record<string, string> = {
@@ -89,23 +95,21 @@ function ciIcon(ciStatus: WorkItem['ciStatus']) {
     </div>
 
     <template v-else-if="workItems?.length">
-      <component
-        :is="resolvedLinkMode === 'repo' ? 'NuxtLink' : 'a'"
+      <div
         v-for="item in workItems"
         :key="item.id"
-        v-bind="resolvedLinkMode === 'repo'
-          ? { to: workItemTo(item) }
-          : { href: item.htmlUrl, target: '_blank', rel: 'noopener noreferrer' }"
-        class="flex items-start gap-2.5 px-3 py-2.5 hover:bg-accented hover:border-l-2 hover:border-l-primary hover:pl-2.5 transition-all border-b border-default last:border-b-0"
+        class="flex items-start gap-2.5 px-3 py-2.5 hover:bg-accented hover:border-l-2 hover:border-l-primary hover:pl-2.5 transition-all border-b border-default last:border-b-0 cursor-pointer"
+        @click="navigateToItem(item)"
       >
         <RepoWorkItemRow
           :item="item"
+          :repo="`${owner}/${repo}`"
           :state-badge-color="stateBadgeColor(item.state)"
           :state-badge-label="stateBadgeLabel(item)"
           :pr-status-label="prStatusLabel(item)"
           :ci-icon="ciIcon(item.ciStatus)"
         />
-      </component>
+      </div>
     </template>
 
     <div

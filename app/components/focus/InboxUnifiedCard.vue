@@ -134,6 +134,8 @@ const issuePreview = computed(() =>
   preview.value?.type === 'issue' ? preview.value : null,
 )
 
+const { localLabels, onLabelAdded, onLabelRemoved } = useLocalLabels(() => props.item.labels)
+
 const workItemPath = computed(() => buildWorkItemPath(props.item.repo, props.item.number, props.item.type))
 
 const workItemLink = computed(() => (workItemPath.value ? localePath(workItemPath.value) : null))
@@ -258,13 +260,12 @@ function linkedPrWorkItemLink(prNumber: number) {
                 size="xs"
               />
             </UTooltip>
-            <UBadge
-              v-for="label in item.labels.slice(0, 3)"
-              :key="label.name"
-              :label="label.name"
-              :style="{ backgroundColor: `#${label.color}20`, color: `#${label.color}` }"
-              variant="subtle"
-              size="xs"
+            <UiLabelManager
+              :repo="item.repo"
+              :number="item.number"
+              :labels="localLabels"
+              @added="onLabelAdded"
+              @removed="onLabelRemoved"
             />
           </div>
         </div>

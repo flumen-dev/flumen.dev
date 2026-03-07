@@ -10,7 +10,9 @@
     "viewOnGithub": "Auf GitHub ansehen",
     "close": "Schließen",
     "cancel": "Abbrechen",
-    "bot": "Bot"
+    "bot": "Bot",
+    "filterLabels": "Labels filtern...",
+    "noLabelsAvailable": "Keine Labels verfügbar"
   },
   "nav": {
     "dashboard": "Dashboard",

@@ -39,6 +39,12 @@
         },
         "bot": {
           "type": "string"
+        },
+        "filterLabels": {
+          "type": "string"
+        },
+        "noLabelsAvailable": {
+          "type": "string"
         }
       },
       "additionalProperties": false

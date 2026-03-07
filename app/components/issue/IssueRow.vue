@@ -15,15 +15,18 @@ const updatedAgo = useTimeAgo(computed(() => props.issue.updatedAt))
 const stateIcon = computed(() => getIssueStateIcon(props.issue.state, props.issue.stateReason))
 const stateColor = computed(() => getIssueStateColor(props.issue.state, props.issue.stateReason))
 
-const issueLink = computed(() => {
-  return localePath(buildWorkItemPath(props.issue.repository.nameWithOwner, props.issue.number)!)
-})
+const router = useRouter()
+const { localLabels, onLabelAdded, onLabelRemoved } = useLocalLabels(() => props.issue.labels)
+
+function navigate() {
+  router.push(localePath(buildWorkItemPath(props.issue.repository.nameWithOwner, props.issue.number)!))
+}
 </script>
 
 <template>
-  <NuxtLink
-    :to="issueLink"
-    class="flex items-start gap-3 px-4 py-3 hover:bg-elevated transition-colors"
+  <div
+    class="flex items-start gap-3 px-4 py-3 hover:bg-elevated transition-colors cursor-pointer"
+    @click="navigate"
   >
     <!-- State icon -->
     <UIcon
@@ -39,15 +42,13 @@ const issueLink = computed(() => {
         <span class="font-medium text-highlighted hover:underline">
           {{ issue.title }}
         </span>
-        <UBadge
-          v-for="label in issue.labels"
-          :key="label.name"
-          variant="subtle"
-          size="xs"
-          :style="{ backgroundColor: `#${label.color}20`, color: `#${label.color}` }"
-        >
-          {{ label.name }}
-        </UBadge>
+        <UiLabelManager
+          :repo="issue.repository.nameWithOwner"
+          :number="issue.number"
+          :labels="localLabels"
+          @added="onLabelAdded"
+          @removed="onLabelRemoved"
+        />
       </div>
 
       <!-- Row 2: Meta -->
@@ -66,7 +67,7 @@ const issueLink = computed(() => {
         <button
           type="button"
           class="inline-flex items-center gap-1 cursor-pointer hover:underline"
-          @click.stop.prevent="openProfile(issue.author.login)"
+          @click.stop="openProfile(issue.author.login)"
         >
           <UAvatar
             :src="issue.author.avatarUrl"
@@ -132,7 +133,7 @@ const issueLink = computed(() => {
         <button
           type="button"
           class="cursor-pointer"
-          @click.stop.prevent="openProfile(assignee.login)"
+          @click.stop="openProfile(assignee.login)"
         >
           <UAvatar
             :src="assignee.avatarUrl"
@@ -142,5 +143,5 @@ const issueLink = computed(() => {
         </button>
       </UTooltip>
     </div>
-  </NuxtLink>
+  </div>
 </template>
