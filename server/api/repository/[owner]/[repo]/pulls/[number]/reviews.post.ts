@@ -8,7 +8,7 @@ interface ReviewRequest {
   workItemId?: string
 }
 
-interface GitHubReviewResponse {
+interface GitHubReview {
   id: number
   node_id: string
   state: string
@@ -18,6 +18,12 @@ interface GitHubReviewResponse {
 }
 
 const VALID_EVENTS: Set<string> = new Set(['APPROVE', 'REQUEST_CHANGES', 'COMMENT'])
+
+/** Maps review event to the resulting GitHub state for comparison. */
+const EVENT_TO_STATE: Record<string, string> = {
+  APPROVE: 'APPROVED',
+  REQUEST_CHANGES: 'CHANGES_REQUESTED',
+}
 
 const REVIEW_ERROR_MAP: Record<number, string> = {
   403: 'forbidden',
@@ -46,16 +52,37 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'Body is required for REQUEST_CHANGES' })
   }
 
-  const reviewBody: Record<string, string> = {
-    event: body.event,
+  // Check current review state — skip submission if already in desired state
+  const targetState = EVENT_TO_STATE[body.event]
+  if (targetState) {
+    const reviews = await githubFetchWithToken<GitHubReview[]>(
+      token,
+      `/repos/${owner}/${repo}/pulls/${number}/reviews`,
+      { params: { per_page: 100 } },
+    )
+
+    const latestUserReview = reviews.data
+      .filter(r => r.user.login === login && (r.state === 'APPROVED' || r.state === 'CHANGES_REQUESTED'))
+      .sort((a, b) => new Date(b.submitted_at).getTime() - new Date(a.submitted_at).getTime())[0]
+
+    if (latestUserReview?.state === targetState) {
+      return {
+        changed: false,
+        id: latestUserReview.node_id,
+        state: latestUserReview.state,
+        body: latestUserReview.body,
+        submittedAt: latestUserReview.submitted_at,
+        author: latestUserReview.user.login,
+        authorAvatarUrl: latestUserReview.user.avatar_url,
+      }
+    }
   }
 
-  if (trimmedBody) {
-    reviewBody.body = trimmedBody
-  }
+  const reviewBody: Record<string, string> = { event: body.event }
+  if (trimmedBody) reviewBody.body = trimmedBody
 
   try {
-    const result = await githubFetchWithToken<GitHubReviewResponse>(
+    const result = await githubFetchWithToken<GitHubReview>(
       token,
       `/repos/${owner}/${repo}/pulls/${number}/reviews`,
       { method: 'POST', body: reviewBody },
@@ -66,6 +93,7 @@ export default defineEventHandler(async (event) => {
     }
 
     return {
+      changed: true,
       id: result.data.node_id,
       state: result.data.state,
       body: result.data.body,

@@ -21,6 +21,7 @@ const PR_FIELDS = /* GraphQL */ `
       }
     }
   }
+  assignees(first: 3) { nodes { login avatarUrl } }
   commits(last: 1) {
     nodes {
       commit {

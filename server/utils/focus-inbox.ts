@@ -21,6 +21,7 @@ export interface GQLInboxPR {
   mergeable: 'MERGEABLE' | 'CONFLICTING' | 'UNKNOWN'
   headRefName: string
   comments: { totalCount: number }
+  assignees: { nodes: Array<{ login: string, avatarUrl: string }> }
   reviewRequests: { nodes: Array<{ requestedReviewer: { login: string, avatarUrl: string } | null }> }
   commits?: {
     nodes: Array<{
@@ -67,6 +68,7 @@ export function mapPRNode(node: GQLInboxPR): BaseInboxItem {
     changedFiles: node.changedFiles,
     mergeable: node.mergeable,
     headRefName: node.headRefName,
+    assignees: node.assignees?.nodes ?? [],
     requestedReviewers: (node.reviewRequests?.nodes ?? [])
       .map(n => n.requestedReviewer)
       .filter((r): r is { login: string, avatarUrl: string } => r !== null),

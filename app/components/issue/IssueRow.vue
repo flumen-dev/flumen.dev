@@ -16,10 +16,28 @@ const stateIcon = computed(() => getIssueStateIcon(props.issue.state, props.issu
 const stateColor = computed(() => getIssueStateColor(props.issue.state, props.issue.stateReason))
 
 const router = useRouter()
+const { user } = useUserSession()
+const issueStore = useIssueStore()
 const { localLabels, onLabelAdded, onLabelRemoved } = useLocalLabels(() => props.issue.labels)
 
+const repo = computed(() => props.issue.repository.nameWithOwner)
+
+function onAssigned(login: string) {
+  const assignees = [...props.issue.assignees]
+  if (!assignees.some(a => a.login === login)) {
+    assignees.push({ login, avatarUrl: user.value?.avatarUrl ?? '' })
+  }
+  issueStore.updateIssue(repo.value, props.issue.number, { assignees })
+}
+
+function onUnassigned(login: string) {
+  issueStore.updateIssue(repo.value, props.issue.number, {
+    assignees: props.issue.assignees.filter(a => a.login !== login),
+  })
+}
+
 function navigate() {
-  router.push(localePath(buildWorkItemPath(props.issue.repository.nameWithOwner, props.issue.number)!))
+  router.push(localePath(buildWorkItemPath(repo.value, props.issue.number)!))
 }
 </script>
 
@@ -123,8 +141,15 @@ function navigate() {
       </div>
     </div>
 
-    <!-- Right side: Assignees + author -->
+    <!-- Right side: Assign + Assignees -->
     <div class="flex items-center gap-1 shrink-0">
+      <UiAssignButton
+        :repo="repo"
+        :number="issue.number"
+        :assignees="issue.assignees"
+        @assigned="onAssigned"
+        @unassigned="onUnassigned"
+      />
       <UTooltip
         v-for="assignee in issue.assignees"
         :key="assignee.login"

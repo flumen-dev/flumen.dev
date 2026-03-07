@@ -223,6 +223,18 @@ export const useFocusStore = defineStore('focus', () => {
     await reloadInbox()
   }
 
+  /** Update a single inbox item in-place across all sections (optimistic). */
+  function updateInboxItem(repo: string, number: number, patch: Partial<UnifiedInboxItem>) {
+    for (const section of [inboxPRsOpen, inboxPRsClosed, inboxIssuesOpen, inboxIssuesClosed]) {
+      const idx = section.data.value.findIndex(i => i.repo === repo && i.number === number)
+      if (idx !== -1) {
+        section.data.value = section.data.value.map((item, i) =>
+          i === idx ? { ...item, ...patch } : item,
+        )
+      }
+    }
+  }
+
   // --- Preview cache (click-to-load, cached per key) ---
   const previewCache = ref<Record<string, InboxPreview>>({})
   const previewLoading = ref<Record<string, boolean>>({})
@@ -663,5 +675,6 @@ export const useFocusStore = defineStore('focus', () => {
     clearSelection,
     dismissSelected,
     restoreSelected,
+    updateInboxItem,
   }
 })

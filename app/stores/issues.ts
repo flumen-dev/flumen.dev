@@ -133,6 +133,15 @@ export const useIssueStore = defineStore('issues', () => {
     await fetchIssues()
   }
 
+  function updateIssue(repo: string, number: number, patch: Partial<Issue>) {
+    const idx = section.data.value.findIndex(i => i.repository.nameWithOwner === repo && i.number === number)
+    if (idx !== -1) {
+      section.data.value = section.data.value.map((item, i) =>
+        i === idx ? { ...item, ...patch } : item,
+      )
+    }
+  }
+
   async function refresh() {
     loaded.value = false
     search.value = ''
@@ -165,5 +174,6 @@ export const useIssueStore = defineStore('issues', () => {
     loadPreviousPage: section.prevPage,
     selectRepo,
     refresh,
+    updateIssue,
   }
 })

@@ -45,6 +45,9 @@
         },
         "noLabelsAvailable": {
           "type": "string"
+        },
+        "error": {
+          "type": "string"
         }
       },
       "additionalProperties": false
@@ -2171,6 +2174,12 @@
               "type": "string"
             },
             "assigneesLabel": {
+              "type": "string"
+            },
+            "assignMe": {
+              "type": "string"
+            },
+            "unassignMe": {
               "type": "string"
             },
             "new": {

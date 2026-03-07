@@ -12,7 +12,8 @@
     "cancel": "Cancel",
     "bot": "Bot",
     "filterLabels": "Filter labels...",
-    "noLabelsAvailable": "No labels available"
+    "noLabelsAvailable": "No labels available",
+    "error": "Error"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -722,6 +723,8 @@
       "linkedPRs": "Linked PRs",
       "reviewers": "Reviewers",
       "assigneesLabel": "Assignees",
+      "assignMe": "Assign to me",
+      "unassignMe": "Unassign me",
       "new": "new",
       "searchPlaceholder": "Search...",
       "allRepos": "All repos",
