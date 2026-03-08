@@ -17,7 +17,7 @@ describe('githubReferences', () => {
   it('returns null for invalid content', () => {
     expect(parseGitHubReference('#123')).toBeNull()
     expect(parseGitHubReference('close 123')).toBeNull()
-    expect(parseGitHubReference('closed #123')).toBeNull()
+    expect(parseGitHubReference('closed #123')).toEqual({ keyword: 'closed', number: 123 })
   })
 
   it('matches standalone references only', () => {
