@@ -146,6 +146,9 @@ const repoBase = computed(() => `/repos/${owner.value}/${repo.value}`)
                 </div>
               </template>
 
+              <p class="text-xs text-dimmed mb-3">
+                {{ $t('repos.detail.workItemsHint') }}
+              </p>
               <div class="grid grid-cols-1 gap-2">
                 <UButton
                   block
@@ -157,19 +160,12 @@ const repoBase = computed(() => `/repos/${owner.value}/${repo.value}`)
                 </UButton>
                 <UButton
                   block
-                  variant="outline"
+                  variant="soft"
+                  color="error"
                   icon="i-lucide-circle-dot"
                   :to="localePath(`${repoBase}/issues`)"
                 >
                   {{ $t('nav.issues') }}
-                </UButton>
-                <UButton
-                  block
-                  variant="outline"
-                  icon="i-lucide-git-pull-request"
-                  :to="localePath(`${repoBase}/pulls`)"
-                >
-                  {{ $t('nav.pullRequests') }}
                 </UButton>
               </div>
             </UCard>

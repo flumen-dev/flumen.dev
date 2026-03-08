@@ -178,6 +178,7 @@
       "forkedFrom": "Geforkt von",
       "lists": "Listen",
       "workItems": "Work Items",
+      "workItemsHint": "Issues und Pull Requests kombiniert — nach Priorität sortiert.",
       "specialFiles": {
         "readme": "README",
         "codeOfConduct": "Verhaltensregeln",

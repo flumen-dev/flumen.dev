@@ -178,6 +178,7 @@
       "forkedFrom": "Forked from",
       "lists": "Lists",
       "workItems": "Work Items",
+      "workItemsHint": "Issues and pull requests combined — sorted by priority.",
       "specialFiles": {
         "readme": "README",
         "codeOfConduct": "Code of Conduct",
