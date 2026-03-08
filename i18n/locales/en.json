@@ -325,7 +325,6 @@
   "issues": {
     "open": "Open",
     "closed": "Closed",
-    "all": "All",
     "selectRepo": "Select a repository...",
     "searchRepos": "Search repositories...",
     "searchReposHint": "Filter your repos or search GitHub",
@@ -447,19 +446,16 @@
       }
     }
   },
-  "pulls": {
-    "all": "All"
-  },
   "workItems": {
+    "open": "Open",
+    "closed": "Closed",
+    "noResults": "No work items found.",
     "tabs": {
       "conversation": "Conversation",
       "changes": "Changes"
     },
     "badge": {
       "bot": "Bot"
-    },
-    "filter": {
-      "all": "All"
     },
     "ci": {
       "allPassed": "All checks passed",

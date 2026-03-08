@@ -541,6 +541,9 @@
             "workItems": {
               "type": "string"
             },
+            "workItemsHint": {
+              "type": "string"
+            },
             "specialFiles": {
               "type": "object",
               "properties": {
@@ -979,9 +982,6 @@
         "closed": {
           "type": "string"
         },
-        "all": {
-          "type": "string"
-        },
         "selectRepo": {
           "type": "string"
         },
@@ -1345,18 +1345,18 @@
       },
       "additionalProperties": false
     },
-    "pulls": {
-      "type": "object",
-      "properties": {
-        "all": {
-          "type": "string"
-        }
-      },
-      "additionalProperties": false
-    },
     "workItems": {
       "type": "object",
       "properties": {
+        "open": {
+          "type": "string"
+        },
+        "closed": {
+          "type": "string"
+        },
+        "noResults": {
+          "type": "string"
+        },
         "tabs": {
           "type": "object",
           "properties": {
@@ -1373,15 +1373,6 @@
           "type": "object",
           "properties": {
             "bot": {
-              "type": "string"
-            }
-          },
-          "additionalProperties": false
-        },
-        "filter": {
-          "type": "object",
-          "properties": {
-            "all": {
               "type": "string"
             }
           },
