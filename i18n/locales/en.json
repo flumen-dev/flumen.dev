@@ -849,6 +849,11 @@
       "away": "Away"
     }
   },
+  "references": {
+    "self": "This work item",
+    "local": "Work item in this repository",
+    "external": "Work item in {repo}"
+  },
   "settings": {
     "appearance": {
       "title": "Appearance",

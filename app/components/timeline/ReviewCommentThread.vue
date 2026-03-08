@@ -4,6 +4,7 @@ const props = defineProps<{
   replies?: ReviewComment[]
   repoContext: string
   issueNumber?: number
+  selfNumbers?: number[]
   workItemId: string
   currentUserLogin?: string
   reactions: { content: string, count: number, viewerHasReacted: boolean }[]
@@ -154,6 +155,7 @@ function executeDelete() {
       v-else
       :source="comment.body"
       :repo-context="repoContext"
+      :self-numbers="selfNumbers"
     />
 
     <IssueReactions

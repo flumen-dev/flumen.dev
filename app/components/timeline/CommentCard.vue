@@ -18,6 +18,7 @@ const props = defineProps<{
   pullCommentId?: number
   workItemId?: string
   viewerCanUpdate?: boolean
+  selfNumbers?: number[]
   viewerCanDelete?: boolean
   viewerCanToggleTasks?: boolean
   isEditing?: boolean
@@ -176,6 +177,7 @@ const showQuickReactions = computed(() => {
             v-if="body"
             :source="body"
             :repo-context="repoContext"
+            :self-numbers="selfNumbers"
             :interactive-tasks="viewerCanToggleTasks && !isEditing"
             @task-toggle="(detail) => emit('taskToggle', detail)"
           />

@@ -64,6 +64,15 @@ const mentionUsers = computed<MentionUser[]>(() => {
 
 const contributions = computed(() => workItemRef.value?.contributions ?? [])
 
+/** All numbers belonging to this work item (own + contributions) for self-ref badge detection */
+const selfNumbers = computed<number[]>(() => {
+  const wi = workItemRef.value
+  if (!wi) return []
+  const nums = [wi.number]
+  for (const c of wi.contributions) nums.push(c.number)
+  return nums
+})
+
 const pullSubjectIdsByNumber = computed<Record<number, string>>(() => {
   const result: Record<number, string> = {}
   for (const contribution of contributions.value) {
@@ -721,6 +730,7 @@ const commentFormRef = ref<{ active: boolean }>()
               :review-state="item.kind === 'review' ? item.reviewState : undefined"
               :source="item.source"
               :repo-context="repo"
+              :self-numbers="selfNumbers"
               :reactions="getLocalReactions(item.id)"
               :subject-id="getTimelineSubjectId(item)"
               :issue-number="workItemRef?.number"
@@ -769,6 +779,7 @@ const commentFormRef = ref<{ active: boolean }>()
                         :replies="getLocalReplies(rc.id, rc.replies)"
                         :repo-context="repo"
                         :issue-number="workItemRef?.number"
+                        :self-numbers="selfNumbers"
                         :work-item-id="id"
                         :current-user-login="user?.login"
                         :reactions="getLocalReactions(rc.id)"

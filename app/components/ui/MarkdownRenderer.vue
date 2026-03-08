@@ -1,9 +1,13 @@
 <script lang="ts" setup>
+const { locale, t } = useI18n()
+
 const props = withDefaults(defineProps<{
   /** Raw markdown source */
   source: string
   /** Repository context for GitHub issue references (owner/repo) */
   repoContext?: string
+  /** Numbers belonging to this work item (issue + linked PRs) — rendered as self-ref badges */
+  selfNumbers?: number[]
   /** Base URL for proxying raw files, rewrites relative image URLs */
   rawProxyBase?: string
   /** Auto-convert @mentions to GitHub profile links */
@@ -45,7 +49,14 @@ function enhance() {
   }
 
   if (props.repoContext) {
-    enhanceGitHubReferences(el, props.repoContext)
+    enhanceGitHubReferences(el, props.repoContext, locale.value, {
+      selfNumbers: props.selfNumbers,
+      tooltips: {
+        self: t('references.self'),
+        local: t('references.local'),
+        external: t('references.external', { repo: '{repo}' }),
+      },
+    })
   }
 
   if (props.interactiveTasks) {

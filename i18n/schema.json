@@ -2554,6 +2554,21 @@
       },
       "additionalProperties": false
     },
+    "references": {
+      "type": "object",
+      "properties": {
+        "self": {
+          "type": "string"
+        },
+        "local": {
+          "type": "string"
+        },
+        "external": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
     "settings": {
       "type": "object",
       "properties": {

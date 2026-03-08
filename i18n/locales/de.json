@@ -849,6 +849,11 @@
       "away": "Abwesend"
     }
   },
+  "references": {
+    "self": "Dieses Work Item",
+    "local": "Work Item in diesem Repository",
+    "external": "Work Item in {repo}"
+  },
   "settings": {
     "appearance": {
       "title": "Erscheinungsbild",

@@ -112,18 +112,22 @@
 .markdown-content :where(a:hover) { text-decoration: underline; }
 .markdown-content :where(a > img) { display: inline; }
 
+/* GitHub reference badges — layout only, colors via Tailwind classes on the element */
 .markdown-content :where(.github-ref) {
   display: inline-flex;
   align-items: center;
+  gap: 0.2rem;
   border-radius: 0.25rem;
   padding: 0.1rem 0.4rem;
   font-size: 0.8125rem;
   font-weight: 600;
   line-height: 1.2;
-  background-color: color-mix(in oklab, var(--ui-color-primary) 12%, transparent);
-  color: var(--ui-color-primary);
   text-decoration: none;
+  transition: background-color 0.15s;
+  vertical-align: baseline;
 }
+.markdown-content :where(.github-ref:hover) { text-decoration: none; }
+.github-ref-icon { display: inline-flex; align-items: center; flex-shrink: 0; }
 
 .markdown-content :where(ul),
 .markdown-content :where(ol) { padding-left: 1.5rem; margin: 0.5rem 0; }
