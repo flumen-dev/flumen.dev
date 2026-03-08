@@ -9,7 +9,16 @@ const props = defineProps<{
   compact?: boolean
 }>()
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
+
+const GITHUB_ISSUE_PR_URL = /^https?:\/\/github\.com\/([^/]+\/[^/]+)\/(?:issues|pull)\/(\d+)/
+
+function toFlumenUrl(githubUrl: string): string {
+  const match = githubUrl.match(GITHUB_ISSUE_PR_URL)
+  if (!match) return githubUrl
+  const prefix = locale.value ? `/${locale.value}` : ''
+  return `${prefix}/repos/${match[1]}/work-items/${match[2]}`
+}
 
 // Group consecutive events by actor
 const actorGroups = computed(() => {
@@ -134,10 +143,9 @@ function isBotActor(actor: string) {
         </span>
 
         <!-- Cross-referenced -->
-        <a
+        <NuxtLink
           v-else-if="event.type === 'CrossReferencedEvent'"
-          :href="event.source.url"
-          target="_blank"
+          :to="toFlumenUrl(event.source.url)"
           class="inline-flex items-center gap-1 rounded-full border border-default bg-elevated/50 px-2 py-0.5 text-xs hover:border-primary/50 transition-colors"
         >
           <UIcon
@@ -146,7 +154,7 @@ function isBotActor(actor: string) {
           />
           <span class="text-muted">#{{ event.source.number }}</span>
           <span class="text-muted/60 truncate max-w-32 sm:max-w-48">{{ event.source.title }}</span>
-        </a>
+        </NuxtLink>
 
         <!-- Milestoned -->
         <span
