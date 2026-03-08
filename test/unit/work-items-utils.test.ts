@@ -1,5 +1,5 @@
 import { beforeAll, describe, expect, it } from 'vitest'
-import { parseWorkItemId, workItemIdFromIssue, workItemIdFromPull } from '../../server/utils/work-items'
+import { parseWorkItemId } from '../../server/utils/work-items'
 
 beforeAll(() => {
   ;(globalThis as { createError?: (input: { statusCode: number, message: string }) => Error & { statusCode: number } }).createError = ({ statusCode, message }) => {
@@ -10,29 +10,24 @@ beforeAll(() => {
 })
 
 describe('work item id helpers', () => {
-  it('creates canonical issue and pull ids', () => {
-    expect(workItemIdFromIssue(42)).toBe('42')
-    expect(workItemIdFromPull(42)).toBe('pr-42')
+  it('parses valid numeric ids', () => {
+    expect(parseWorkItemId('1')).toEqual({ number: 1 })
+    expect(parseWorkItemId('42')).toEqual({ number: 42 })
   })
 
-  it('parses valid issue ids', () => {
-    expect(parseWorkItemId('1')).toEqual({ type: 'issue', number: 1 })
-    expect(parseWorkItemId('42')).toEqual({ type: 'issue', number: 42 })
+  it('parses legacy pr- prefixed ids', () => {
+    expect(parseWorkItemId('pr-1')).toEqual({ number: 1 })
+    expect(parseWorkItemId('pr-42')).toEqual({ number: 42 })
   })
 
-  it('parses valid pull ids', () => {
-    expect(parseWorkItemId('pr-1')).toEqual({ type: 'pull', number: 1 })
-    expect(parseWorkItemId('pr-42')).toEqual({ type: 'pull', number: 42 })
-  })
-
-  it('rejects non-positive, non-integer and malformed issue ids', () => {
+  it('rejects non-positive, non-integer and malformed ids', () => {
     expect(() => parseWorkItemId('0')).toThrow('Invalid work item id')
     expect(() => parseWorkItemId('-2')).toThrow('Invalid work item id')
     expect(() => parseWorkItemId('1.5')).toThrow('Invalid work item id')
     expect(() => parseWorkItemId('abc')).toThrow('Invalid work item id')
   })
 
-  it('rejects non-positive, non-integer and malformed pull ids', () => {
+  it('rejects malformed pr- prefixed ids', () => {
     expect(() => parseWorkItemId('pr-0')).toThrow('Invalid work item id')
     expect(() => parseWorkItemId('pr--2')).toThrow('Invalid work item id')
     expect(() => parseWorkItemId('pr-1.5')).toThrow('Invalid work item id')
