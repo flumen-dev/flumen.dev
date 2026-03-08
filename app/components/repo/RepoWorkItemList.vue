@@ -85,6 +85,13 @@ function ciIcon(ciStatus: WorkItem['ciStatus']) {
         class="size-3.5"
       />
       {{ $t('repos.detail.workItems') }}
+      <NuxtLinkLocale
+        :to="`/repos/${owner}/${repo}/work-items`"
+        class="ml-auto text-muted hover:text-primary transition-colors"
+        @click.stop
+      >
+        {{ $t('common.viewAll') }}
+      </NuxtLinkLocale>
     </div>
 
     <div

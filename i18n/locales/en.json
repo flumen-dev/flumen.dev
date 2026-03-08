@@ -10,6 +10,7 @@
     "viewOnGithub": "View on GitHub",
     "close": "Close",
     "cancel": "Cancel",
+    "viewAll": "View all",
     "bot": "Bot",
     "filterLabels": "Filter labels...",
     "noLabelsAvailable": "No labels available",
@@ -446,7 +447,17 @@
       }
     }
   },
+  "pulls": {
+    "all": "All",
+    "search": "Search pull requests...",
+    "count": "No pull requests | {count} pull request | {count} pull requests",
+    "filter": {
+      "draft": "Draft"
+    }
+  },
   "workItems": {
+    "search": "Search work items...",
+    "count": "No items | {count} item | {count} items",
     "source": {
       "issue": "From issue thread",
       "pr": "From pull request"

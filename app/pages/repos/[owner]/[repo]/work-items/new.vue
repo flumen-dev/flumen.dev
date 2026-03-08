@@ -12,11 +12,12 @@ const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
 const localePath = useLocalePath()
-const store = useIssueStore()
 const apiFetch = useRequestFetch()
 const toast = useToast()
 
-const repo = computed(() => (route.query.repo as string) || store.selectedRepo || null)
+const owner = computed(() => route.params.owner as string)
+const repo = computed(() => route.params.repo as string)
+const repoFullName = computed(() => `${owner.value}/${repo.value}`)
 
 // Form state
 const title = ref('')
@@ -30,7 +31,7 @@ const repositoryId = ref('')
 const hasTemplates = ref(false)
 const selectedFormTemplate = ref<IssueFormTemplate | null>(null)
 const formRenderer = ref<{ handleSubmit: () => void, vorm: { formData: Record<string, unknown> } }>()
-const plainBodyDraftKey = computed(() => repo.value ? `issue-create-body:${repo.value}` : null)
+const plainBodyDraftKey = computed(() => `issue-create-body:${repoFullName.value}`)
 const { hasDraft: hasPlainBodyDraft, discardDraft: discardPlainBodyDraft, markSavedBaseline: markPlainBodyDraftSaved } = useMarkdownDraft({
   key: plainBodyDraftKey,
   value: body,
@@ -44,15 +45,10 @@ const { hasDraft: hasPlainBodyDraft, discardDraft: discardPlainBodyDraft, markSa
 })
 
 watchEffect(async () => {
-  if (!repo.value) {
-    step.value = 'form'
-    return
-  }
-
   try {
     const data = await apiFetch<{ repositoryId: string, templates: IssueTemplate[] }>(
       '/api/issues/templates',
-      { params: { repo: repo.value } },
+      { params: { repo: repoFullName.value } },
     )
     repositoryId.value = data.repositoryId
     templates.value = data.templates
@@ -92,7 +88,7 @@ function backToTemplates() {
 }
 
 async function submitIssue(issueBody: string) {
-  if (!title.value.trim() || submitting.value || !repo.value) return
+  if (!title.value.trim() || submitting.value) return
   submitting.value = true
   const normalizedBody = normalizeMarkdownMentions(issueBody)
 
@@ -103,11 +99,11 @@ async function submitIssue(issueBody: string) {
         repositoryId: repositoryId.value,
         title: title.value,
         body: normalizedBody,
-        repo: repo.value,
+        repo: repoFullName.value,
       },
     })
     toast.add({ title: t('issues.create.success'), color: 'success' })
-    await router.push(localePath(buildWorkItemPath(repo.value, result.number)!))
+    await router.push(localePath(buildWorkItemPath(repoFullName.value, result.number)!))
     return true
   }
   catch {
@@ -134,11 +130,27 @@ function submitForm(formData: Record<string, unknown>) {
 
 <template>
   <div class="p-4 max-w-3xl mx-auto">
-    <!-- Page header with repo context -->
-    <div
-      v-if="repo"
-      class="mb-6"
-    >
+    <!-- Breadcrumb -->
+    <div class="flex items-center gap-2 mb-6">
+      <NuxtLinkLocale
+        :to="`/repos/${owner}/${repo}`"
+        class="text-sm font-semibold text-highlighted hover:text-primary transition-colors"
+      >
+        {{ repoFullName }}
+      </NuxtLinkLocale>
+      <span class="text-sm text-muted">/</span>
+      <NuxtLinkLocale
+        :to="`/repos/${owner}/${repo}/work-items`"
+        class="text-sm text-muted hover:text-primary transition-colors"
+      >
+        {{ t('repos.detail.workItems') }}
+      </NuxtLinkLocale>
+      <span class="text-sm text-muted">/</span>
+      <span class="text-sm text-muted">{{ t('issues.create.title') }}</span>
+    </div>
+
+    <!-- Page header -->
+    <div class="mb-6">
       <h1 class="text-xl font-semibold">
         {{ t('issues.create.title') }}
       </h1>
@@ -147,21 +159,13 @@ function submitForm(formData: Record<string, unknown>) {
           name="i-lucide-git-fork"
           class="size-3.5 align-text-bottom mr-0.5"
         />
-        {{ repo }}
+        {{ repoFullName }}
       </p>
     </div>
 
-    <!-- No repo selected -->
-    <UAlert
-      v-if="!repo"
-      :title="t('issues.create.noRepo')"
-      color="warning"
-      icon="i-lucide-alert-triangle"
-    />
-
     <!-- Loading templates -->
     <div
-      v-else-if="step === 'loading'"
+      v-if="step === 'loading'"
       class="flex items-center justify-center py-16 text-muted gap-2"
     >
       <UIcon
@@ -212,7 +216,7 @@ function submitForm(formData: Record<string, unknown>) {
       <!-- Form fields rendered by Vorm -->
       <IssueFormRenderer
         ref="formRenderer"
-        :repo-context="repo || undefined"
+        :repo-context="repoFullName"
         :fields="selectedFormTemplate.body"
         @submit="submitForm"
       />
@@ -223,7 +227,7 @@ function submitForm(formData: Record<string, unknown>) {
           :label="t('profile.cancel')"
           color="neutral"
           variant="ghost"
-          :to="localePath('/issues')"
+          :to="localePath(`/repos/${owner}/${repo}/work-items`)"
         />
         <UButton
           v-if="hasPlainBodyDraft"
@@ -283,7 +287,7 @@ function submitForm(formData: Record<string, unknown>) {
         <div class="rounded-md border border-default bg-default overflow-hidden">
           <EditorMarkdownEditor
             v-model="body"
-            :repo-context="repo || undefined"
+            :repo-context="repoFullName"
             :placeholder="t('issues.create.bodyPlaceholder')"
             :show-header="true"
             :framed="false"
@@ -298,7 +302,14 @@ function submitForm(formData: Record<string, unknown>) {
           :label="t('profile.cancel')"
           color="neutral"
           variant="ghost"
-          :to="localePath('/issues')"
+          :to="localePath(`/repos/${owner}/${repo}/work-items`)"
+        />
+        <UButton
+          v-if="hasPlainBodyDraft"
+          :label="t('issues.draft.discard')"
+          color="neutral"
+          variant="ghost"
+          @click="discardPlainBodyDraft()"
         />
         <UButton
           :label="submitting ? t('issues.create.submitting') : t('issues.create.submit')"

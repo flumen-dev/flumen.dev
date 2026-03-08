@@ -10,6 +10,7 @@
     "viewOnGithub": "Auf GitHub ansehen",
     "close": "Schließen",
     "cancel": "Abbrechen",
+    "viewAll": "Alle anzeigen",
     "bot": "Bot",
     "filterLabels": "Labels filtern...",
     "noLabelsAvailable": "Keine Labels verfügbar",
@@ -446,7 +447,17 @@
       }
     }
   },
+  "pulls": {
+    "all": "Alle",
+    "search": "Pull Requests durchsuchen...",
+    "count": "Keine Pull Requests | {count} Pull Request | {count} Pull Requests",
+    "filter": {
+      "draft": "Entwurf"
+    }
+  },
   "workItems": {
+    "search": "Arbeitselemente durchsuchen...",
+    "count": "Keine Elemente | {count} Element | {count} Elemente",
     "source": {
       "issue": "Aus Issue-Thread",
       "pr": "Aus Pull Request"

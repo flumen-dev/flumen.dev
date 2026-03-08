@@ -74,7 +74,6 @@ const { pinnedRepos, unpin, reorder } = usePinnedRepos()
 
 const { settings, update: updateSettings } = useUserSettings()
 
-const issueStore = useIssueStore()
 const recentStore = useRecentStore()
 
 // --- Resizable pinned section ---
@@ -139,9 +138,9 @@ let sidebarSearchDebounce: ReturnType<typeof setTimeout> | null = null
 let sidebarSearchRequestId = 0
 
 function selectPinnedRepo(repo: string) {
-  issueStore.selectRepo(repo)
   updateSettings({ selectedRepo: repo })
-  navigateTo(localePath('/issues'))
+  const [repoOwner, repoName] = repo.split('/')
+  navigateTo(localePath(`/repos/${repoOwner}/${repoName}/work-items`))
 }
 
 function resetSidebarSearch() {
@@ -213,9 +212,6 @@ function recentItemToCommand(item: RecentItem): CommandPaletteItem {
       sidebarSearchOpen.value = false
       if (workItemPath) {
         navigateTo(localePath(workItemPath))
-      }
-      else if (isIssue) {
-        navigateTo(localePath('/issues'))
       }
       else if (!isIssue) {
         navigateTo(item.url, { external: true, open: { target: '_blank' } })
@@ -359,12 +355,6 @@ const mainItems = computed<NavigationMenuItem[]>(() => [
     label: t('nav.repos'),
     icon: 'i-lucide-book-marked',
     to: localePath('/repos'),
-    disabled: !loggedIn.value,
-  },
-  {
-    label: t('nav.issues'),
-    icon: 'i-lucide-circle-dot',
-    to: localePath('/issues'),
     disabled: !loggedIn.value,
   },
   {
