@@ -42,7 +42,7 @@ const categoryConfig = {
 const config = computed(() => categoryConfig[props.item.category])
 
 const itemLink = computed(() => {
-  const path = buildWorkItemPath(props.item.repo, props.item.number, props.item.type)
+  const path = buildWorkItemPath(props.item.repo, props.item.number)
   return path ? localePath(path) : localePath('/dashboard')
 })
 

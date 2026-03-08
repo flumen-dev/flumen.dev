@@ -6,7 +6,7 @@ const store = useFocusStore()
 const localePath = useLocalePath()
 
 function itemRoute(item: { repo: string, number: number, type: 'issue' | 'pr' }) {
-  const path = buildWorkItemPath(item.repo, item.number, item.type)
+  const path = buildWorkItemPath(item.repo, item.number)
   if (!path) {
     return localePath('/focus')
   }

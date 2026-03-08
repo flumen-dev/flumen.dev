@@ -3,7 +3,6 @@ import type { WorkItem } from '~~/shared/types/work-item'
 import { getRepoParams, getSessionToken, githubFetchWithToken } from '~~/server/utils/github'
 import { githubGraphQL } from '~~/server/utils/github-graphql'
 import { mapCiStatus } from '~~/server/utils/focus-created'
-import { workItemIdFromIssue, workItemIdFromPull } from '~~/server/utils/work-items'
 import { toRepoIssue, toRepoPullRequest } from '~~/shared/utils/repository'
 
 const ISSUE_LINK_REGEX = /(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?)\s+(?:#|(?:[\w.-]+\/)?[\w.-]+#)(\d+)/gi
@@ -153,7 +152,7 @@ const fetchWorkItems = defineCachedFunction(
       const primaryLinkedPull = linkedPulls[0] ?? null
       const linkedInsight = primaryLinkedPull ? pullInsights.get(primaryLinkedPull.number) : null
       return {
-        id: workItemIdFromIssue(issue.number),
+        id: String(issue.number),
         type: 'issue',
         number: issue.number,
         title: issue.title,
@@ -190,7 +189,7 @@ const fetchWorkItems = defineCachedFunction(
       .map((pr) => {
         const pullInsight = pullInsights.get(pr.number)
         return {
-          id: workItemIdFromPull(pr.number),
+          id: String(pr.number),
           type: 'pull',
           number: pr.number,
           title: pr.title,

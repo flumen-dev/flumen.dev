@@ -151,12 +151,12 @@ function onUnassigned(login: string) {
   })
 }
 
-const workItemPath = computed(() => buildWorkItemPath(props.item.repo, props.item.number, props.item.type))
+const workItemPath = computed(() => buildWorkItemPath(props.item.repo, props.item.number))
 
 const workItemLink = computed(() => (workItemPath.value ? localePath(workItemPath.value) : null))
 
 function linkedPrWorkItemLink(prNumber: number) {
-  const path = buildWorkItemPath(props.item.repo, prNumber, 'pr')
+  const path = buildWorkItemPath(props.item.repo, prNumber)
   return path ? localePath(path) : null
 }
 </script>

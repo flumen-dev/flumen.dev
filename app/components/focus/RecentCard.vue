@@ -20,7 +20,7 @@ const toast = useToast()
 
 const isFavorite = computed(() => props.variant === 'favorite')
 
-const workItemPath = computed(() => buildWorkItemPath(props.item.repo, props.item.number, props.item.type))
+const workItemPath = computed(() => buildWorkItemPath(props.item.repo, props.item.number))
 
 const link = computed(() => (workItemPath.value ? localePath(workItemPath.value) : props.item.url))
 

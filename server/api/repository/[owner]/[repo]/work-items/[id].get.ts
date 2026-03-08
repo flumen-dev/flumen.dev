@@ -672,11 +672,28 @@ function mapReviewers(pull: PullDetailNode): Reviewer[] {
   return Array.from(reviewerMap.values())
 }
 
+const RESOLVE_TYPE_QUERY = `
+query($owner: String!, $repo: String!, $number: Int!) {
+  repository(owner: $owner, name: $repo) {
+    issueOrPullRequest(number: $number) { __typename }
+  }
+}
+`
+
+async function resolveWorkItemType(token: string, owner: string, repo: string, number: number): Promise<'issue' | 'pull'> {
+  const data = await githubGraphQL<{ repository?: { issueOrPullRequest?: { __typename: string } | null } }>(token, RESOLVE_TYPE_QUERY, { owner, repo, number })
+  const typename = data.repository?.issueOrPullRequest?.__typename
+  if (typename === 'PullRequest') return 'pull'
+  if (typename === 'Issue') return 'issue'
+  throw createError({ statusCode: 404, message: 'Work item not found' })
+}
+
 const fetchWorkItemDetail = defineCachedFunction(
   async (login: string, token: string, owner: string, repo: string, id: string): Promise<WorkItemDetail> => {
     const parsed = parseWorkItemId(id)
+    const type = await resolveWorkItemType(token, owner, repo, parsed.number)
 
-    if (parsed.type === 'issue') {
+    if (type === 'issue') {
       const data = await githubGraphQL<{ repository?: { issue?: IssueDetailNode | null } }>(token, ISSUE_DETAIL_QUERY, {
         owner,
         repo,

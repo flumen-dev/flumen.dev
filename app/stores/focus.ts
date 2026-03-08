@@ -471,7 +471,7 @@ export const useFocusStore = defineStore('focus', () => {
     const item = highlightedItem.value
     if (!item) return
     const lp = useLocalePath()
-    navigateTo(lp(buildWorkItemPath(item.repo, item.number, item.type)!))
+    navigateTo(lp(buildWorkItemPath(item.repo, item.number)!))
   }
 
   function dismissItem(key: string) {

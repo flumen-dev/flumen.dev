@@ -201,7 +201,7 @@ function selectSearchRepo(repo: SearchRepo) {
 
 function recentItemToCommand(item: RecentItem): CommandPaletteItem {
   const isIssue = item.type === 'issue'
-  const workItemPath = buildWorkItemPath(item.repo, item.number, item.type)
+  const workItemPath = buildWorkItemPath(item.repo, item.number)
   return {
     id: item.key,
     label: item.title,

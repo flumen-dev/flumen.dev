@@ -137,12 +137,12 @@ const stats = computed(() => [
 ])
 
 function pulseItemLink(item: PulseItem) {
-  const path = buildWorkItemPath(item.repo, item.number, item.type)
+  const path = buildWorkItemPath(item.repo, item.number)
   return path ? localePath(path) : item.url
 }
 
 function pulseItemExternal(item: PulseItem) {
-  return !buildWorkItemPath(item.repo, item.number, item.type)
+  return !buildWorkItemPath(item.repo, item.number)
 }
 </script>
 
