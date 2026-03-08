@@ -1,4 +1,4 @@
-const GITHUB_REFERENCE_KEYWORD_GROUP = '(close|closes|fix|fixes|resolve|resolves)'
+const GITHUB_REFERENCE_KEYWORD_GROUP = '(close[sd]?|fix(?:e[sd])?|resolve[sd]?)'
 const GITHUB_REFERENCE_NUMBER_GROUP = '(\\d+)'
 
 export const GITHUB_REFERENCE_MATCHER = `${GITHUB_REFERENCE_KEYWORD_GROUP}\\s+#${GITHUB_REFERENCE_NUMBER_GROUP}`
@@ -11,7 +11,7 @@ export const GITHUB_REFERENCE_INPUT_REGEX = new RegExp(`${GITHUB_REFERENCE_MATCH
 
 const GITHUB_REFERENCE_ATTRS_REGEX = new RegExp(`^${GITHUB_REFERENCE_MATCHER}$`, 'i')
 
-const ISSUE_REFERENCE_KEYWORD = '(close|closes|fix|fixes|resolve|resolves)'
+const ISSUE_REFERENCE_KEYWORD = '(close[sd]?|fix(?:e[sd])?|resolve[sd]?)'
 const CROSS_REPO = '([a-zA-Z\\d](?:[a-zA-Z\\d._-]*[a-zA-Z\\d])?\\/[a-zA-Z\\d](?:[a-zA-Z\\d._-]*[a-zA-Z\\d])?)'
 const ISSUE_NUMBER = '([1-9]\\d*)'
 
