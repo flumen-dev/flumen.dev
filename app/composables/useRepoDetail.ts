@@ -25,6 +25,7 @@ const SPECIAL_FILE_NAMES = new Set([
 export function useRepoDetail(owner: Ref<string>, repo: Ref<string>) {
   const route = useRoute()
   const router = useRouter()
+  const fetchWithCookies = useRequestFetch()
 
   const repoDetail = ref<RepoDetail | null>(null)
   const specialFiles = ref<RepoTreeEntry[]>([])
@@ -46,16 +47,16 @@ export function useRepoDetail(owner: Ref<string>, repo: Ref<string>) {
   const isViewingFile = computed(() => isCodeTab.value && browsingFile.value)
 
   async function fetchRepo() {
-    repoDetail.value = await $fetch<RepoDetail>(`/api/repository/${owner.value}/${repo.value}`)
+    repoDetail.value = await fetchWithCookies<RepoDetail>(`/api/repository/${owner.value}/${repo.value}`)
   }
 
   async function fetchStats() {
-    stats.value = await $fetch<RepoHealthStats>(`/api/repository/${owner.value}/${repo.value}/stats`)
+    stats.value = await fetchWithCookies<RepoHealthStats>(`/api/repository/${owner.value}/${repo.value}/stats`)
   }
 
   async function fetchContents(path = '') {
     currentPath.value = path
-    const data = await $fetch<ContentsResponse>(`/api/repository/${owner.value}/${repo.value}/contents`, {
+    const data = await fetchWithCookies<ContentsResponse>(`/api/repository/${owner.value}/${repo.value}/contents`, {
       params: { path },
     })
     if (data.type === 'directory') {
@@ -77,7 +78,7 @@ export function useRepoDetail(owner: Ref<string>, repo: Ref<string>) {
       return
     }
 
-    const data = await $fetch<ContentsResponse>(`/api/repository/${owner.value}/${repo.value}/contents`)
+    const data = await fetchWithCookies<ContentsResponse>(`/api/repository/${owner.value}/${repo.value}/contents`)
     if (data.type !== 'directory') {
       specialFiles.value = []
       return
@@ -89,7 +90,7 @@ export function useRepoDetail(owner: Ref<string>, repo: Ref<string>) {
   }
 
   async function fetchSpecialFileContent(path: string) {
-    const data = await $fetch<ContentsResponse>(`/api/repository/${owner.value}/${repo.value}/contents`, {
+    const data = await fetchWithCookies<ContentsResponse>(`/api/repository/${owner.value}/${repo.value}/contents`, {
       params: { path },
     })
     if (data.type === 'file') {

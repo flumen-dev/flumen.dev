@@ -19,8 +19,16 @@ const starCount = computed(() => starStore.starCount(props.repo.fullName))
 const starLoaded = computed(() => starStore.isLoaded(props.repo.fullName))
 const starPending = computed(() => starStore.isPending(props.repo.fullName))
 
-function toggleStar() {
-  starStore.toggleStar(props.repo.fullName)
+const isToggling = ref(false)
+async function toggleStar() {
+  if (isToggling.value) return
+  isToggling.value = true
+  try {
+    await starStore.toggleStar(props.repo.fullName)
+  }
+  finally {
+    isToggling.value = false
+  }
 }
 
 const primaryLanguage = computed(() => {
@@ -41,7 +49,7 @@ const gradientStyle = computed(() => {
 
 const healthScore = computed(() => props.stats ? computeHealthScore(props.stats) : null)
 
-const isOwnRepo = computed(() => props.repo.owner.login.toLowerCase() === 'flumen-dev')
+const isOwnRepo = computed(() => props.repo.fullName.toLowerCase() === 'flumen-dev/flumen.dev')
 </script>
 
 <template>
@@ -174,21 +182,19 @@ const isOwnRepo = computed(() => props.repo.owner.login.toLowerCase() === 'flume
     </p>
 
     <!-- Action bar: Stars, Forks, Watchers, Pin, GitHub -->
-    <div
-      v-if="stats"
-      class="flex items-center gap-3 flex-wrap"
-    >
+    <div class="flex items-center gap-3 flex-wrap">
       <!-- Stars — prominent, interactive -->
       <button
+        v-if="stats"
         type="button"
         class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
         :class="[
           starred
             ? 'bg-amber-500/15 text-amber-400 hover:bg-amber-500/25'
             : 'bg-amber-500/10 text-amber-500 hover:bg-amber-500/20',
-          starPending ? 'opacity-60 pointer-events-none' : '',
+          starPending || isToggling ? 'opacity-60 pointer-events-none' : '',
         ]"
-        :disabled="!starLoaded"
+        :disabled="!starLoaded || isToggling"
         @click="toggleStar"
       >
         <UIcon
@@ -201,7 +207,10 @@ const isOwnRepo = computed(() => props.repo.owner.login.toLowerCase() === 'flume
       </button>
 
       <!-- Forks -->
-      <div class="flex items-center gap-1.5 text-sm text-muted">
+      <div
+        v-if="stats"
+        class="flex items-center gap-1.5 text-sm text-muted"
+      >
         <UIcon
           name="i-lucide-git-fork"
           class="size-4"
@@ -211,7 +220,10 @@ const isOwnRepo = computed(() => props.repo.owner.login.toLowerCase() === 'flume
       </div>
 
       <!-- Watchers -->
-      <div class="flex items-center gap-1.5 text-sm text-muted">
+      <div
+        v-if="stats"
+        class="flex items-center gap-1.5 text-sm text-muted"
+      >
         <UIcon
           name="i-lucide-eye"
           class="size-4"

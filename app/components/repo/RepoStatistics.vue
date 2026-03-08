@@ -16,11 +16,11 @@ const RANK_COLORS = ['text-amber-400', 'text-zinc-400', 'text-amber-700'] as con
 const topContributors = computed(() => {
   const top = props.stats.topContributors.slice(0, 8)
   if (!top.length) return []
-  const maxContrib = top[0]!.contributions
+  const maxContrib = Math.max(...top.map(t => t.contributions), 0)
   return top.map((c, i) => ({
     ...c,
     rank: i + 1,
-    pct: maxContrib > 0 ? (c.contributions / maxContrib) * 100 : 0,
+    pct: maxContrib > 0 ? Math.min(100, (c.contributions / maxContrib) * 100) : 0,
     rankColor: RANK_COLORS[i] ?? 'text-dimmed',
     isPodium: i < 3,
   }))
