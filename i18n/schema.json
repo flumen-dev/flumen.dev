@@ -1105,6 +1105,9 @@
             "mentions": {
               "type": "string"
             },
+            "workItems": {
+              "type": "string"
+            },
             "reproductions": {
               "type": "string"
             },

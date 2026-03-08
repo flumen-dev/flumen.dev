@@ -103,7 +103,7 @@ async function handleSubmit() {
     <!-- Collapsed: reviewer avatars + review button -->
     <div class="flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2">
       <!-- Reviewer avatars -->
-      <div class="flex items-center gap-1 flex-1 min-w-0 overflow-x-auto">
+      <div class="flex items-center gap-1 flex-1 min-w-0 overflow-x-auto pb-0.5">
         <span
           v-if="!reviewers.length"
           class="text-xs text-muted"

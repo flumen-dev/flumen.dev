@@ -823,12 +823,12 @@ const commentFormRef = ref<{ active: boolean }>()
     </div>
 
     <div
-      v-if="issue"
+      v-if="workItemRef"
       class="hidden lg:block"
     >
       <div class="sticky top-48">
-        <IssueSidebar
-          :issue="issue"
+        <WorkItemSidebar
+          :work-item="workItemRef"
           :repo="repo"
         />
       </div>
