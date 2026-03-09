@@ -37,6 +37,9 @@
         "cancel": {
           "type": "string"
         },
+        "viewAll": {
+          "type": "string"
+        },
         "bot": {
           "type": "string"
         },
@@ -400,12 +403,6 @@
           },
           "additionalProperties": false
         },
-        "openIssues": {
-          "type": "string"
-        },
-        "openPrs": {
-          "type": "string"
-        },
         "unreadNotifications": {
           "type": "string"
         },
@@ -535,13 +532,7 @@
             "forkedFrom": {
               "type": "string"
             },
-            "lists": {
-              "type": "string"
-            },
             "workItems": {
-              "type": "string"
-            },
-            "workItemsHint": {
               "type": "string"
             },
             "specialFiles": {
@@ -982,37 +973,10 @@
         "closed": {
           "type": "string"
         },
-        "selectRepo": {
-          "type": "string"
-        },
-        "searchRepos": {
-          "type": "string"
-        },
-        "searchReposHint": {
-          "type": "string"
-        },
-        "yourRepos": {
-          "type": "string"
-        },
-        "openCount": {
-          "type": "string"
-        },
-        "noResults": {
-          "type": "string"
-        },
         "closedAs": {
           "type": "string"
         },
         "closedAsNotPlanned": {
-          "type": "string"
-        },
-        "needsResponse": {
-          "type": "string"
-        },
-        "search": {
-          "type": "string"
-        },
-        "count": {
           "type": "string"
         },
         "page": {
@@ -1023,45 +987,6 @@
         },
         "nextPage": {
           "type": "string"
-        },
-        "filter": {
-          "type": "object",
-          "properties": {
-            "assignedToMe": {
-              "type": "string"
-            },
-            "unassigned": {
-              "type": "string"
-            },
-            "hasMilestone": {
-              "type": "string"
-            }
-          },
-          "additionalProperties": false
-        },
-        "sort": {
-          "type": "object",
-          "properties": {
-            "critical": {
-              "type": "string"
-            },
-            "newest": {
-              "type": "string"
-            },
-            "oldest": {
-              "type": "string"
-            },
-            "mostCommented": {
-              "type": "string"
-            },
-            "leastCommented": {
-              "type": "string"
-            },
-            "recentlyUpdated": {
-              "type": "string"
-            }
-          },
-          "additionalProperties": false
         },
         "detail": {
           "type": "object",
@@ -1252,39 +1177,6 @@
         "create": {
           "type": "object",
           "properties": {
-            "title": {
-              "type": "string"
-            },
-            "button": {
-              "type": "string"
-            },
-            "titleLabel": {
-              "type": "string"
-            },
-            "titlePlaceholder": {
-              "type": "string"
-            },
-            "bodyLabel": {
-              "type": "string"
-            },
-            "bodyPlaceholder": {
-              "type": "string"
-            },
-            "submit": {
-              "type": "string"
-            },
-            "submitting": {
-              "type": "string"
-            },
-            "success": {
-              "type": "string"
-            },
-            "error": {
-              "type": "string"
-            },
-            "noRepo": {
-              "type": "string"
-            },
             "chooseTemplate": {
               "type": "string"
             },
@@ -1293,51 +1185,6 @@
             },
             "blankIssueDescription": {
               "type": "string"
-            },
-            "backToTemplates": {
-              "type": "string"
-            }
-          },
-          "additionalProperties": false
-        },
-        "error": {
-          "type": "object",
-          "properties": {
-            "fetchError": {
-              "type": "object",
-              "properties": {
-                "title": {
-                  "type": "string"
-                },
-                "description": {
-                  "type": "string"
-                }
-              },
-              "additionalProperties": false
-            },
-            "sessionExpired": {
-              "type": "object",
-              "properties": {
-                "title": {
-                  "type": "string"
-                },
-                "description": {
-                  "type": "string"
-                }
-              },
-              "additionalProperties": false
-            },
-            "rateLimited": {
-              "type": "object",
-              "properties": {
-                "title": {
-                  "type": "string"
-                },
-                "description": {
-                  "type": "string"
-                }
-              },
-              "additionalProperties": false
             }
           },
           "additionalProperties": false
@@ -1348,6 +1195,12 @@
     "workItems": {
       "type": "object",
       "properties": {
+        "search": {
+          "type": "string"
+        },
+        "count": {
+          "type": "string"
+        },
         "source": {
           "type": "object",
           "properties": {
@@ -1742,6 +1595,30 @@
               "type": "string"
             },
             "save": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "pulls": {
+      "type": "object",
+      "properties": {
+        "all": {
+          "type": "string"
+        },
+        "search": {
+          "type": "string"
+        },
+        "count": {
+          "type": "string"
+        },
+        "filter": {
+          "type": "object",
+          "properties": {
+            "draft": {
               "type": "string"
             }
           },

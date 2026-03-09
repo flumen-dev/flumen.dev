@@ -21,9 +21,9 @@ const activeFilters = ref<string[]>([])
 const repoFullName = computed(() => `${owner.value}/${repo.value}`)
 
 const { data: workItems, status, error: fetchError, refresh } = useLazyFetch<WorkItem[]>(
-  `/api/repository/${owner.value}/${repo.value}/work-items`,
+  () => `/api/repository/${owner.value}/${repo.value}/work-items`,
   {
-    query: { limit: 100, state },
+    query: { state },
   },
 )
 
@@ -84,56 +84,18 @@ function toggleFilter(key: string) {
 }
 
 const sortOptions = computed(() => [
-  { label: t('issues.sort.newest'), value: 'newest' },
-  { label: t('issues.sort.oldest'), value: 'oldest' },
-  { label: t('issues.sort.mostCommented'), value: 'mostCommented' },
-  { label: t('issues.sort.leastCommented'), value: 'leastCommented' },
-  { label: t('issues.sort.recentlyUpdated'), value: 'recentlyUpdated' },
+  { label: t('workItems.sort.newest'), value: 'newest' },
+  { label: t('workItems.sort.oldest'), value: 'oldest' },
+  { label: t('workItems.sort.mostCommented'), value: 'mostCommented' },
+  { label: t('workItems.sort.leastCommented'), value: 'leastCommented' },
+  { label: t('workItems.sort.recentlyUpdated'), value: 'recentlyUpdated' },
 ])
 
 function navigateToItem(item: WorkItem) {
-  router.push(localePath(`/repos/${owner.value}/${repo.value}/work-items/${item.id}`))
+  router.push(localePath(`/repos/${owner.value}/${repo.value}/work-items/${item.number}`))
 }
 
-const STATE_COLOR: Record<string, string> = {
-  OPEN: 'success',
-  CLOSED: 'neutral',
-  MERGED: 'primary',
-  DRAFT: 'neutral',
-}
-
-function stateBadgeColor(itemState: string) {
-  return STATE_COLOR[itemState] ?? 'neutral'
-}
-
-function stateBadgeLabel(item: WorkItem) {
-  if (item.type === 'pull' && item.isDraft) return t('repos.workItem.state.draft')
-  if (item.state === 'MERGED') return t('repos.workItem.state.merged')
-  if (item.state === 'CLOSED') return t('repos.workItem.state.closed')
-  return t('repos.workItem.state.open')
-}
-
-function prStatusLabel(item: WorkItem) {
-  if (item.type === 'pull') {
-    if (item.isDraft) return t('repos.workItem.status.draft')
-    if (item.state === 'MERGED') return t('repos.workItem.status.merged')
-    if (item.reviewDecision === 'APPROVED') return t('repos.workItem.status.approved')
-    if (item.reviewDecision === 'CHANGES_REQUESTED') return t('repos.workItem.status.changesRequested')
-    if (item.reviewDecision === 'REVIEW_REQUIRED') return t('repos.workItem.status.reviewRequested')
-    if (item.state === 'CLOSED') return t('repos.workItem.status.closed')
-    return t('repos.workItem.status.open')
-  }
-
-  if (!item.linkedPulls.length) return null
-  if (item.reviewDecision === 'APPROVED') return t('repos.workItem.status.prApproved')
-  if (item.reviewDecision === 'CHANGES_REQUESTED') return t('repos.workItem.status.prChangesRequested')
-  if (item.reviewDecision === 'REVIEW_REQUIRED') return t('repos.workItem.status.prReviewRequested')
-  return t('repos.workItem.status.prLinked')
-}
-
-function ciIcon(ciStatus: WorkItem['ciStatus']) {
-  return getCIIcon(ciStatus)
-}
+const { stateBadgeColor, stateBadgeLabel, prStatusLabel, ciIcon } = useWorkItemBadges()
 </script>
 
 <template>
@@ -150,7 +112,7 @@ function ciIcon(ciStatus: WorkItem['ciStatus']) {
       <span class="text-sm text-muted">{{ t('repos.detail.workItems') }}</span>
       <UButton
         class="ml-auto"
-        :label="t('issues.create.button')"
+        :label="t('workItems.create.button')"
         icon="i-lucide-plus"
         size="sm"
         :to="localePath(`/repos/${owner}/${repo}/work-items/new`)"

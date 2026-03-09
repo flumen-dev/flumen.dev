@@ -126,8 +126,6 @@
       "prs": "Offene PRs",
       "notifications": "Benachrichtigungen"
     },
-    "openIssues": "{count} offenes Issue | {count} offene Issues",
-    "openPrs": "{count} offener Pull Request | {count} offene Pull Requests",
     "unreadNotifications": "{count} ungelesene Benachrichtigung | {count} ungelesene Benachrichtigungen",
     "badge": {
       "archived": "archiviert",
@@ -177,9 +175,7 @@
       "title": "Repository-Details",
       "viewOnGithub": "Auf GitHub ansehen",
       "forkedFrom": "Geforkt von",
-      "lists": "Listen",
       "workItems": "Work Items",
-      "workItemsHint": "Issues und Pull Requests kombiniert — nach Priorität sortiert.",
       "specialFiles": {
         "readme": "README",
         "codeOfConduct": "Verhaltensregeln",
@@ -326,33 +322,11 @@
   "issues": {
     "open": "Offen",
     "closed": "Geschlossen",
-    "selectRepo": "Repository auswählen...",
-    "searchRepos": "Repositories durchsuchen...",
-    "searchReposHint": "Eigene Repos filtern oder GitHub durchsuchen",
-    "yourRepos": "Deine Repos",
-    "openCount": "{count} offen",
-    "noResults": "Keine Issues gefunden.",
     "closedAs": "Geschlossen",
     "closedAsNotPlanned": "Nicht geplant",
-    "needsResponse": "Wartet auf deine Antwort",
-    "search": "Issues durchsuchen...",
-    "count": "Keine Issues | {count} Issue | {count} Issues",
     "page": "Seite {current} von {total}",
     "previousPage": "Zurück",
     "nextPage": "Weiter",
-    "filter": {
-      "assignedToMe": "Mir zugewiesen",
-      "unassigned": "Nicht zugewiesen",
-      "hasMilestone": "Meilenstein"
-    },
-    "sort": {
-      "critical": "Braucht Aufmerksamkeit",
-      "newest": "Neueste",
-      "oldest": "Älteste",
-      "mostCommented": "Meiste Kommentare",
-      "leastCommented": "Wenigste Kommentare",
-      "recentlyUpdated": "Kürzlich aktualisiert"
-    },
     "detail": {
       "needsOwner": "Braucht Zuständigen",
       "claim": "Übernehmen",
@@ -416,6 +390,25 @@
       "discard": "Entwurf verwerfen"
     },
     "create": {
+      "chooseTemplate": "Vorlage auswählen",
+      "blankIssue": "Leeres Issue",
+      "blankIssueDescription": "Von Grund auf ein neues Issue erstellen."
+    }
+  },
+  "workItems": {
+    "search": "Arbeitselemente durchsuchen...",
+    "count": "Keine Elemente | {count} Element | {count} Elemente",
+    "filter": {
+      "all": "Alle"
+    },
+    "sort": {
+      "newest": "Neueste",
+      "oldest": "Älteste",
+      "mostCommented": "Meiste Kommentare",
+      "leastCommented": "Wenigste Kommentare",
+      "recentlyUpdated": "Kürzlich aktualisiert"
+    },
+    "create": {
       "title": "Neues Issue",
       "button": "Neues Issue",
       "titleLabel": "Titel",
@@ -426,11 +419,11 @@
       "submitting": "Wird erstellt...",
       "success": "Issue erstellt.",
       "error": "Issue konnte nicht erstellt werden. Bitte versuche es erneut.",
-      "noRepo": "Bitte wähle zuerst ein Repository aus.",
-      "chooseTemplate": "Vorlage auswählen",
-      "blankIssue": "Leeres Issue",
-      "blankIssueDescription": "Von Grund auf ein neues Issue erstellen.",
       "backToTemplates": "Zurück zu Vorlagen"
+    },
+    "draft": {
+      "restored": "Entwurf wiederhergestellt.",
+      "discard": "Entwurf verwerfen"
     },
     "error": {
       "fetchError": {
@@ -473,7 +466,7 @@
     "noResults": "Keine Work Items gefunden.",
     "tabs": {
       "conversation": "Konversation",
-      "changes": "\u00c4nderungen"
+      "changes": "Änderungen"
     },
     "badge": {
       "bot": "Bot"

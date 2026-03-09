@@ -12,7 +12,6 @@ const props = defineProps<{
 const resolvedLimit = computed(() => props.limit ?? 5)
 const resolvedState = computed(() => props.state ?? 'open')
 const resolvedLinkMode = computed(() => props.linkMode ?? 'external')
-const { t } = useI18n()
 
 const { data: workItems, status, error: fetchError } = useLazyFetch<WorkItem[]>(
   `/api/repository/${props.owner}/${props.repo}/work-items`,
@@ -29,52 +28,14 @@ const localePath = useLocalePath()
 
 function navigateToItem(item: WorkItem) {
   if (resolvedLinkMode.value === 'repo') {
-    router.push(localePath(`/repos/${props.owner}/${props.repo}/work-items/${item.id}`))
+    router.push(localePath(`/repos/${props.owner}/${props.repo}/work-items/${item.number}`))
   }
   else {
     window.open(item.htmlUrl, '_blank', 'noopener,noreferrer')
   }
 }
 
-const STATE_COLOR: Record<string, string> = {
-  OPEN: 'success',
-  CLOSED: 'neutral',
-  MERGED: 'primary',
-  DRAFT: 'neutral',
-}
-
-function stateBadgeColor(state: string) {
-  return STATE_COLOR[state] ?? 'neutral'
-}
-
-function stateBadgeLabel(item: WorkItem) {
-  if (item.type === 'pull' && item.isDraft) return t('repos.workItem.state.draft')
-  if (item.state === 'MERGED') return t('repos.workItem.state.merged')
-  if (item.state === 'CLOSED') return t('repos.workItem.state.closed')
-  return t('repos.workItem.state.open')
-}
-
-function prStatusLabel(item: WorkItem) {
-  if (item.type === 'pull') {
-    if (item.isDraft) return t('repos.workItem.status.draft')
-    if (item.state === 'MERGED') return t('repos.workItem.status.merged')
-    if (item.reviewDecision === 'APPROVED') return t('repos.workItem.status.approved')
-    if (item.reviewDecision === 'CHANGES_REQUESTED') return t('repos.workItem.status.changesRequested')
-    if (item.reviewDecision === 'REVIEW_REQUIRED') return t('repos.workItem.status.reviewRequested')
-    if (item.state === 'CLOSED') return t('repos.workItem.status.closed')
-    return t('repos.workItem.status.open')
-  }
-
-  if (!item.linkedPulls.length) return null
-  if (item.reviewDecision === 'APPROVED') return t('repos.workItem.status.prApproved')
-  if (item.reviewDecision === 'CHANGES_REQUESTED') return t('repos.workItem.status.prChangesRequested')
-  if (item.reviewDecision === 'REVIEW_REQUIRED') return t('repos.workItem.status.prReviewRequested')
-  return t('repos.workItem.status.prLinked')
-}
-
-function ciIcon(ciStatus: WorkItem['ciStatus']) {
-  return getCIIcon(ciStatus)
-}
+const { stateBadgeColor, stateBadgeLabel, prStatusLabel, ciIcon } = useWorkItemBadges()
 </script>
 
 <template>
@@ -108,9 +69,9 @@ function ciIcon(ciStatus: WorkItem['ciStatus']) {
         role="link"
         tabindex="0"
         class="flex items-start gap-2.5 px-3 py-2.5 hover:bg-accented hover:border-l-2 hover:border-l-primary hover:pl-2.5 transition-all border-b border-default last:border-b-0 cursor-pointer"
-        @click="navigateToItem(item)"
-        @keydown.enter="navigateToItem(item)"
-        @keydown.space.prevent="navigateToItem(item)"
+        @click.stop="navigateToItem(item)"
+        @keydown.enter.stop="navigateToItem(item)"
+        @keydown.space.prevent.stop="navigateToItem(item)"
       >
         <RepoWorkItemRow
           :item="item"

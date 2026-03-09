@@ -213,7 +213,7 @@ function recentItemToCommand(item: RecentItem): CommandPaletteItem {
       if (workItemPath) {
         navigateTo(localePath(workItemPath))
       }
-      else if (!isIssue) {
+      else {
         navigateTo(item.url, { external: true, open: { target: '_blank' } })
       }
     },
