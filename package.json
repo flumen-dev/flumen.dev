@@ -57,7 +57,7 @@
     "yaml": "2.8.2"
   },
   "devDependencies": {
-    "@iconify-json/lucide": "1.2.95",
+    "@iconify-json/lucide": "1.2.96",
     "@iconify-json/simple-icons": "1.2.71",
     "@nuxt/a11y": "1.0.0-alpha.1",
     "@nuxt/eslint": "1.15.2",
