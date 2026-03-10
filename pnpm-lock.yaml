@@ -66,8 +66,8 @@ importers:
         specifier: 3.3.0
         version: 3.3.0
       marked:
-        specifier: 17.0.3
-        version: 17.0.3
+        specifier: 17.0.4
+        version: 17.0.4
       nuxt:
         specifier: 4.3.1
         version: 4.3.1(@parcel/watcher@2.5.6)(@types/node@25.3.2)(@upstash/redis@1.36.3)(@vue/compiler-sfc@3.5.29)(cac@6.7.14)(db0@0.3.4)(eslint@10.0.2(jiti@2.6.1))(ioredis@5.10.0)(lightningcss@1.31.1)(magicast@0.5.2)(optionator@0.9.4)(rollup@4.59.0)(terser@5.46.0)(typescript@5.9.3)(vite@7.3.1(@types/node@25.3.2)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(yaml@2.8.2))(yaml@2.8.2)
@@ -4774,8 +4774,8 @@ packages:
     resolution: {integrity: sha512-BuU2qnTti9YKgK5N+IeMubp14ZUKUUw7yeJbkjtosvHiP0AZ5c8IAgEMk79D0eC8F23r4Ac/q8cAIFdm2FtyoA==}
     hasBin: true
 
-  marked@17.0.3:
-    resolution: {integrity: sha512-jt1v2ObpyOKR8p4XaUJVk3YWRJ5n+i4+rjQopxvV32rSndTJXvIzuUdWWIy/1pFQMkQmvTXawzDNqOH/CUmx6A==}
+  marked@17.0.4:
+    resolution: {integrity: sha512-NOmVMM+KAokHMvjWmC5N/ZOvgmSWuqJB8FoYI019j4ogb/PeRMKoKIjReZ2w3376kkA8dSJIP8uD993Kxc0iRQ==}
     engines: {node: '>= 20'}
     hasBin: true
 
@@ -8933,7 +8933,7 @@ snapshots:
     dependencies:
       '@tiptap/core': 3.20.0(@tiptap/pm@3.20.1)
       '@tiptap/pm': 3.20.1
-      marked: 17.0.3
+      marked: 17.0.4
 
   '@tiptap/pm@3.20.1':
     dependencies:
@@ -11180,7 +11180,7 @@ snapshots:
       punycode.js: 2.3.1
       uc.micro: 2.1.0
 
-  marked@17.0.3: {}
+  marked@17.0.4: {}
 
   mdn-data@2.0.28: {}
 
