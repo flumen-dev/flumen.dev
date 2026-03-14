@@ -587,9 +587,6 @@ function handleDelete(item: WorkItemTimelineUiItem) {
   if (!subjectId) return
   deleteTimelineComment(item.id, subjectId, { sourceNumber: item.sourceNumber })
 }
-
-// --- Comment form ---
-const commentFormRef = ref<{ active: boolean }>()
 </script>
 
 <template>
@@ -808,19 +805,14 @@ const commentFormRef = ref<{ active: boolean }>()
         </UTimeline>
       </div>
 
-      <div
+      <IssueCommentForm
         v-if="loggedIn && primarySubjectId"
-        :class="commentFormRef?.active ? 'sticky bottom-0 z-10' : ''"
-      >
-        <IssueCommentForm
-          ref="commentFormRef"
-          :issue-id="primarySubjectId"
-          :repo-context="repo"
-          :mention-users="mentionUsers"
-          :submit-comment="submitComment"
-          @submitted="toast.add({ title: t('issues.comment.submitted'), color: 'success' })"
-        />
-      </div>
+        :issue-id="primarySubjectId"
+        :repo-context="repo"
+        :mention-users="mentionUsers"
+        :submit-comment="submitComment"
+        @submitted="toast.add({ title: t('issues.comment.submitted'), color: 'success' })"
+      />
     </div>
 
     <div

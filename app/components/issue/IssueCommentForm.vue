@@ -28,7 +28,7 @@ const hydrated = ref(false)
 const editingId = useState<string | null>('issue-editing-id', () => null)
 const isEdit = computed(() => !!props.editComment)
 const someoneEditing = computed(() => !isEdit.value && editingId.value !== null)
-const active = computed(() => pinEnabled.value && (focused.value || body.value.length > 0))
+const active = computed(() => pinEnabled.value)
 const submitDisabled = computed(() => {
   if (!hydrated.value) return true
   return !hasMeaningfulMarkdown(body.value) || someoneEditing.value || submitting.value
@@ -55,8 +55,6 @@ function togglePin() {
 onMounted(() => {
   hydrated.value = true
 })
-
-defineExpose({ active })
 
 async function submit() {
   if (submitDisabled.value) return
@@ -92,94 +90,96 @@ async function submit() {
 </script>
 
 <template>
-  <div
-    class="relative rounded-lg border border-default bg-default overflow-hidden"
-    @focusin="focused = true"
-    @focusout="focused = false"
-  >
-    <EditorMarkdownEditor
-      v-model="body"
-      :repo-context="props.repoContext"
-      :mention-users="props.mentionUsers"
-      :framed="false"
-      :show-header="true"
-      @submit="submit"
+  <div :class="active ? 'sticky bottom-0 z-10' : ''">
+    <div
+      class="relative rounded-lg border border-default bg-default overflow-hidden"
+      @focusin="focused = true"
+      @focusout="focused = false"
     >
-      <template #header-left="{ mode, setMode }">
-        <div class="flex items-center gap-3">
-          <UAvatar
-            :src="user?.avatarUrl"
-            :alt="user?.login"
-            size="xs"
-          />
-          <span class="text-sm font-medium">{{ user?.login }}</span>
-          <span
-            v-if="isEdit"
-            class="text-xs text-muted"
+      <EditorMarkdownEditor
+        v-model="body"
+        :repo-context="props.repoContext"
+        :mention-users="props.mentionUsers"
+        :framed="false"
+        :show-header="true"
+        @submit="submit"
+      >
+        <template #header-left="{ mode, setMode }">
+          <div class="flex items-center gap-3">
+            <UAvatar
+              :src="user?.avatarUrl"
+              :alt="user?.login"
+              size="xs"
+            />
+            <span class="text-sm font-medium">{{ user?.login }}</span>
+            <span
+              v-if="isEdit"
+              class="text-xs text-muted"
+            >
+              {{ t('issues.comment.editing') }}
+            </span>
+
+            <div class="h-4 w-px bg-default" />
+
+            <EditorSourceToggle
+              :model-value="mode"
+              @update:model-value="setMode"
+            />
+          </div>
+        </template>
+
+        <template #header-right>
+          <button
+            type="button"
+            class="flex items-center justify-center size-5 rounded-full transition-colors"
+            :class="pinEnabled
+              ? 'bg-primary text-white shadow-sm cursor-pointer hover:bg-primary/80'
+              : 'bg-elevated text-muted ring-1 ring-default cursor-default'"
+            :aria-label="pinEnabled ? t('editor.unpin') : t('editor.pin')"
+            :title="pinEnabled ? t('editor.unpin') : t('editor.pin')"
+            :aria-pressed="pinEnabled"
+            @mousedown.prevent
+            @click.stop="togglePin"
           >
-            {{ t('issues.comment.editing') }}
-          </span>
+            <UIcon
+              name="i-lucide-pin"
+              class="size-3"
+            />
+          </button>
+        </template>
+      </EditorMarkdownEditor>
 
-          <div class="h-4 w-px bg-default" />
+      <div class="p-4 pt-0">
+        <div
+          v-if="error"
+          class="text-sm text-red-500 mt-3 mb-2"
+        >
+          {{ error }}
+        </div>
 
-          <EditorSourceToggle
-            :model-value="mode"
-            @update:model-value="setMode"
+        <div class="flex items-center justify-end gap-2 mt-3">
+          <UButton
+            v-if="isEdit"
+            :label="t('profile.cancel')"
+            color="neutral"
+            variant="ghost"
+            @click="emit('cancel')"
+          />
+          <UButton
+            v-if="hasDraft"
+            :label="t('issues.draft.discard')"
+            color="neutral"
+            variant="ghost"
+            @click="discardDraft()"
+          />
+          <UButton
+            :label="isEdit ? t('issues.comment.update') : t('issues.comment.submit')"
+            icon="i-lucide-send"
+            :loading="submitting"
+            :disabled="submitDisabled"
+            @click="submit"
           />
         </div>
-      </template>
-
-      <template #header-right>
-        <button
-          type="button"
-          class="flex items-center justify-center size-5 rounded-full transition-colors"
-          :class="pinEnabled
-            ? 'bg-primary text-white shadow-sm cursor-pointer hover:bg-primary/80'
-            : 'bg-elevated text-muted ring-1 ring-default cursor-default'"
-          :aria-label="pinEnabled ? t('editor.unpin') : t('editor.pin')"
-          :title="pinEnabled ? t('editor.unpin') : t('editor.pin')"
-          :aria-pressed="pinEnabled"
-          @mousedown.prevent
-          @click.stop="togglePin"
-        >
-          <UIcon
-            name="i-lucide-pin"
-            class="size-3"
-          />
-        </button>
-      </template>
-    </EditorMarkdownEditor>
-
-    <div class="p-4 pt-0">
-      <div
-        v-if="error"
-        class="text-sm text-red-500 mt-3 mb-2"
-      >
-        {{ error }}
-      </div>
-
-      <div class="flex items-center justify-end gap-2 mt-3">
-        <UButton
-          v-if="isEdit"
-          :label="t('profile.cancel')"
-          color="neutral"
-          variant="ghost"
-          @click="emit('cancel')"
-        />
-        <UButton
-          v-if="hasDraft"
-          :label="t('issues.draft.discard')"
-          color="neutral"
-          variant="ghost"
-          @click="discardDraft()"
-        />
-        <UButton
-          :label="isEdit ? t('issues.comment.update') : t('issues.comment.submit')"
-          icon="i-lucide-send"
-          :loading="submitting"
-          :disabled="submitDisabled"
-          @click="submit"
-        />
       </div>
     </div>
   </div>
