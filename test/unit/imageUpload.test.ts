@@ -41,7 +41,8 @@ describe('imageExtFromType', () => {
     expect(imageExtFromType('image/gif')).toBe('gif')
   })
 
-  it('converts svg+xml to svg', () => {
-    expect(imageExtFromType('image/svg+xml')).toBe('svg')
+  it('rejects SVG to prevent XSS', () => {
+    const result = validateImageFile({ data: Buffer.from('x'), type: 'image/svg+xml' })
+    expect(result.valid).toBe(false)
   })
 })

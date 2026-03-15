@@ -1,4 +1,4 @@
-export const ALLOWED_IMAGE_TYPES = new Set(['image/png', 'image/jpeg', 'image/gif', 'image/webp', 'image/svg+xml'])
+export const ALLOWED_IMAGE_TYPES = new Set(['image/png', 'image/jpeg', 'image/gif', 'image/webp'])
 export const MAX_IMAGE_SIZE = 5 * 1024 * 1024 // 5 MB
 
 export function validateImageFile(file: { data: Buffer, type?: string }): { valid: true } | { valid: false, message: string } {
@@ -18,5 +18,5 @@ export function validateImageFile(file: { data: Buffer, type?: string }): { vali
 }
 
 export function imageExtFromType(type: string): string {
-  return type.split('/')[1]?.replace('svg+xml', 'svg') ?? 'png'
+  return type.split('/')[1] ?? 'png'
 }

@@ -9,7 +9,7 @@ function getImageFile(dt: DataTransfer): File | null {
   return null
 }
 
-export interface ImageUploadOptions {
+interface ImageUploadOptions {
   onError?: (error: Error) => void
 }
 
