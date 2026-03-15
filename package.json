@@ -23,6 +23,7 @@
     "i18n:schema": "node --experimental-strip-types scripts/generate-i18n-schema.ts"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1009.0",
     "@flumen-dev/mutatio-view": "^0.0.1-alpha.1",
     "@nuxt/image": "2.0.0",
     "@nuxt/ui": "4.5.1",

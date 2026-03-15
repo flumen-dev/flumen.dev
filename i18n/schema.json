@@ -1855,7 +1855,7 @@
         "editedAgo": {
           "type": "string"
         },
-        "imageReadError": {
+        "imageUploadError": {
           "type": "string"
         },
         "toolbar": {

@@ -306,12 +306,11 @@ function executeDelete() {
         v-else
         class="flex flex-col gap-2"
       >
-        <UTextarea
+        <EditorMarkdownEditor
           v-model="replyModel"
+          :repo-context="repoContext"
           :placeholder="t('workItems.timeline.replyPlaceholder')"
-          autoresize
-          :rows="2"
-          size="sm"
+          min-height="8rem"
         />
         <div class="flex gap-2">
           <UButton

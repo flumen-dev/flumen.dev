@@ -616,7 +616,7 @@
     "source": "Source",
     "wysiwyg": "Preview",
     "editedAgo": "edited {time}",
-    "imageReadError": "Could not read the selected image.",
+    "imageUploadError": "Image upload failed.",
     "toolbar": {
       "headings": "Headings",
       "heading1": "Heading 1",

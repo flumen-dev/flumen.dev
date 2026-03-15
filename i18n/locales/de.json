@@ -616,7 +616,7 @@
     "source": "Quelltext",
     "wysiwyg": "Vorschau",
     "editedAgo": "bearbeitet {time}",
-    "imageReadError": "Das ausgewählte Bild konnte nicht gelesen werden.",
+    "imageUploadError": "Bild-Upload fehlgeschlagen.",
     "toolbar": {
       "headings": "Überschriften",
       "heading1": "Überschrift 1",
