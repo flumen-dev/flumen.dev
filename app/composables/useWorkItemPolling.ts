@@ -45,7 +45,9 @@ export function useWorkItemPolling(
     try {
       await requestFetch(checkUrl.value)
     }
-    catch {}
+    catch {
+      // Ignore
+    }
     start()
   })
 
