@@ -1,7 +1,7 @@
 export default defineEventHandler(async (event) => {
-  const { token } = await getSessionToken(event)
+  const { token, userId } = await getSessionToken(event)
 
-  const info = getRateLimit()
+  const info = getRateLimit(userId)
 
   // Seed cache on first call (both REST + GraphQL not yet tracked)
   if (info.limit === 0 || info.limit <= 5000) {
@@ -18,14 +18,14 @@ export default defineEventHandler(async (event) => {
       'x-ratelimit-limit': String(core.limit),
       'x-ratelimit-remaining': String(core.remaining),
       'x-ratelimit-reset': String(core.reset),
-    }), 'rest')
+    }), 'rest', userId)
     updateRateLimitFromHeaders(new Headers({
       'x-ratelimit-limit': String(graphql.limit),
       'x-ratelimit-remaining': String(graphql.remaining),
       'x-ratelimit-reset': String(graphql.reset),
-    }), 'graphql')
+    }), 'graphql', userId)
 
-    return getRateLimit()
+    return getRateLimit(userId)
   }
 
   return info

@@ -9,32 +9,41 @@ function fakeHeaders(limit: number, remaining: number, reset: number): Headers {
   return h
 }
 
-describe('rate limit tracking', () => {
-  it('aggregates REST and GraphQL limits', () => {
-    updateRateLimitFromHeaders(fakeHeaders(5000, 4900, 1000), 'rest')
-    updateRateLimitFromHeaders(fakeHeaders(5000, 4800, 1100), 'graphql')
+const USER_A = 1001
+const USER_B = 1002
 
-    const info = getRateLimit()
+describe('rate limit tracking', () => {
+  it('aggregates REST and GraphQL limits per user', () => {
+    updateRateLimitFromHeaders(fakeHeaders(5000, 4900, 1000), 'rest', USER_A)
+    updateRateLimitFromHeaders(fakeHeaders(5000, 4800, 1100), 'graphql', USER_A)
+
+    const info = getRateLimit(USER_A)
     expect(info.limit).toBe(10000)
     expect(info.remaining).toBe(9700)
     expect(info.reset).toBe(1100)
   })
 
-  it('updates values on subsequent calls', () => {
-    updateRateLimitFromHeaders(fakeHeaders(5000, 4900, 1000), 'rest')
-    updateRateLimitFromHeaders(fakeHeaders(5000, 4850, 1000), 'rest')
+  it('isolates rate limits between users', () => {
+    updateRateLimitFromHeaders(fakeHeaders(5000, 100, 2000), 'rest', USER_B)
+    updateRateLimitFromHeaders(fakeHeaders(5000, 200, 2000), 'graphql', USER_B)
 
-    const info = getRateLimit()
-    // REST remaining should be 4850 (latest), graphql still 4800 from previous test
-    expect(info.remaining).toBe(4850 + 4800)
+    const infoA = getRateLimit(USER_A)
+    const infoB = getRateLimit(USER_B)
+
+    expect(infoA.remaining).toBe(9700) // from previous test
+    expect(infoB.remaining).toBe(300)
   })
 
-  it('ignores headers without valid limit', () => {
-    updateRateLimitFromHeaders(fakeHeaders(5000, 4000, 2000), 'rest')
-    updateRateLimitFromHeaders(new Headers(), 'rest')
+  it('returns zeroes for unknown user', () => {
+    const info = getRateLimit(9999)
+    expect(info.limit).toBe(0)
+    expect(info.remaining).toBe(0)
+  })
 
-    // Empty headers have limit=0, so they're ignored — previous values stay
-    const info = getRateLimit()
-    expect(info.limit).toBeGreaterThan(0)
+  it('ignores headers without userId', () => {
+    updateRateLimitFromHeaders(fakeHeaders(5000, 0, 3000), 'rest')
+    // Should not affect any user
+    const info = getRateLimit(USER_A)
+    expect(info.remaining).toBe(9700)
   })
 })

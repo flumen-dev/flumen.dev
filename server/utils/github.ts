@@ -7,9 +7,11 @@ export interface RateLimitInfo {
   reset: number
 }
 
-const rateLimits: Record<string, RateLimitInfo> = {}
+const rateLimitsPerUser = new Map<number, Record<string, RateLimitInfo>>()
 
-export function getRateLimit(): RateLimitInfo {
+export function getRateLimit(userId: number): RateLimitInfo {
+  const rateLimits = rateLimitsPerUser.get(userId)
+  if (!rateLimits) return { limit: 0, remaining: 0, reset: 0 }
   const entries = Object.values(rateLimits)
   if (!entries.length) return { limit: 0, remaining: 0, reset: 0 }
   return {
@@ -19,12 +21,13 @@ export function getRateLimit(): RateLimitInfo {
   }
 }
 
-export function updateRateLimitFromHeaders(headers: Headers, source: 'rest' | 'graphql' = 'rest') {
+export function updateRateLimitFromHeaders(headers: Headers, source: 'rest' | 'graphql' = 'rest', userId?: number) {
   const limit = Number(headers.get('x-ratelimit-limit'))
   const remaining = Number(headers.get('x-ratelimit-remaining'))
   const reset = Number(headers.get('x-ratelimit-reset'))
-  if (limit > 0) {
-    rateLimits[source] = { limit, remaining, reset }
+  if (limit > 0 && userId != null) {
+    if (!rateLimitsPerUser.has(userId)) rateLimitsPerUser.set(userId, {})
+    rateLimitsPerUser.get(userId)![source] = { limit, remaining, reset }
   }
 }
 
@@ -186,7 +189,7 @@ export async function githubCachedFetchWithToken<T>(
     body: options.body ? JSON.stringify(options.body) : undefined,
   })
 
-  updateRateLimitFromHeaders(response.headers)
+  updateRateLimitFromHeaders(response.headers, 'rest', userId)
 
   if (response.status === 304 && cached) {
     return { data: cached.data, status: 304, headers: response.headers }
