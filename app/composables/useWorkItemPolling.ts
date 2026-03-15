@@ -42,20 +42,24 @@ export function useWorkItemPolling(
 
   // Warm up ETag cache on mount, then start polling
   onMounted(async () => {
-    try {
-      await requestFetch(checkUrl.value)
-    }
-    catch {
-      // Ignore
-    }
+    await requestFetch(checkUrl.value).catch(() => null)
     start()
   })
 
-  // Manual trigger (e.g. after merge) — immediate check + reload
+  // Force reload without check (e.g. after merge/review/CI — we already know something changed)
+  // Short delay lets GitHub propagate all side effects (comments, status, etc.)
   async function trigger() {
-    if (import.meta.client) {
-      if (!timer) start()
-      await tick()
+    if (!import.meta.client) return
+    if (!timer) start()
+    await new Promise(r => setTimeout(r, 3_000))
+    try {
+      const fresh = await requestFetch<WorkItemDetail>(fetchUrl.value)
+      if (fresh && workItem.value) {
+        workItem.value = { ...workItem.value, ...fresh }
+      }
+    }
+    catch {
+      // Network error — next tick will retry
     }
   }
 
