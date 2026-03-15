@@ -30,15 +30,20 @@ interface BranchStatusQueryResult {
   } | null
 }
 
-const BRANCH_STATUS_QUERY = /* GraphQL */ `
-  query BranchStatus($owner: String!, $repo: String!, $branchRef: String!, $forkOwner: String!) {
+const REPO_QUERY = /* GraphQL */ `
+  query BranchStatus($owner: String!, $repo: String!, $branchRef: String!) {
     repository(owner: $owner, name: $repo) {
       viewerPermission
       defaultBranchRef { name }
       url
       ref(qualifiedName: $branchRef) { name }
     }
-    fork: repository(owner: $forkOwner, name: $repo) {
+  }
+`
+
+const FORK_QUERY = /* GraphQL */ `
+  query ForkStatus($forkOwner: String!, $repo: String!, $branchRef: String!) {
+    repository(owner: $forkOwner, name: $repo) {
       isFork
       nameWithOwner
       url
@@ -72,35 +77,51 @@ export default defineEventHandler(async (event): Promise<BranchStatus> => {
   // 2. Single GraphQL query: repo permissions, default branch, fork status, branch existence
   const branchRef = `refs/heads/${suggestedBranch}`
 
-  const data = await githubGraphQL<BranchStatusQueryResult>(token, BRANCH_STATUS_QUERY, {
+  const repoData = await githubGraphQL<{ repository: BranchStatusQueryResult['repository'] }>(token, REPO_QUERY, {
     owner,
     repo: repoName,
     branchRef,
-    forkOwner: login,
   })
 
-  if (!data.repository) {
+  if (!repoData.repository) {
     throw createError({ statusCode: 404, message: 'Repository not found' })
   }
 
-  const { viewerPermission, defaultBranchRef } = data.repository
+  // Fork query may fail if user has no fork — that's ok
+  let forkData: BranchStatusQueryResult['fork'] = null
+  try {
+    const result = await githubGraphQL<{ repository: BranchStatusQueryResult['fork'] }>(token, FORK_QUERY, {
+      forkOwner: login,
+      repo: repoName,
+      branchRef,
+    })
+    if (result.repository?.isFork) {
+      forkData = result.repository
+    }
+  }
+  catch {
+    // No fork — that's fine
+  }
+
+  const repoInfo = repoData.repository
+  const { viewerPermission, defaultBranchRef } = repoInfo
   const isCollaborator = !!viewerPermission && ['ADMIN', 'MAINTAIN', 'WRITE'].includes(viewerPermission)
   const defaultBranch = defaultBranchRef?.name ?? 'main'
 
   // 3. Determine branch existence + clone URL based on collaborator status
-  const hasFork = !!data.fork?.isFork
-  const forkFullName = hasFork ? data.fork!.nameWithOwner : null
+  const hasFork = !!forkData?.isFork
+  const forkFullName = hasFork ? forkData!.nameWithOwner : null
 
   let branchExists: boolean
   let cloneUrl: string | null
 
   if (isCollaborator) {
-    branchExists = !!data.repository.ref
-    cloneUrl = data.repository.url + '.git'
+    branchExists = !!repoInfo.ref
+    cloneUrl = repoInfo.url + '.git'
   }
   else {
-    branchExists = !!data.fork?.ref
-    cloneUrl = hasFork ? data.fork!.url + '.git' : null
+    branchExists = !!forkData?.ref
+    cloneUrl = hasFork ? forkData!.url + '.git' : null
   }
 
   // 4. Clean up current user's claim if their branch was deleted
