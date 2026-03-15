@@ -57,6 +57,7 @@ export interface GitHubRequestOptions {
   method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
   body?: unknown
   params?: Record<string, string | number>
+  userId?: number
 }
 
 export interface GitHubResponse<T> {
@@ -134,7 +135,7 @@ export async function githubFetchWithToken<T>(
     throw new GitHubError(response.status, endpoint, detail)
   }
 
-  updateRateLimitFromHeaders(response.headers)
+  updateRateLimitFromHeaders(response.headers, 'rest', options.userId)
 
   const data = await response.json() as T
   return { data, status: response.status, headers: response.headers }

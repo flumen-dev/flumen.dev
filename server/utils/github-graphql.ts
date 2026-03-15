@@ -11,6 +11,7 @@ export async function githubGraphQL<T>(
   token: string,
   query: string,
   variables?: Record<string, unknown>,
+  userId?: number,
 ): Promise<T> {
   const response = await fetch(GITHUB_GRAPHQL, {
     method: 'POST',
@@ -21,7 +22,7 @@ export async function githubGraphQL<T>(
     body: JSON.stringify({ query, variables }),
   })
 
-  updateRateLimitFromHeaders(response.headers, 'graphql')
+  updateRateLimitFromHeaders(response.headers, 'graphql', userId)
 
   if (!response.ok) {
     throw new GitHubError(response.status, '/graphql', `GitHub GraphQL ${response.status}: ${response.statusText}`)
