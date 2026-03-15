@@ -892,5 +892,11 @@
       "skinGrass": "Grass",
       "skinFire": "Fire"
     }
+  },
+  "rateLimit": {
+    "label": "API Usage",
+    "resetsIn": "resets in {min}min",
+    "resetsNow": "resetting...",
+    "tooltip": "GitHub API requests used this hour. Resets automatically. High usage may temporarily limit Flumen's functionality."
   }
 }

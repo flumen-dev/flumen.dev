@@ -1,3 +1,5 @@
+import { updateRateLimitFromHeaders } from './github'
+
 const GITHUB_GRAPHQL = 'https://api.github.com/graphql'
 
 interface GraphQLResponse<T> {
@@ -18,6 +20,8 @@ export async function githubGraphQL<T>(
     },
     body: JSON.stringify({ query, variables }),
   })
+
+  updateRateLimitFromHeaders(response.headers, 'graphql')
 
   if (!response.ok) {
     throw new GitHubError(response.status, '/graphql', `GitHub GraphQL ${response.status}: ${response.statusText}`)

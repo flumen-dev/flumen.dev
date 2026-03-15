@@ -892,5 +892,11 @@
       "skinGrass": "Gras",
       "skinFire": "Feuer"
     }
+  },
+  "rateLimit": {
+    "label": "API-Nutzung",
+    "resetsIn": "Reset in {min}min",
+    "resetsNow": "wird zurückgesetzt...",
+    "tooltip": "GitHub API-Anfragen in dieser Stunde. Wird automatisch zurückgesetzt. Hohe Nutzung kann Flumens Funktionen vorübergehend einschränken."
   }
 }
