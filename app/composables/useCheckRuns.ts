@@ -145,5 +145,6 @@ export function useCheckRuns(
     result: mergedResult,
     hasPending,
     statusChanged,
+    refetch: fetchAll,
   }
 }

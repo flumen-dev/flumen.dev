@@ -51,11 +51,16 @@ const emit = defineEmits<{
   reviewed: []
 }>()
 
-const { result: checkResult, statusChanged } = useCheckRuns(ownerRef, repoRef, prNumbers)
+const { result: checkResult, statusChanged, refetch: refetchChecks } = useCheckRuns(ownerRef, repoRef, prNumbers)
 const ciExpanded = ref(false)
 
 watch(statusChanged, () => {
   emit('ciStatusChanged')
+})
+
+// Refetch checks when work item data changes (e.g. after push detected by polling)
+watch(() => props.workItem.updatedAt, () => {
+  refetchChecks()
 })
 
 // --- Row 1: State ---
