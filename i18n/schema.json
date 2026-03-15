@@ -1444,6 +1444,12 @@
             "confirmMerge": {
               "type": "string"
             },
+            "mergeBypass": {
+              "type": "string"
+            },
+            "bypassHint": {
+              "type": "string"
+            },
             "mergeSuccess": {
               "type": "string"
             },

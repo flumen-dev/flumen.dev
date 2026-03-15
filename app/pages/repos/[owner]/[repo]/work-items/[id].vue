@@ -76,6 +76,7 @@ const activePullHeadSha = computed(() => {
 })
 
 provide('workItemRef', workItem)
+provide('hasPr', hasPr)
 
 const activeTab = ref('conversation')
 

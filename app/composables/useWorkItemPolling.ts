@@ -1,7 +1,6 @@
 import type { WorkItemDetail } from '~~/shared/types/work-item'
 
 const POLL_INTERVAL = 20_000
-const MAX_STALE_ROUNDS = 3
 
 export function useWorkItemPolling(
   workItem: Ref<WorkItemDetail | null | undefined>,
@@ -10,52 +9,28 @@ export function useWorkItemPolling(
   const requestFetch = useRequestFetch()
 
   let timer: ReturnType<typeof setInterval> | null = null
-  let staleCount = 0
-  let lastFingerprint = ''
 
-  const polling = ref(false)
-
-  const needsPolling = computed(() => {
-    const wi = workItem.value
-    if (!wi) return false
-    return wi.ciStatus === 'PENDING'
-  })
-
-  function fingerprint(): string {
-    const wi = workItem.value
-    if (!wi) return ''
-    return `${wi.state}|${wi.ciStatus}|${wi.updatedAt}`
-  }
+  const checkUrl = computed(() => `${fetchUrl.value}/check`)
 
   async function tick() {
     try {
+      // Lightweight check with ETag — 304 = free, no API cost
+      const { changed } = await requestFetch<{ changed: boolean }>(checkUrl.value)
+      if (!changed) return
+
+      // Something changed — replace ref to trigger Vue reactivity
       const fresh = await requestFetch<WorkItemDetail>(fetchUrl.value)
-      if (!fresh || !workItem.value) return
-      Object.assign(workItem.value, fresh)
+      if (fresh && workItem.value) {
+        workItem.value = { ...workItem.value, ...fresh }
+      }
     }
     catch {
-      return
-    }
-
-    const current = fingerprint()
-    if (current === lastFingerprint) {
-      staleCount++
-    }
-    else {
-      staleCount = 0
-      lastFingerprint = current
-    }
-
-    if (staleCount >= MAX_STALE_ROUNDS || !needsPolling.value) {
-      stop()
+      // Network error — skip this round
     }
   }
 
   function start() {
     if (timer) return
-    staleCount = 0
-    lastFingerprint = fingerprint()
-    polling.value = true
     timer = setInterval(tick, POLL_INTERVAL)
   }
 
@@ -63,21 +38,21 @@ export function useWorkItemPolling(
     if (!timer) return
     clearInterval(timer)
     timer = null
-    polling.value = false
   }
 
-  watch(needsPolling, (should) => {
-    if (import.meta.client && should) {
-      start()
+  // Warm up ETag cache on mount, then start polling
+  onMounted(async () => {
+    try {
+      await requestFetch(checkUrl.value)
     }
-    else {
-      stop()
-    }
-  }, { immediate: true })
+    catch {}
+    start()
+  })
 
+  // Manual trigger (e.g. after merge) — immediate check + reload
   async function trigger() {
     if (import.meta.client) {
-      start()
+      if (!timer) start()
       await tick()
     }
   }
@@ -85,7 +60,6 @@ export function useWorkItemPolling(
   onScopeDispose(stop)
 
   return {
-    polling: readonly(polling),
     trigger,
   }
 }

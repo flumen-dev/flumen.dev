@@ -479,6 +479,8 @@
       "commitTitle": "Commit title",
       "commitMessage": "Additional details (optional)",
       "confirmMerge": "Merge this pull request",
+      "mergeBypass": "Merge without waiting for requirements",
+      "bypassHint": "Requirements have not been met. You can merge as an administrator.",
       "mergeSuccess": "Pull request merged",
       "mergeFailed": "Merge failed",
       "deleteBranch": "Delete branch",

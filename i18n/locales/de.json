@@ -479,6 +479,8 @@
       "commitTitle": "Commit-Titel",
       "commitMessage": "Weitere Details (optional)",
       "confirmMerge": "Pull Request mergen",
+      "mergeBypass": "Ohne Anforderungen mergen",
+      "bypassHint": "Anforderungen nicht erfüllt. Du kannst als Administrator mergen.",
       "mergeSuccess": "Pull Request gemergt",
       "mergeFailed": "Merge fehlgeschlagen",
       "deleteBranch": "Branch löschen",

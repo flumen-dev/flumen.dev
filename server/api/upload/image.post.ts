@@ -1,7 +1,6 @@
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3'
 import { randomUUID } from 'node:crypto'
 import { getSessionToken } from '~~/server/utils/github'
-import { validateImageFile, imageExtFromType } from '~~/server/utils/image-upload'
 
 let s3: S3Client | null = null
 
