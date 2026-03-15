@@ -2686,6 +2686,24 @@
       },
       "additionalProperties": false
     },
+    "rateLimit": {
+      "type": "object",
+      "properties": {
+        "label": {
+          "type": "string"
+        },
+        "resetsIn": {
+          "type": "string"
+        },
+        "resetsNow": {
+          "type": "string"
+        },
+        "tooltip": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
     "$schema": {
       "type": "string"
     }
