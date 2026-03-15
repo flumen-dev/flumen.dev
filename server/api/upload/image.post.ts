@@ -1,9 +1,7 @@
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3'
 import { randomUUID } from 'node:crypto'
 import { getSessionToken } from '~~/server/utils/github'
-
-const ALLOWED_TYPES = new Set(['image/png', 'image/jpeg', 'image/gif', 'image/webp', 'image/svg+xml'])
-const MAX_SIZE = 5 * 1024 * 1024 // 5 MB
+import { validateImageFile, imageExtFromType } from '~~/server/utils/image-upload'
 
 let s3: S3Client | null = null
 
@@ -28,7 +26,6 @@ function getS3Client(): S3Client {
 }
 
 export default defineEventHandler(async (event) => {
-  // Auth check
   await getSessionToken(event)
 
   const form = await readMultipartFormData(event)
@@ -41,12 +38,9 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'No file provided' })
   }
 
-  if (!ALLOWED_TYPES.has(file.type)) {
-    throw createError({ statusCode: 400, message: `Unsupported file type: ${file.type}` })
-  }
-
-  if (file.data.length > MAX_SIZE) {
-    throw createError({ statusCode: 400, message: 'File too large (max 5 MB)' })
+  const validation = validateImageFile(file as { data: Buffer, type: string })
+  if (!validation.valid) {
+    throw createError({ statusCode: 400, message: validation.message })
   }
 
   const bucket = process.env.R2_BUCKET
@@ -56,7 +50,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 503, message: 'Image upload is not configured' })
   }
 
-  const ext = file.type.split('/')[1]?.replace('svg+xml', 'svg') ?? 'png'
+  const ext = imageExtFromType(file.type)
   const key = `${randomUUID()}.${ext}`
 
   await getS3Client().send(new PutObjectCommand({
