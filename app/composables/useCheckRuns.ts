@@ -128,12 +128,22 @@ export function useCheckRuns(
     fetchAll()
   })
 
-  watch(hasPending, (pending) => {
-    if (import.meta.client && pending) {
+  // Always poll while there are PR numbers to watch
+  watch([hasPending, prNumbersKey], () => {
+    if (!import.meta.client || !prNumbers.value.length) {
+      stopPolling()
+      return
+    }
+    if (hasPending.value) {
       startPolling()
     }
     else {
+      // No pending checks, but still poll slowly to detect new runs (e.g. after push)
       stopPolling()
+      pollTimer = setInterval(async () => {
+        await fetchAll()
+        if (hasPending.value) startPolling()
+      }, 30_000)
     }
   }, { immediate: true })
 

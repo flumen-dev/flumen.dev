@@ -11,11 +11,13 @@ export default defineEventHandler(async (event) => {
   const id = getRouterParam(event, 'id')!
   const { number } = parseWorkItemId(id)
 
-  // Optional linked PR numbers (comma-separated) to also check
-  const linkedPrs = (getQuery(event).prs as string || '')
-    .split(',')
-    .map(Number)
-    .filter(n => Number.isFinite(n) && n > 0)
+  // Optional linked PR numbers (comma-separated, deduplicated, max 10)
+  const linkedPrs = [...new Set(
+    (getQuery(event).prs as string || '')
+      .split(',')
+      .map(Number)
+      .filter(n => Number.isFinite(n) && n > 0),
+  )].slice(0, 10)
 
   // Check the issue/PR + all linked PRs via REST (ETags → 304 = free)
   const endpoints = [
@@ -23,11 +25,12 @@ export default defineEventHandler(async (event) => {
     ...linkedPrs.map(pr => `/repos/${owner}/${repo}/pulls/${pr}`),
   ]
 
-  const results = await Promise.all(
+  const results = await Promise.allSettled(
     endpoints.map(ep => githubCachedFetchWithToken<GitHubItem>(token, userId, ep)),
   )
 
-  const anyChanged = results.some(r => r.status !== 304)
+  // Any rejected or non-304 response means something changed
+  const anyChanged = results.some(r => r.status === 'rejected' || r.value.status !== 304)
 
   if (!anyChanged) {
     return { changed: false }
