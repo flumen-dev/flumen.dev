@@ -11,15 +11,28 @@ export default defineEventHandler(async (event) => {
   const id = getRouterParam(event, 'id')!
   const { number } = parseWorkItemId(id)
 
-  // Check the issue/PR itself via REST (supports ETags → 304 = free)
-  const main = await githubCachedFetchWithToken<GitHubItem>(
-    token, userId, `/repos/${owner}/${repo}/issues/${number}`,
+  // Optional linked PR numbers (comma-separated) to also check
+  const linkedPrs = (getQuery(event).prs as string || '')
+    .split(',')
+    .map(Number)
+    .filter(n => Number.isFinite(n) && n > 0)
+
+  // Check the issue/PR + all linked PRs via REST (ETags → 304 = free)
+  const endpoints = [
+    `/repos/${owner}/${repo}/issues/${number}`,
+    ...linkedPrs.map(pr => `/repos/${owner}/${repo}/pulls/${pr}`),
+  ]
+
+  const results = await Promise.all(
+    endpoints.map(ep => githubCachedFetchWithToken<GitHubItem>(token, userId, ep)),
   )
 
-  if (main.status === 304) {
+  const anyChanged = results.some(r => r.status !== 304)
+
+  if (!anyChanged) {
     return { changed: false }
   }
-  await invalidateWorkItemDetailCache(login, owner, repo, id)
 
+  await invalidateWorkItemDetailCache(login, owner, repo, id)
   return { changed: true }
 })

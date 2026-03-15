@@ -10,7 +10,23 @@ export function useWorkItemPolling(
 
   let timer: ReturnType<typeof setInterval> | null = null
 
-  const checkUrl = computed(() => `${fetchUrl.value}/check`)
+  const checkUrl = computed(() => {
+    const wi = workItem.value
+    if (!wi) return `${fetchUrl.value}/check`
+    const prNums: number[] = []
+    if (wi.primaryType === 'pull') {
+      // Primary is PR — issue endpoint already covers it
+    }
+    else {
+      // Issue-primary: also check linked PRs
+      for (const c of wi.contributions) prNums.push(c.number)
+      for (const p of wi.linkedPulls) {
+        if (!prNums.includes(p.number)) prNums.push(p.number)
+      }
+    }
+    const params = prNums.length ? `?prs=${prNums.join(',')}` : ''
+    return `${fetchUrl.value}/check${params}`
+  })
 
   async function tick() {
     try {
