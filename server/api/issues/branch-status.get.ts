@@ -99,8 +99,9 @@ export default defineEventHandler(async (event): Promise<BranchStatus> => {
       forkData = result.repository
     }
   }
-  catch {
-    // No fork — that's fine
+  catch (e) {
+    const isForkNotFound = e instanceof GitHubError && e.message.includes('Could not resolve to a Repository')
+    if (!isForkNotFound) throw e
   }
 
   const repoInfo = repoData.repository

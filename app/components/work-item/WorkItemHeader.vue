@@ -28,9 +28,13 @@ const prNumbers = computed<number[]>(() => {
   if (wi.primaryType === 'pull') {
     return [wi.number]
   }
-  return wi.linkedPulls
+  const fromLinked = wi.linkedPulls
     .filter(p => !p.state || p.state === 'OPEN')
     .map(p => p.number)
+  const fromContributions = (wi as WorkItemDetail).contributions
+    ?.filter(c => c.state === 'OPEN')
+    .map(c => c.number) ?? []
+  return [...new Set([...fromLinked, ...fromContributions])]
 })
 
 const [ownerRef, repoRef] = (() => {
