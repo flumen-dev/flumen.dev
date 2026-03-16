@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { WorkItem } from '~~/shared/types/work-item'
+import type { WorkItem, WorkItemsPageResponse } from '~~/shared/types/work-item'
 
 definePageMeta({
   middleware: 'auth',
@@ -10,6 +10,7 @@ const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
 const localePath = useLocalePath()
+const requestFetch = useRequestFetch()
 
 const owner = computed(() => route.params.owner as string)
 const repo = computed(() => route.params.repo as string)
@@ -17,57 +18,100 @@ const state = ref<'open' | 'closed' | 'all'>('open')
 const search = ref('')
 const sortKey = ref<'newest' | 'oldest' | 'mostCommented' | 'leastCommented' | 'recentlyUpdated'>('newest')
 const activeFilters = ref<string[]>([])
+const availableLabels = ref<string[]>([])
+const syncStatus = ref<'idle' | 'running' | 'failed'>('idle')
+const syncLastSyncedAt = ref<number | null>(null)
+const syncIsPartial = ref(false)
+const syncLastError = ref<string | null>(null)
 
 const repoFullName = computed(() => `${owner.value}/${repo.value}`)
 
-const { data: workItems, status, error: fetchError, refresh } = useLazyFetch<WorkItem[]>(
-  () => `/api/repository/${owner.value}/${repo.value}/work-items`,
-  {
-    query: { state },
-  },
+function applySyncState(res: WorkItemsPageResponse) {
+  syncStatus.value = res.sync.status
+  syncLastSyncedAt.value = res.sync.lastSyncedAt
+  syncIsPartial.value = res.sync.isPartial
+  syncLastError.value = res.sync.lastError
+  availableLabels.value = res.availableLabels
+}
+
+const section = usePaginatedSection<WorkItem, WorkItemsPageResponse>(
+  requestFetch,
+  '/api/work-items',
+  30,
+  () => ({
+    repo: repoFullName.value,
+    state: state.value,
+    search: search.value.trim(),
+    sort: sortKey.value,
+    filters: activeFilters.value.join('|'),
+  }),
+  applySyncState,
 )
 
-const filteredItems = computed(() => {
-  let items = workItems.value ?? []
+const workItems = section.data
+const loading = section.loading
+const fetchError = section.error
+const totalCount = section.totalCount
+const currentPage = section.currentPage
+const totalPages = section.totalPages
+const hasMore = section.hasMore
+const hasPrevious = section.hasPrevious
+const paging = section.paging
+const nextPage = section.nextPage
+const prevPage = section.prevPage
+const refresh = section.refresh
 
-  if (search.value.trim()) {
-    const q = search.value.trim().toLowerCase()
-    items = items.filter(item =>
-      item.title.toLowerCase().includes(q)
-      || `#${item.number}`.includes(q)
-      || item.author.login.toLowerCase().includes(q),
-    )
-  }
-
-  if (activeFilters.value.length) {
-    const labelFilters = activeFilters.value.filter(f => f.startsWith('label:')).map(f => f.slice(6))
-    if (labelFilters.length) {
-      items = items.filter(item => labelFilters.every(lf => item.labels.some(l => l.name === lf)))
-    }
-    if (activeFilters.value.includes('type:issue')) {
-      items = items.filter(item => item.type === 'issue')
-    }
-    if (activeFilters.value.includes('type:pull')) {
-      items = items.filter(item => item.type === 'pull' || item.linkedPulls.length > 0)
-    }
-  }
-
-  const s = sortKey.value
-  return [...items].sort((a, b) => {
-    if (s === 'oldest') return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-    if (s === 'mostCommented') return b.commentCount - a.commentCount
-    if (s === 'leastCommented') return a.commentCount - b.commentCount
-    if (s === 'recentlyUpdated') return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
-    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime() // newest
-  })
+const syncLastText = computed(() => {
+  if (!syncLastSyncedAt.value) return t('workItems.sync.never')
+  return timeAgo(syncLastSyncedAt.value)
 })
 
-const availableLabels = computed(() => {
-  const items = workItems.value ?? []
-  if (!items.length) return []
-  const set = new Set(items.flatMap(item => item.labels.map(l => l.name)))
-  return [...set].sort()
+const syncTone = computed<'neutral' | 'info' | 'warning' | 'error'>(() => {
+  if (syncStatus.value === 'failed') return 'error'
+  if (syncStatus.value === 'running') return 'info'
+  if (syncIsPartial.value) return 'warning'
+  return 'neutral'
 })
+
+const showSyncInfo = computed(() => syncStatus.value !== 'idle' || syncIsPartial.value || !!syncLastSyncedAt.value)
+
+const syncCompactText = computed(() => {
+  if (syncStatus.value === 'failed') {
+    return syncLastError.value
+      ? `${t('workItems.sync.failedTitle')} - ${syncLastError.value}`
+      : t('workItems.sync.failedTitle')
+  }
+  if (syncStatus.value === 'running') {
+    return `${t('workItems.sync.runningTitle')} - ${t('workItems.sync.lastSync', { time: syncLastText.value })}`
+  }
+  if (syncIsPartial.value) {
+    return `${t('workItems.sync.partialTitle')} - ${t('workItems.sync.lastSync', { time: syncLastText.value })}`
+  }
+  return `${t('workItems.sync.upToDateTitle')} - ${t('workItems.sync.lastSync', { time: syncLastText.value })}`
+})
+
+if (section.isStale()) {
+  refresh()
+}
+
+watch(state, () => {
+  section.resetPagination()
+  refresh()
+})
+
+let searchDebounce: ReturnType<typeof setTimeout> | null = null
+watch(search, () => {
+  if (searchDebounce) clearTimeout(searchDebounce)
+  searchDebounce = setTimeout(() => {
+    section.resetPagination()
+    refresh()
+  }, 250)
+})
+
+watch([sortKey, activeFilters], () => {
+  section.resetPagination()
+  refresh()
+}, { deep: true })
 
 function toggleFilter(key: string) {
   const TYPE_FILTERS = ['type:issue', 'type:pull']
@@ -144,6 +188,18 @@ const { stateBadgeColor, stateBadgeLabel, prStatusLabel, ciIcon } = useWorkItemB
         :all-label="t('workItems.filter.all')"
       />
 
+      <div
+        v-if="showSyncInfo"
+        class="flex items-center gap-2 text-xs px-2.5 py-1.5 rounded-md border border-default bg-muted/30"
+      >
+        <UIcon
+          :name="syncStatus === 'running' ? 'i-lucide-loader-circle' : syncStatus === 'failed' ? 'i-lucide-alert-triangle' : syncIsPartial ? 'i-lucide-clock-3' : 'i-lucide-check-circle-2'"
+          class="size-3.5"
+          :class="syncTone === 'error' ? 'text-error' : syncTone === 'warning' ? 'text-warning' : syncTone === 'info' ? 'text-info' : 'text-success'"
+        />
+        <span class="text-muted">{{ syncCompactText }}</span>
+      </div>
+
       <!-- Toolbar: search + filters + sort -->
       <div class="flex flex-col gap-3">
         <div class="flex items-center gap-3">
@@ -154,7 +210,7 @@ const { stateBadgeColor, stateBadgeLabel, prStatusLabel, ciIcon } = useWorkItemB
             class="flex-1"
           />
           <span class="text-sm text-muted shrink-0">
-            {{ t('workItems.count', filteredItems.length) }}
+            {{ t('workItems.count', totalCount) }}
           </span>
         </div>
         <div class="flex items-center gap-2 flex-wrap">
@@ -212,7 +268,7 @@ const { stateBadgeColor, stateBadgeLabel, prStatusLabel, ciIcon } = useWorkItemB
 
       <!-- Loading -->
       <div
-        v-if="status === 'pending'"
+        v-if="loading && !workItems.length"
         class="rounded-lg border border-default divide-y divide-default overflow-hidden"
       >
         <div
@@ -230,11 +286,11 @@ const { stateBadgeColor, stateBadgeLabel, prStatusLabel, ciIcon } = useWorkItemB
 
       <!-- Work item list -->
       <div
-        v-else-if="filteredItems.length"
+        v-else-if="workItems.length"
         class="rounded-md border border-default bg-default overflow-hidden"
       >
         <div
-          v-for="item in filteredItems"
+          v-for="item in workItems"
           :key="item.id"
           role="link"
           tabindex="0"
@@ -261,6 +317,16 @@ const { stateBadgeColor, stateBadgeLabel, prStatusLabel, ciIcon } = useWorkItemB
       >
         {{ t('repos.noResults') }}
       </p>
+
+      <UiPaginator
+        :current-page="currentPage"
+        :total-pages="totalPages"
+        :has-more="hasMore"
+        :has-previous="hasPrevious"
+        :paging="paging"
+        @next="nextPage()"
+        @previous="prevPage()"
+      />
     </template>
   </div>
 </template>

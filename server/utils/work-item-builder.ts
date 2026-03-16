@@ -112,7 +112,6 @@ export async function fetchPullInsights(
 // Build WorkItems from raw GitHub data
 // ---------------------------------------------------------------------------
 export async function buildWorkItemsFromRaw(
-  token: string,
   owner: string,
   repo: string,
   issues: GitHubIssueWithPull[],
@@ -147,7 +146,7 @@ export async function buildWorkItemsFromRaw(
       } satisfies RepoPullRequest
     })
 
-  const pullInsights = await fetchPullInsights(token, owner, repo, mappedPulls.map(pr => pr.number))
+  const pullInsights = new Map<number, { reviewDecision: WorkItem['reviewDecision'], ciStatus: WorkItem['ciStatus'] }>()
 
   const issueMap = new Map<number, RepoIssue>(mappedIssues.map(issue => [issue.number, issue]))
   const linkedPullsByIssue = new Map<number, RepoPullRequest[]>()

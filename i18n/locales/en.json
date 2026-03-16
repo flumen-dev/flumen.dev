@@ -398,6 +398,14 @@
   "workItems": {
     "search": "Search work items...",
     "count": "No items | {count} item | {count} items",
+    "sync": {
+      "runningTitle": "Sync in progress",
+      "partialTitle": "Partial data",
+      "upToDateTitle": "Work items up to date",
+      "failedTitle": "Sync failed",
+      "lastSync": "Last sync: {time}",
+      "never": "never"
+    },
     "filter": {
       "all": "All"
     },
@@ -883,9 +891,11 @@
   },
   "rateLimit": {
     "label": "API Usage",
+    "sharedLabel": "PAT Usage",
     "resetsIn": "resets in {min}min",
     "resetsNow": "resetting...",
-    "tooltip": "GitHub API requests used this hour. Resets automatically. High usage may temporarily limit Flumen's functionality."
+    "tooltip": "GitHub API requests used this hour. Resets automatically. High usage may temporarily limit Flumen's functionality.",
+    "sharedTooltip": "GitHub API usage of the shared PAT. High usage may delay background syncs."
   },
   "pendingPr": {
     "hadRecentPush": "{count} commit ahead | {count} commits ahead",

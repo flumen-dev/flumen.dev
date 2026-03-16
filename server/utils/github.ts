@@ -1,4 +1,5 @@
 import type { H3Event } from 'h3'
+import { getSharedToken } from './github-app'
 
 // --- In-memory rate limit cache (updated from every GitHub response) ---
 export interface RateLimitInfo {
@@ -8,6 +9,7 @@ export interface RateLimitInfo {
 }
 
 const rateLimitsPerUser = new Map<number, Record<string, RateLimitInfo>>()
+const rateLimitsShared: Record<string, RateLimitInfo> = {}
 
 export function getRateLimit(userId: number): RateLimitInfo {
   const rateLimits = rateLimitsPerUser.get(userId)
@@ -21,7 +23,22 @@ export function getRateLimit(userId: number): RateLimitInfo {
   }
 }
 
-export function updateRateLimitFromHeaders(headers: Headers, source: 'rest' | 'graphql' = 'rest', userId?: number) {
+export function getSharedRateLimit(): RateLimitInfo {
+  const entries = Object.values(rateLimitsShared)
+  if (!entries.length) return { limit: 0, remaining: 0, reset: 0 }
+  return {
+    limit: entries.reduce((s, e) => s + e.limit, 0),
+    remaining: entries.reduce((s, e) => s + e.remaining, 0),
+    reset: Math.max(...entries.map(e => e.reset)),
+  }
+}
+
+export function updateRateLimitFromHeaders(
+  headers: Headers,
+  source: 'rest' | 'graphql' = 'rest',
+  userId?: number,
+  trackShared: boolean = false,
+) {
   const limit = Number(headers.get('x-ratelimit-limit'))
   const remaining = Number(headers.get('x-ratelimit-remaining'))
   const reset = Number(headers.get('x-ratelimit-reset'))
@@ -29,6 +46,14 @@ export function updateRateLimitFromHeaders(headers: Headers, source: 'rest' | 'g
     if (!rateLimitsPerUser.has(userId)) rateLimitsPerUser.set(userId, {})
     rateLimitsPerUser.get(userId)![source] = { limit, remaining, reset }
   }
+  if (limit > 0 && trackShared) {
+    rateLimitsShared[source] = { limit, remaining, reset }
+  }
+}
+
+function isSharedToken(token: string): boolean {
+  const sharedToken = getSharedToken()
+  return Boolean(sharedToken) && token === sharedToken
 }
 
 const GITHUB_API = 'https://api.github.com'
@@ -38,6 +63,7 @@ export interface GitHubRequestOptions {
   body?: unknown
   params?: Record<string, string | number>
   userId?: number
+  onPageFetched?: (info: { page: number, pageItems: number, totalItems: number }) => void
 }
 
 export interface GitHubResponse<T> {
@@ -115,7 +141,7 @@ export async function githubFetchWithToken<T>(
     throw new GitHubError(response.status, endpoint, detail)
   }
 
-  updateRateLimitFromHeaders(response.headers, 'rest', options.userId)
+  updateRateLimitFromHeaders(response.headers, 'rest', options.userId, isSharedToken(token))
 
   const data = await response.json() as T
   return { data, status: response.status, headers: response.headers }
@@ -131,17 +157,20 @@ export async function githubFetchAllWithToken<T>(
 
   const headers = buildHeaders(token)
   const firstResponse = await fetchGitHub(firstUrl, headers, endpoint)
+  updateRateLimitFromHeaders(firstResponse.headers, 'rest', options.userId, isSharedToken(token))
   const items = await firstResponse.json() as T[]
+  let page = 1
+  options.onPageFetched?.({ page, pageItems: items.length, totalItems: items.length })
 
-  const remainingPages = parseRemainingPages(firstResponse.headers.get('link'))
-  if (remainingPages.length) {
-    const pages = await Promise.all(
-      remainingPages.map(async (pageUrl) => {
-        const res = await fetchGitHub(pageUrl, headers, endpoint)
-        return res.json() as Promise<T[]>
-      }),
-    )
-    for (const page of pages) items.push(...page)
+  let nextPageUrl = parseNextPageUrl(firstResponse.headers.get('link'))
+  while (nextPageUrl) {
+    const res = await fetchGitHub(nextPageUrl, headers, endpoint)
+    updateRateLimitFromHeaders(res.headers, 'rest', options.userId, isSharedToken(token))
+    const pageItems = await res.json() as T[]
+    items.push(...pageItems)
+    page += 1
+    options.onPageFetched?.({ page, pageItems: pageItems.length, totalItems: items.length })
+    nextPageUrl = parseNextPageUrl(res.headers.get('link'))
   }
 
   return { data: items, status: 200, headers: firstResponse.headers }
@@ -170,7 +199,7 @@ export async function githubCachedFetchWithToken<T>(
     body: options.body ? JSON.stringify(options.body) : undefined,
   })
 
-  updateRateLimitFromHeaders(response.headers, 'rest', userId)
+  updateRateLimitFromHeaders(response.headers, 'rest', userId, isSharedToken(token))
 
   if (response.status === 304 && cached) {
     return { data: cached.data, status: 304, headers: response.headers }
@@ -209,6 +238,7 @@ export async function githubCachedFetchAllWithToken<T>(
   }
 
   const firstResponse = await fetch(firstUrl, { method: 'GET', headers })
+  updateRateLimitFromHeaders(firstResponse.headers, 'rest', userId, isSharedToken(token))
 
   if (firstResponse.status === 304 && cached) {
     return { data: cached.data, status: 304, headers: firstResponse.headers }
@@ -221,18 +251,17 @@ export async function githubCachedFetchAllWithToken<T>(
   const items = await firstResponse.json() as T[]
   const etag = firstResponse.headers.get('etag')
 
-  const remainingPages = parseRemainingPages(firstResponse.headers.get('link'))
-  const pageCount = 1 + remainingPages.length
+  const fetchHeaders = buildHeaders(token)
+  let pageCount = 1
+  let nextPageUrl = parseNextPageUrl(firstResponse.headers.get('link'))
 
-  if (remainingPages.length) {
-    const fetchHeaders = buildHeaders(token)
-    const pages = await Promise.all(
-      remainingPages.map(async (pageUrl) => {
-        const res = await fetchGitHub(pageUrl, fetchHeaders, endpoint)
-        return res.json() as Promise<T[]>
-      }),
-    )
-    for (const page of pages) items.push(...page)
+  while (nextPageUrl) {
+    const res = await fetchGitHub(nextPageUrl, fetchHeaders, endpoint)
+    updateRateLimitFromHeaders(res.headers, 'rest', userId, isSharedToken(token))
+    const pageItems = await res.json() as T[]
+    items.push(...pageItems)
+    pageCount += 1
+    nextPageUrl = parseNextPageUrl(res.headers.get('link'))
   }
 
   if (etag) {
@@ -360,20 +389,8 @@ async function fetchGitHub(url: URL | string, headers: Record<string, string>, e
   return response
 }
 
-function parseRemainingPages(header: string | null): string[] {
-  if (!header) return []
-  const lastMatch = header.match(/<([^>]+)>;\s*rel="last"/)
-  if (!lastMatch?.[1]) return []
-
-  const lastUrl = new URL(lastMatch[1])
-  const lastPage = Number(lastUrl.searchParams.get('page'))
-  if (!lastPage || lastPage <= 1) return []
-
-  const pages: string[] = []
-  for (let page = 2; page <= lastPage; page++) {
-    const url = new URL(lastUrl)
-    url.searchParams.set('page', String(page))
-    pages.push(url.toString())
-  }
-  return pages
+function parseNextPageUrl(header: string | null): string | null {
+  if (!header) return null
+  const nextMatch = header.match(/<([^>]+)>;\s*rel="next"/)
+  return nextMatch?.[1] ?? null
 }

@@ -1,5 +1,6 @@
 import type { RepoIssue, RepoPullRequest } from './repository'
 import type { ReactionGroup } from './issue-detail'
+import type { PaginatedResponse } from './pagination'
 
 export type WorkItemType = 'issue' | 'pull'
 export type WorkItemReviewDecision = 'APPROVED' | 'CHANGES_REQUESTED' | 'REVIEW_REQUIRED' | null
@@ -37,6 +38,18 @@ export interface WorkItem {
   pull: RepoPullRequest | null
   linkedPulls: WorkItemRef[]
   linkedIssues: WorkItemRef[]
+}
+
+export interface WorkItemsSyncInfo {
+  status: 'idle' | 'running' | 'failed'
+  lastSyncedAt: number | null
+  isPartial: boolean
+  lastError: string | null
+}
+
+export interface WorkItemsPageResponse extends PaginatedResponse<WorkItem> {
+  sync: WorkItemsSyncInfo
+  availableLabels: string[]
 }
 
 export interface WorkItemContribution {

@@ -19,9 +19,6 @@ import {
   type GitHubIssueWithPull,
 } from '~~/server/utils/work-item-builder'
 
-// Re-export cache invalidation so existing consumers keep working
-export { invalidateSharedRepoDetailCache, invalidateSharedWorkItemsCache } from '~~/server/utils/repo-cache'
-
 // ---------------------------------------------------------------------------
 // Configuration
 // ---------------------------------------------------------------------------
@@ -39,6 +36,7 @@ const MAINTENANCE_HOT_DETAIL_MS = 10 * 60_000 // 10 min
 const MAINTENANCE_WARM_WORK_ITEMS_MS = 20 * 60_000 // 20 min
 const MAINTENANCE_WARM_DETAIL_MS = 60 * 60_000 // 60 min
 const MAINTENANCE_MAX_REPOS_PER_RUN = 30
+const FAST_WORK_ITEMS_PAGE_SIZE = 30
 
 // ---------------------------------------------------------------------------
 // GitHub fetch: repo detail (with ETag support for background sync)
@@ -87,13 +85,64 @@ async function fetchCanonicalIssues(
   const params: Record<string, string> = { state: 'all', sort: 'updated', direction: 'desc' }
   if (since) params.since = since
 
+  const startedAt = Date.now()
+  let pagesFetched = 0
+  console.log('[repo-sync] canonical issues fetch started', { owner, repo, since: since ?? null })
+
   const response = await githubFetchAllWithToken<GitHubIssueWithPull>(
     token,
     `/repos/${owner}/${repo}/issues`,
-    { params },
+    {
+      params,
+      onPageFetched: ({ page, pageItems, totalItems }) => {
+        pagesFetched = page
+        if (page === 1 || page % 10 === 0) {
+          console.log('[repo-sync] canonical issues fetch progress', {
+            owner,
+            repo,
+            page,
+            pageItems,
+            totalItems,
+            elapsedMs: Date.now() - startedAt,
+          })
+        }
+      },
+    },
   )
 
+  console.log('[repo-sync] canonical issues fetch completed', {
+    owner,
+    repo,
+    since: since ?? null,
+    items: response.data.length,
+    pagesFetched,
+    elapsedMs: Date.now() - startedAt,
+  })
+
   return response.data
+}
+
+async function fetchCanonicalIssuesPage(
+  token: string,
+  owner: string,
+  repo: string,
+  perPage: number,
+): Promise<GitHubIssueWithPull[]> {
+  const { data } = await githubFetchWithToken<GitHubIssueWithPull[]>(
+    token,
+    `/repos/${owner}/${repo}/issues`,
+    {
+      params: {
+        state: 'all',
+        sort: 'updated',
+        direction: 'desc',
+        per_page: Math.min(Math.max(perPage, 1), 100),
+        page: 1,
+      },
+    },
+  )
+
+  return data
 }
 
 async function fetchPullDetailsForIssues(
@@ -116,7 +165,11 @@ async function fetchPullDetailsByNumbers(
   const details = new Map<number, GitHubPullRequest & { body?: string }>()
   if (!unique.length) return details
 
-  for (const batch of chunk(unique, 25)) {
+  let rateLimited = false
+
+  for (const batch of chunk(unique, 5)) {
+    if (rateLimited) break
+
     const results = await Promise.all(
       batch.map(async (number) => {
         try {
@@ -124,17 +177,26 @@ async function fetchPullDetailsByNumbers(
             token,
             `/repos/${owner}/${repo}/pulls/${number}`,
           )
-          return { number, data }
+          return { number, data, error: null as unknown }
         }
         catch (error) {
+          const status = (error as { status?: number })?.status
+          if (status === 403) {
+            rateLimited = true
+          }
           console.error('[repo-sync] Failed to fetch pull detail for enrichment', { owner, repo, number, error })
-          return { number, data: null }
+          return { number, data: null, error }
         }
       }),
     )
 
     for (const entry of results) {
       if (entry.data) details.set(entry.number, entry.data)
+    }
+
+    if (rateLimited) {
+      console.warn('[repo-sync] Pull detail enrichment stopped due to rate limit', { owner, repo })
+      break
     }
   }
 
@@ -146,9 +208,49 @@ async function fetchAllWorkItemsFromGitHub(
   owner: string,
   repo: string,
 ): Promise<WorkItem[]> {
+  const startedAt = Date.now()
+  console.log('[repo-sync] full work-items build started', { owner, repo })
+
   const issues = await fetchCanonicalIssues(token, owner, repo)
-  const pullDetails = await fetchPullDetailsForIssues(token, owner, repo, issues)
-  return buildWorkItemsFromRaw(token, owner, repo, issues, pullDetails)
+  console.log('[repo-sync] full work-items build issues fetched', {
+    owner,
+    repo,
+    issues: issues.length,
+    elapsedMs: Date.now() - startedAt,
+  })
+
+  const pullDetails = new Map<number, GitHubPullRequest & { body?: string }>()
+  const workItems = await buildWorkItemsFromRaw(owner, repo, issues, pullDetails)
+
+  console.log('[repo-sync] full work-items build completed', {
+    owner,
+    repo,
+    issues: issues.length,
+    workItems: workItems.length,
+    elapsedMs: Date.now() - startedAt,
+  })
+
+  return workItems
+}
+
+async function fetchTopWorkItemsFromGitHub(
+  token: string,
+  owner: string,
+  repo: string,
+  limit: number,
+): Promise<WorkItem[]> {
+  const startedAt = Date.now()
+  const issues = await fetchCanonicalIssuesPage(token, owner, repo, limit)
+  const pullDetails = new Map<number, GitHubPullRequest & { body?: string }>()
+  const workItems = await buildWorkItemsFromRaw(owner, repo, issues, pullDetails)
+  console.log('[repo-sync] fast work-items build completed', {
+    owner,
+    repo,
+    issueSample: issues.length,
+    workItems: workItems.length,
+    elapsedMs: Date.now() - startedAt,
+  })
+  return workItems
 }
 
 async function fetchIssueByNumber(
@@ -223,7 +325,22 @@ async function buildIncrementalWorkItems(
   cached: WorkItem[],
   since: string,
 ): Promise<IncrementalBuildResult> {
+  const startedAt = Date.now()
+  console.log('[repo-sync] incremental work-items build started', {
+    owner,
+    repo,
+    since,
+    cachedCount: cached.length,
+  })
+
   const deltaIssues = await fetchCanonicalIssues(token, owner, repo, since)
+
+  console.log('[repo-sync] incremental delta fetched', {
+    owner,
+    repo,
+    deltaCount: deltaIssues.length,
+    elapsedMs: Date.now() - startedAt,
+  })
 
   if (!deltaIssues.length) {
     return { mode: 'incremental', data: cached, affectedCount: 0, deltaCount: 0 }
@@ -300,9 +417,17 @@ async function buildIncrementalWorkItems(
     .filter((entry): entry is GitHubIssueWithPull => !!entry)
 
   const pullDetails = await fetchPullDetailsForIssues(token, owner, repo, currentAffectedSnapshots)
-  const rebuiltAffectedItems = await buildWorkItemsFromRaw(token, owner, repo, currentAffectedSnapshots, pullDetails)
+  const rebuiltAffectedItems = await buildWorkItemsFromRaw(owner, repo, currentAffectedSnapshots, pullDetails)
 
   const merged = mergeWorkItemsByNumber(cached, rebuiltAffectedItems, affected)
+  console.log('[repo-sync] incremental work-items build completed', {
+    owner,
+    repo,
+    deltaCount: deltaIssues.length,
+    affectedCount: affected.size,
+    resultCount: merged.length,
+    elapsedMs: Date.now() - startedAt,
+  })
   return {
     mode: 'incremental',
     data: merged,
@@ -319,7 +444,12 @@ async function syncRepoDetail(
   owner: string,
   repo: string,
 ): Promise<void> {
-  if (!await acquireSyncLock(owner, repo, 'detail')) return
+  if (!await acquireSyncLock(owner, repo, 'detail')) {
+    console.log('[repo-sync] detail-sync skipped (lock active)', { owner, repo })
+    return
+  }
+
+  console.log('[repo-sync] detail-sync started', { owner, repo })
 
   const meta = await readMeta(owner, repo)
   meta.detailSyncStatus = 'running'
@@ -338,6 +468,12 @@ async function syncRepoDetail(
     meta.detailSyncStatus = 'idle'
     meta.detailLastError = null
     await writeMeta(owner, repo, reconcileMeta(meta))
+    console.log('[repo-sync] detail-sync completed', {
+      owner,
+      repo,
+      notModified: result.notModified,
+      visibility: meta.visibility,
+    })
   }
   catch (error) {
     meta.detailSyncStatus = 'failed'
@@ -378,9 +514,21 @@ async function syncWorkItems(
   repo: string,
   mode: 'full' | 'incremental',
 ): Promise<void> {
-  if (!await acquireSyncLock(owner, repo, 'work-items')) return
+  if (!await acquireSyncLock(owner, repo, 'work-items')) {
+    console.log('[repo-sync] work-items sync skipped (lock active)', { owner, repo, requestedMode: mode })
+    return
+  }
 
   const meta = await readMeta(owner, repo)
+  const syncStartedAt = Date.now()
+  console.log('[repo-sync] work-items sync started', {
+    owner,
+    repo,
+    requestedMode: mode,
+    visibility: meta.visibility,
+    previousWorkItemsSyncedAt: meta.workItemsSyncedAt,
+    previousLastFullSyncAt: meta.lastFullSyncAt,
+  })
   meta.workItemsSyncStatus = 'running'
   await writeMeta(owner, repo, meta)
 
@@ -389,6 +537,14 @@ async function syncWorkItems(
     const modeDecision = mode === 'incremental'
       ? decideWorkItemsSyncMode(meta, Boolean(cached))
       : { mode: 'full' as const, reason: 'forced-full' }
+    console.log('[repo-sync] work-items sync decision', {
+      owner,
+      repo,
+      requestedMode: mode,
+      selectedMode: modeDecision.mode,
+      reason: modeDecision.reason,
+      cachedCount: cached?.data.length ?? 0,
+    })
 
     let nextItems: WorkItem[]
 
@@ -398,17 +554,46 @@ async function syncWorkItems(
 
       if (incremental.mode === 'incremental' && incremental.data) {
         nextItems = incremental.data
+        console.log('[repo-sync] work-items incremental applied', {
+          owner,
+          repo,
+          deltaCount: incremental.deltaCount ?? 0,
+          affectedCount: incremental.affectedCount ?? 0,
+          resultCount: nextItems.length,
+        })
       }
       else {
+        console.log('[repo-sync] work-items incremental switched to full fetch', {
+          owner,
+          repo,
+          elapsedMs: Date.now() - syncStartedAt,
+        })
         const allItems = await fetchAllWorkItemsFromGitHub(token, owner, repo)
         nextItems = allItems
         meta.lastFullSyncAt = Date.now()
+        console.log('[repo-sync] work-items incremental fallback to full', {
+          owner,
+          repo,
+          deltaCount: incremental.deltaCount ?? 0,
+          affectedCount: incremental.affectedCount ?? 0,
+          resultCount: nextItems.length,
+        })
       }
     }
     else {
+      console.log('[repo-sync] work-items full fetch started', {
+        owner,
+        repo,
+        elapsedMs: Date.now() - syncStartedAt,
+      })
       const allItems = await fetchAllWorkItemsFromGitHub(token, owner, repo)
       nextItems = allItems
       meta.lastFullSyncAt = Date.now()
+      console.log('[repo-sync] work-items full sync completed', {
+        owner,
+        repo,
+        resultCount: nextItems.length,
+      })
     }
 
     await writeWorkItems(owner, repo, nextItems)
@@ -416,6 +601,13 @@ async function syncWorkItems(
     meta.workItemsSyncStatus = 'idle'
     meta.workItemsLastError = null
     await writeMeta(owner, repo, reconcileMeta(meta))
+    console.log('[repo-sync] work-items sync completed', {
+      owner,
+      repo,
+      totalItems: nextItems.length,
+      syncedAt: meta.workItemsSyncedAt,
+      totalElapsedMs: Date.now() - syncStartedAt,
+    })
   }
   catch (error) {
     meta.workItemsSyncStatus = 'failed'
@@ -428,12 +620,41 @@ async function syncWorkItems(
   }
 }
 
+function runDetached(task: () => Promise<void>): void {
+  setTimeout(() => {
+    task().catch(() => {})
+  }, 0)
+}
+
 function triggerBackgroundDetailSync(token: string, owner: string, repo: string): void {
-  syncRepoDetail(token, owner, repo).catch(() => {})
+  console.log('[repo-sync] background detail-sync queued', { owner, repo })
+  runDetached(() => syncRepoDetail(token, owner, repo))
 }
 
 function triggerBackgroundWorkItemsSync(token: string, owner: string, repo: string, mode: 'full' | 'incremental'): void {
-  syncWorkItems(token, owner, repo, mode).catch(() => {})
+  console.log('[repo-sync] background work-items sync queued', { owner, repo, mode })
+  runDetached(() => syncWorkItems(token, owner, repo, mode))
+}
+
+async function queueWorkItemsSyncIfNeeded(
+  token: string,
+  owner: string,
+  repo: string,
+  mode: 'full' | 'incremental',
+): Promise<boolean> {
+  const meta = await readMeta(owner, repo)
+  if (meta.workItemsSyncStatus === 'running') {
+    console.log('[repo-sync] work-items sync queue skipped (already running)', { owner, repo, mode })
+    return false
+  }
+
+  meta.workItemsSyncStatus = 'running'
+  meta.workItemsLastError = null
+  await writeMeta(owner, repo, reconcileMeta(meta))
+
+  triggerBackgroundWorkItemsSync(token, owner, repo, mode)
+  console.log('[repo-sync] work-items sync queue accepted', { owner, repo, mode })
+  return true
 }
 
 // ---------------------------------------------------------------------------
@@ -455,8 +676,8 @@ const userCachedRepoDetail = defineCachedFunction(
 const userCachedWorkItems = defineCachedFunction(
   async (_login: string, token: string, owner: string, repo: string, state: 'open' | 'closed' | 'all'): Promise<WorkItem[]> => {
     const issues = await fetchCanonicalIssues(token, owner, repo)
-    const pullDetails = await fetchPullDetailsForIssues(token, owner, repo, issues)
-    const allItems = await buildWorkItemsFromRaw(token, owner, repo, issues, pullDetails)
+    const pullDetails = new Map<number, GitHubPullRequest & { body?: string }>()
+    const allItems = await buildWorkItemsFromRaw(owner, repo, issues, pullDetails)
     return filterByState(allItems, state)
   },
   {
@@ -552,42 +773,67 @@ export async function getRepoWorkItemsForRequest(
     const meta = await readMeta(owner, repo)
 
     if (cached) {
+      console.log('[repo-sync] work-items cache hit', {
+        owner,
+        repo,
+        state,
+        fetchedAt: cached.fetchedAt,
+      })
       touchActivity(owner, repo).catch(() => {})
 
       if (!isStale(cached.fetchedAt, WORK_ITEMS_STALE_MS)) {
         return filterByState(cached.data, state)
       }
+
+      console.log('[repo-sync] work-items cache stale', {
+        owner,
+        repo,
+        state,
+        fetchedAt: cached.fetchedAt,
+      })
       // Stale — return cached, trigger background sync
       const mode = decideWorkItemsSyncMode(meta, true)
-      triggerBackgroundWorkItemsSync(sharedToken, owner, repo, mode.mode)
+      await queueWorkItemsSyncIfNeeded(sharedToken, owner, repo, mode.mode)
       return filterByState(cached.data, state)
     }
 
-    // Cold cache — fetch with user token
+    // Cold cache — fetch fast first page with user token, then sync in background
+    await queueWorkItemsSyncIfNeeded(sharedToken, owner, repo, 'full')
+
     const { token: userToken } = await getSessionToken(event)
-    const allItems = await fetchAllWorkItemsFromGitHub(userToken, owner, repo)
+    const fastItems = await fetchTopWorkItemsFromGitHub(userToken, owner, repo, FAST_WORK_ITEMS_PAGE_SIZE)
+    console.log('[repo-sync] cold work-items fetch complete', {
+      owner,
+      repo,
+      state,
+      fetchedCount: fastItems.length,
+      syncStatus: (await readMeta(owner, repo)).workItemsSyncStatus,
+    })
 
-    // Only populate shared cache for public repos
-    if (meta.visibility === 'public') {
-      touchActivity(owner, repo).catch(() => {})
-      await writeWorkItems(owner, repo, allItems)
-
-      meta.workItemsSyncedAt = Date.now()
-      meta.lastFullSyncAt = Date.now()
-      meta.workItemsSyncStatus = 'idle'
-      meta.workItemsLastError = null
-      await writeMeta(owner, repo, reconcileMeta(meta))
-
-      // Start background sync with shared PAT
-      triggerBackgroundWorkItemsSync(sharedToken, owner, repo, 'incremental')
-    }
-
-    return filterByState(allItems, state)
+    return filterByState(fastItems, state)
   }
 
   // No shared PAT configured — per-user cache fallback
   const { token, login } = await getSessionToken(event)
   return userCachedWorkItems(login, token, owner, repo, state)
+}
+
+export interface RepoWorkItemsSyncSnapshot {
+  status: 'idle' | 'running' | 'failed'
+  lastSyncedAt: number | null
+  isPartial: boolean
+  lastError: string | null
+}
+
+export async function getRepoWorkItemsSyncSnapshot(owner: string, repo: string): Promise<RepoWorkItemsSyncSnapshot> {
+  const meta = await readMeta(owner, repo)
+  const cached = await readWorkItems(owner, repo)
+  return {
+    status: meta.workItemsSyncStatus,
+    lastSyncedAt: meta.workItemsSyncedAt,
+    isPartial: !cached && meta.workItemsSyncStatus === 'running',
+    lastError: meta.workItemsLastError,
+  }
 }
 
 // ---------------------------------------------------------------------------

@@ -1,4 +1,5 @@
 import { updateRateLimitFromHeaders } from './github'
+import { getSharedToken } from './github-app'
 
 const GITHUB_GRAPHQL = 'https://api.github.com/graphql'
 
@@ -22,7 +23,8 @@ export async function githubGraphQL<T>(
     body: JSON.stringify({ query, variables }),
   })
 
-  updateRateLimitFromHeaders(response.headers, 'graphql', userId)
+  const sharedToken = getSharedToken()
+  updateRateLimitFromHeaders(response.headers, 'graphql', userId, Boolean(sharedToken) && token === sharedToken)
 
   if (!response.ok) {
     throw new GitHubError(response.status, '/graphql', `GitHub GraphQL ${response.status}: ${response.statusText}`)

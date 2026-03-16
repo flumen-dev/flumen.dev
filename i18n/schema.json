@@ -1201,6 +1201,30 @@
         "count": {
           "type": "string"
         },
+        "sync": {
+          "type": "object",
+          "properties": {
+            "runningTitle": {
+              "type": "string"
+            },
+            "partialTitle": {
+              "type": "string"
+            },
+            "upToDateTitle": {
+              "type": "string"
+            },
+            "failedTitle": {
+              "type": "string"
+            },
+            "lastSync": {
+              "type": "string"
+            },
+            "never": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
         "filter": {
           "type": "object",
           "properties": {
@@ -2656,6 +2680,9 @@
         "label": {
           "type": "string"
         },
+        "sharedLabel": {
+          "type": "string"
+        },
         "resetsIn": {
           "type": "string"
         },
@@ -2663,6 +2690,9 @@
           "type": "string"
         },
         "tooltip": {
+          "type": "string"
+        },
+        "sharedTooltip": {
           "type": "string"
         }
       },

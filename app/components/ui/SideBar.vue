@@ -428,7 +428,13 @@ const mainItems = computed<NavigationMenuItem[]>(() => [
 
       <!-- Rate limit indicator -->
       <ClientOnly>
-        <UiRateLimitIndicator v-if="loggedIn && !collapsed" />
+        <div
+          v-if="loggedIn && !collapsed"
+          class="space-y-1"
+        >
+          <UiRateLimitIndicator />
+          <UiRateLimitIndicator scope="shared" />
+        </div>
       </ClientOnly>
 
       <UNavigationMenu
