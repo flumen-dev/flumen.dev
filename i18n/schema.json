@@ -2091,9 +2091,6 @@
         },
         "nothingToPush": {
           "type": "string"
-        },
-        "viewPr": {
-          "type": "string"
         }
       },
       "additionalProperties": false
