@@ -62,13 +62,16 @@ export function useWorkItemPolling(
     start()
   })
 
-  // Force reload without check (e.g. after merge/review/CI — we already know something changed)
-  // Short delay lets GitHub propagate all side effects (comments, status, etc.)
+  const invalidateUrl = computed(() => `${fetchUrl.value}/invalidate`)
+
+  // Force reload (e.g. after merge/review/CI/PR creation)
+  // Always invalidates server cache first since we know something changed
   async function trigger() {
     if (!import.meta.client) return
     if (!timer) start()
     await new Promise(r => setTimeout(r, 3_000))
     try {
+      await requestFetch(invalidateUrl.value, { method: 'POST' }).catch(() => null)
       const fresh = await requestFetch<WorkItemDetail>(fetchUrl.value)
       if (fresh && workItem.value) {
         workItem.value = { ...workItem.value, ...fresh }

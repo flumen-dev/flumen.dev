@@ -16,7 +16,7 @@ interface GitHubPrResponse {
 }
 
 export default defineEventHandler(async (event) => {
-  const { token, login: _login } = await getSessionToken(event)
+  const { token } = await getSessionToken(event)
   const input = await readBody<CreatePrRequest>(event)
 
   if (!input?.repo || !input.head || !input.base || !input.title) {

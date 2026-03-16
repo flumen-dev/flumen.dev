@@ -195,6 +195,7 @@ async function doPush(withPr: boolean) {
   else if (result.status === 'pushed_with_pr' || result.status === 'created_pr') {
     toast.add({ title: t('cli.pushWithPr'), color: 'success' })
     pushDialogOpen.value = false
+    emit('claimed')
   }
   else if (result.status === 'pushed') {
     toast.add({ title: t('cli.pushed'), color: 'success' })
@@ -284,16 +285,6 @@ function copyCommand() {
         color="primary"
         :loading="pushing"
         @click="openPushDialog"
-      />
-      <!-- PR exists → link to it -->
-      <UButton
-        v-if="cliBridge.hasPr && cliBridge.lastPrUrl"
-        :label="t('cli.viewPr')"
-        icon="i-lucide-external-link"
-        size="xs"
-        variant="soft"
-        :to="cliBridge.lastPrUrl"
-        target="_blank"
       />
     </template>
 

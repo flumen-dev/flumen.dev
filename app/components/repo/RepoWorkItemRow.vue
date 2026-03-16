@@ -10,15 +10,40 @@ const props = defineProps<{
   ciIcon: { name: string, color: string, spin?: boolean } | null
 }>()
 
+const { t } = useI18n()
 const { localLabels, onLabelAdded, onLabelRemoved } = useLocalLabels(() => props.item.labels)
+
+const hasLinkedPr = computed(() => props.item.linkedPulls.some(p => !p.state || p.state === 'OPEN'))
+const hasLinkedIssue = computed(() => props.item.linkedIssues.some(i => !i.state || i.state === 'OPEN'))
+
+const itemTypeTooltip = computed(() => {
+  if (props.item.type === 'issue' && hasLinkedPr.value) return t('workItems.type.issueWithPr')
+  if (props.item.type === 'pull' && hasLinkedIssue.value) return t('workItems.type.prWithIssue')
+  if (props.item.type === 'issue') return t('workItems.type.issue')
+  return t('workItems.type.pr')
+})
 </script>
 
 <template>
-  <UIcon
-    :name="item.type === 'issue' ? getIssueStateIcon(item.state) : getPRStateIcon(item.state, item.isDraft)"
-    class="size-4 shrink-0 mt-0.5"
-    :class="item.type === 'issue' ? getIssueStateColor(item.state) : getPRStateColor(item.state, item.isDraft)"
-  />
+  <UTooltip :text="itemTypeTooltip">
+    <div class="relative shrink-0 mt-0.5">
+      <UIcon
+        :name="item.type === 'issue' ? getIssueStateIcon(item.state) : getPRStateIcon(item.state, item.isDraft)"
+        class="size-4"
+        :class="item.type === 'issue' ? getIssueStateColor(item.state) : getPRStateColor(item.state, item.isDraft)"
+      />
+      <UIcon
+        v-if="item.type === 'issue' && hasLinkedPr"
+        name="i-lucide-git-pull-request"
+        class="size-2.5 absolute -bottom-1 -right-1 text-blue-500"
+      />
+      <UIcon
+        v-else-if="item.type === 'pull' && hasLinkedIssue"
+        name="i-lucide-circle-dot"
+        class="size-2.5 absolute -bottom-1 -right-1 text-emerald-500"
+      />
+    </div>
+  </UTooltip>
 
   <div class="min-w-0 flex-1">
     <div class="flex items-center gap-2 flex-wrap">

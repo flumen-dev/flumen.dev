@@ -387,6 +387,7 @@ async function handleDeleteBranch() {
         v-if="issue"
         :issue="issue"
         :repo="repo"
+        @claimed="emit('ciStatusChanged')"
       />
 
       <!-- Timestamps + comment count -->

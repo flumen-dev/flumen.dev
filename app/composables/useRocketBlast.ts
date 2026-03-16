@@ -18,9 +18,12 @@ export function useRocketBlast() {
     document.body.appendChild(rocket)
 
     // 2. Launch rocket: bottom-left → upper-center-right
+    // Double rAF ensures the browser renders the start position before transitioning
     requestAnimationFrame(() => {
-      rocket.style.bottom = '55%'
-      rocket.style.left = '50%'
+      requestAnimationFrame(() => {
+        rocket.style.bottom = '55%'
+        rocket.style.left = '50%'
+      })
     })
 
     // 3. After rocket reaches top, explode into hearts

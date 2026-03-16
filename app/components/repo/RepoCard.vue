@@ -22,14 +22,7 @@ const activityTooltip = computed(() => {
 
 const { isPinned, toggle: togglePin } = usePinnedRepos()
 const localePath = useLocalePath()
-const issueStore = useIssueStore()
-
 const expandedSection = ref<'issues' | 'prs' | 'notifications' | null>(null)
-
-function navigateToIssues() {
-  issueStore.selectRepo(props.repo.fullName)
-  navigateTo(localePath('/issues'))
-}
 
 function toggleSection(section: 'issues' | 'prs' | 'notifications') {
   expandedSection.value = expandedSection.value === section ? null : section
@@ -39,7 +32,7 @@ function toggleSection(section: 'issues' | 'prs' | 'notifications') {
 <template>
   <div
     class="px-4 py-3 hover:bg-elevated transition-colors cursor-pointer"
-    @click="navigateToIssues"
+    @click="navigateTo(localePath(`/repos/${repo.owner.login}/${repo.name}`))"
   >
     <div class="flex items-start gap-3">
       <!-- Activity dot -->

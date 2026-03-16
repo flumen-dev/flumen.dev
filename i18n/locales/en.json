@@ -447,6 +447,16 @@
     }
   },
   "workItems": {
+    "source": {
+      "issue": "From issue thread",
+      "pr": "From pull request"
+    },
+    "type": {
+      "issue": "Issue",
+      "pr": "Pull Request",
+      "issueWithPr": "Issue with linked Pull Request",
+      "prWithIssue": "Pull Request with linked Issue"
+    },
     "open": "Open",
     "closed": "Closed",
     "noResults": "No work items found.",
@@ -684,8 +694,7 @@
     "pushAndCreatePr": "Push & Create PR",
     "pushWithPr": "Pushed & PR created",
     "pushFailed": "Push failed",
-    "nothingToPush": "Nothing to push",
-    "viewPr": "View PR"
+    "nothingToPush": "Nothing to push"
   },
   "dashboard": {
     "description": "What needs your attention right now.",

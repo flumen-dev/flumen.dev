@@ -11,9 +11,21 @@ const usedRatio = computed(() => limit.value > 0 ? used.value / limit.value : 0)
 const percent = computed(() => Math.round(usedRatio.value * 100))
 const isWarning = computed(() => usedRatio.value > 0.8)
 
+// Reactive ticker for reset countdown (updates every 30s)
+const now = ref(Math.floor(Date.now() / 1000))
+let tickTimer: ReturnType<typeof setInterval> | null = null
+onMounted(() => {
+  tickTimer = setInterval(() => {
+    now.value = Math.floor(Date.now() / 1000)
+  },
+  30_000)
+})
+onBeforeUnmount(() => {
+  if (tickTimer) clearInterval(tickTimer)
+})
+
 const resetLabel = computed(() => {
-  const now = Math.floor(Date.now() / 1000)
-  const diff = reset.value - now
+  const diff = reset.value - now.value
   if (diff <= 0) return t('rateLimit.resetsNow')
   const min = Math.ceil(diff / 60)
   return t('rateLimit.resetsIn', { min })

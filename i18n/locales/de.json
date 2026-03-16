@@ -447,6 +447,16 @@
     }
   },
   "workItems": {
+    "source": {
+      "issue": "Aus Issue-Thread",
+      "pr": "Aus Pull Request"
+    },
+    "type": {
+      "issue": "Issue",
+      "pr": "Pull Request",
+      "issueWithPr": "Issue mit verlinktem Pull Request",
+      "prWithIssue": "Pull Request mit verlinktem Issue"
+    },
     "open": "Offen",
     "closed": "Geschlossen",
     "noResults": "Keine Work Items gefunden.",
@@ -684,8 +694,7 @@
     "pushAndCreatePr": "Pushen & PR erstellen",
     "pushWithPr": "Gepusht & PR erstellt",
     "pushFailed": "Push fehlgeschlagen",
-    "nothingToPush": "Nichts zu pushen",
-    "viewPr": "PR ansehen"
+    "nothingToPush": "Nichts zu pushen"
   },
   "dashboard": {
     "description": "Was gerade deine Aufmerksamkeit braucht.",
