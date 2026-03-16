@@ -913,8 +913,6 @@
     "commitsAhead": "{count} commit ahead | {count} commits ahead",
     "linkIssue": "Link issue",
     "searchIssue": "Search issues...",
-    "noIssues": "No issues found",
-    "closesIssue": "Closes #{number}",
     "draftHint": "Created as draft. Mark as ready when you're done."
   }
 }

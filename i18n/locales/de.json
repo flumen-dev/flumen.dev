@@ -913,8 +913,6 @@
     "commitsAhead": "{count} Commit voraus | {count} Commits voraus",
     "linkIssue": "Issue verknüpfen",
     "searchIssue": "Issues suchen...",
-    "noIssues": "Keine Issues gefunden",
-    "closesIssue": "Schließt #{number}",
     "draftHint": "Als Entwurf erstellt. Markiere als bereit wenn du fertig bist."
   }
 }

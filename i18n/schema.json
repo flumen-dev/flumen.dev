@@ -1450,6 +1450,18 @@
             "bypassHint": {
               "type": "string"
             },
+            "draftHint": {
+              "type": "string"
+            },
+            "markReady": {
+              "type": "string"
+            },
+            "markedReady": {
+              "type": "string"
+            },
+            "markReadyFailed": {
+              "type": "string"
+            },
             "mergeSuccess": {
               "type": "string"
             },
@@ -2699,6 +2711,42 @@
           "type": "string"
         },
         "tooltip": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "pendingPr": {
+      "type": "object",
+      "properties": {
+        "hadRecentPush": {
+          "type": "string"
+        },
+        "createPr": {
+          "type": "string"
+        },
+        "created": {
+          "type": "string"
+        },
+        "createFailed": {
+          "type": "string"
+        },
+        "prTitle": {
+          "type": "string"
+        },
+        "draftPr": {
+          "type": "string"
+        },
+        "commitsAhead": {
+          "type": "string"
+        },
+        "linkIssue": {
+          "type": "string"
+        },
+        "searchIssue": {
+          "type": "string"
+        },
+        "draftHint": {
           "type": "string"
         }
       },
