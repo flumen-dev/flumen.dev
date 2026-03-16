@@ -1201,6 +1201,87 @@
         "count": {
           "type": "string"
         },
+        "filter": {
+          "type": "object",
+          "properties": {
+            "all": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "sort": {
+          "type": "object",
+          "properties": {
+            "newest": {
+              "type": "string"
+            },
+            "oldest": {
+              "type": "string"
+            },
+            "mostCommented": {
+              "type": "string"
+            },
+            "leastCommented": {
+              "type": "string"
+            },
+            "recentlyUpdated": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "create": {
+          "type": "object",
+          "properties": {
+            "title": {
+              "type": "string"
+            },
+            "button": {
+              "type": "string"
+            },
+            "titleLabel": {
+              "type": "string"
+            },
+            "titlePlaceholder": {
+              "type": "string"
+            },
+            "bodyLabel": {
+              "type": "string"
+            },
+            "bodyPlaceholder": {
+              "type": "string"
+            },
+            "submit": {
+              "type": "string"
+            },
+            "submitting": {
+              "type": "string"
+            },
+            "success": {
+              "type": "string"
+            },
+            "error": {
+              "type": "string"
+            },
+            "backToTemplates": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "draft": {
+          "type": "object",
+          "properties": {
+            "restored": {
+              "type": "string"
+            },
+            "discard": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
         "source": {
           "type": "object",
           "properties": {
@@ -1230,15 +1311,6 @@
             }
           },
           "additionalProperties": false
-        },
-        "open": {
-          "type": "string"
-        },
-        "closed": {
-          "type": "string"
-        },
-        "noResults": {
-          "type": "string"
         },
         "tabs": {
           "type": "object",
@@ -1595,30 +1667,6 @@
               "type": "string"
             },
             "save": {
-              "type": "string"
-            }
-          },
-          "additionalProperties": false
-        }
-      },
-      "additionalProperties": false
-    },
-    "pulls": {
-      "type": "object",
-      "properties": {
-        "all": {
-          "type": "string"
-        },
-        "search": {
-          "type": "string"
-        },
-        "count": {
-          "type": "string"
-        },
-        "filter": {
-          "type": "object",
-          "properties": {
-            "draft": {
               "type": "string"
             }
           },

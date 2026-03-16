@@ -425,32 +425,6 @@
       "restored": "Entwurf wiederhergestellt.",
       "discard": "Entwurf verwerfen"
     },
-    "error": {
-      "fetchError": {
-        "title": "Issues konnten nicht geladen werden",
-        "description": "Beim Laden der Issues ist ein Fehler aufgetreten. Bitte versuche es erneut."
-      },
-      "sessionExpired": {
-        "title": "Sitzung abgelaufen",
-        "description": "Deine Sitzung ist abgelaufen. Bitte melde dich erneut an."
-      },
-      "rateLimited": {
-        "title": "Zu viele Anfragen",
-        "description": "GitHub-Rate-Limit erreicht. Bitte warte einen Moment und versuche es erneut."
-      }
-    }
-  },
-  "pulls": {
-    "all": "Alle",
-    "search": "Pull Requests durchsuchen...",
-    "count": "Keine Pull Requests | {count} Pull Request | {count} Pull Requests",
-    "filter": {
-      "draft": "Entwurf"
-    }
-  },
-  "workItems": {
-    "search": "Arbeitselemente durchsuchen...",
-    "count": "Keine Elemente | {count} Element | {count} Elemente",
     "source": {
       "issue": "Aus Issue-Thread",
       "pr": "Aus Pull Request"
@@ -461,9 +435,6 @@
       "issueWithPr": "Issue mit verlinktem Pull Request",
       "prWithIssue": "Pull Request mit verlinktem Issue"
     },
-    "open": "Offen",
-    "closed": "Geschlossen",
-    "noResults": "Keine Work Items gefunden.",
     "tabs": {
       "conversation": "Konversation",
       "changes": "Änderungen"

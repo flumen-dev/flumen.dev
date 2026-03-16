@@ -425,32 +425,6 @@
       "restored": "Draft restored.",
       "discard": "Discard draft"
     },
-    "error": {
-      "fetchError": {
-        "title": "Failed to load issues",
-        "description": "Something went wrong while fetching your issues. Please try again."
-      },
-      "sessionExpired": {
-        "title": "Session expired",
-        "description": "Your session has expired. Please log in again."
-      },
-      "rateLimited": {
-        "title": "Too many requests",
-        "description": "GitHub rate limit reached. Please wait a moment and try again."
-      }
-    }
-  },
-  "pulls": {
-    "all": "All",
-    "search": "Search pull requests...",
-    "count": "No pull requests | {count} pull request | {count} pull requests",
-    "filter": {
-      "draft": "Draft"
-    }
-  },
-  "workItems": {
-    "search": "Search work items...",
-    "count": "No items | {count} item | {count} items",
     "source": {
       "issue": "From issue thread",
       "pr": "From pull request"
@@ -461,9 +435,6 @@
       "issueWithPr": "Issue with linked Pull Request",
       "prWithIssue": "Pull Request with linked Issue"
     },
-    "open": "Open",
-    "closed": "Closed",
-    "noResults": "No work items found.",
     "tabs": {
       "conversation": "Conversation",
       "changes": "Changes"
