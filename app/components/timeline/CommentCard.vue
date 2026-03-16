@@ -126,7 +126,10 @@ const showQuickReactions = computed(() => {
           :avatar-url="authorAvatarUrl"
           size="2xs"
         />
-        <UTooltip :text="source === 'pull' ? t('workItems.source.pr') : t('workItems.source.issue')">
+        <UTooltip
+          v-if="source"
+          :text="source === 'pull' ? t('workItems.source.pr') : t('workItems.source.issue')"
+        >
           <UIcon
             :name="source === 'pull' ? 'i-lucide-git-pull-request' : 'i-lucide-circle-dot'"
             class="size-3.5"
