@@ -1348,6 +1348,51 @@
     "workItems": {
       "type": "object",
       "properties": {
+        "quick": {
+          "type": "object",
+          "properties": {
+            "newest": {
+              "type": "string"
+            },
+            "mostDiscussed": {
+              "type": "string"
+            },
+            "stale": {
+              "type": "string"
+            },
+            "needsReview": {
+              "type": "string"
+            },
+            "myItems": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "search": {
+          "type": "object",
+          "properties": {
+            "placeholder": {
+              "type": "string"
+            },
+            "allTypes": {
+              "type": "string"
+            },
+            "author": {
+              "type": "string"
+            },
+            "assignee": {
+              "type": "string"
+            },
+            "label": {
+              "type": "string"
+            },
+            "clear": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
         "source": {
           "type": "object",
           "properties": {
@@ -1442,6 +1487,9 @@
           "type": "object",
           "properties": {
             "readyToMerge": {
+              "type": "string"
+            },
+            "hasConflicts": {
               "type": "string"
             },
             "merge": {

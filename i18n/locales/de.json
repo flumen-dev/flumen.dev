@@ -447,6 +447,21 @@
     }
   },
   "workItems": {
+    "quick": {
+      "newest": "Neueste",
+      "mostDiscussed": "Meistdiskutiert",
+      "stale": "Veraltet",
+      "needsReview": "Review nötig",
+      "myItems": "Meine Items"
+    },
+    "search": {
+      "placeholder": "Work Items suchen...",
+      "allTypes": "Alle Typen",
+      "author": "Autor",
+      "assignee": "Zugewiesen",
+      "label": "Label",
+      "clear": "Filter zurücksetzen"
+    },
     "source": {
       "issue": "Aus Issue-Thread",
       "pr": "Aus Pull Request"
@@ -479,6 +494,7 @@
     },
     "merge": {
       "readyToMerge": "Bereit zum Mergen",
+      "hasConflicts": "Merge-Konflikte — vor dem Mergen auflösen",
       "merge": "Mergen",
       "keepAll": "Alle Commits behalten",
       "keepAllDesc": "Alle {count} Commits werden mit einem Merge-Commit in den Zielbranch übernommen.",

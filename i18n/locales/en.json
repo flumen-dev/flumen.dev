@@ -447,6 +447,21 @@
     }
   },
   "workItems": {
+    "quick": {
+      "newest": "Newest",
+      "mostDiscussed": "Most discussed",
+      "stale": "Stale",
+      "needsReview": "Needs review",
+      "myItems": "My items"
+    },
+    "search": {
+      "placeholder": "Search work items...",
+      "allTypes": "All types",
+      "author": "Author",
+      "assignee": "Assignee",
+      "label": "Label",
+      "clear": "Clear filters"
+    },
     "source": {
       "issue": "From issue thread",
       "pr": "From pull request"
@@ -479,6 +494,7 @@
     },
     "merge": {
       "readyToMerge": "Ready to merge",
+      "hasConflicts": "Merge conflicts — resolve before merging",
       "merge": "Merge",
       "keepAll": "Keep all commits",
       "keepAllDesc": "All {count} commits are added to the base branch with a merge commit.",

@@ -229,6 +229,169 @@ const fetchWorkItems = defineCachedFunction(
   },
 )
 
+// --- Search-based fetch (uses GitHub Search API for filtered queries) ---
+
+interface SearchFilters {
+  q?: string
+  assignee?: string
+  author?: string
+  label?: string
+  type?: 'issue' | 'pr'
+  page?: number
+}
+
+interface GitHubSearchResult {
+  total_count: number
+  items: Array<GitHubIssue & { pull_request?: { url: string } } & { body?: string }>
+}
+
+function hasSearchFilters(filters: SearchFilters): boolean {
+  return !!(filters.q || filters.assignee || filters.author || filters.label || filters.type)
+}
+
+function buildSearchQuery(owner: string, repo: string, state: string, filters: SearchFilters): string {
+  const parts = [`repo:${owner}/${repo}`]
+
+  if (state === 'open') parts.push('is:open')
+  else if (state === 'closed') parts.push('is:closed')
+
+  if (filters.type === 'issue') parts.push('is:issue')
+  else if (filters.type === 'pr') parts.push('is:pr')
+
+  if (filters.assignee) parts.push(`assignee:${filters.assignee}`)
+  if (filters.author) parts.push(`author:${filters.author}`)
+  if (filters.label) parts.push(`label:"${filters.label}"`)
+  if (filters.q) parts.push(filters.q)
+
+  return parts.join(' ')
+}
+
+async function searchWorkItems(
+  token: string,
+  owner: string,
+  repo: string,
+  state: string,
+  filters: SearchFilters,
+  limit: number,
+): Promise<{ items: WorkItem[], totalCount: number }> {
+  const q = buildSearchQuery(owner, repo, state, filters)
+  const page = filters.page ?? 1
+
+  const { data } = await githubFetchWithToken<GitHubSearchResult>(
+    token,
+    '/search/issues',
+    { params: { q, sort: 'updated', order: 'desc', per_page: limit, page } },
+  )
+
+  const issues: RepoIssue[] = []
+  const pulls: RepoPullRequest[] = []
+  const rawPulls: Array<GitHubPullRequest & { body?: string }> = []
+
+  for (const item of data.items) {
+    if (item.pull_request) {
+      const pr = toRepoPullRequest(item as unknown as GitHubPullRequest)
+      pulls.push(pr)
+      rawPulls.push(item as unknown as GitHubPullRequest & { body?: string })
+    }
+    else {
+      issues.push(toRepoIssue(item))
+    }
+  }
+
+  const pullInsights = await fetchPullInsights(token, owner, repo, pulls.map(pr => pr.number))
+
+  const issueMap = new Map<number, RepoIssue>(issues.map(issue => [issue.number, issue]))
+  const linkedPullsByIssue = new Map<number, RepoPullRequest[]>()
+  const linkedIssueNumbersByPull = new Map<number, number[]>()
+
+  for (const pull of rawPulls) {
+    const linkedIssueNumbers = Array.from(new Set(collectIssueLinksFromText(pull.body)))
+    linkedIssueNumbersByPull.set(pull.number, linkedIssueNumbers)
+
+    for (const issueNumber of linkedIssueNumbers) {
+      if (!issueMap.has(issueNumber)) continue
+      const current = linkedPullsByIssue.get(issueNumber) ?? []
+      const mappedPull = toRepoPullRequest(pull as unknown as GitHubPullRequest)
+      linkedPullsByIssue.set(issueNumber, [...current, mappedPull])
+    }
+  }
+
+  const issueWorkItems: WorkItem[] = issues.map((issue) => {
+    const linkedPulls = linkedPullsByIssue.get(issue.number) ?? []
+    const primaryLinkedPull = linkedPulls[0] ?? null
+    const linkedInsight = primaryLinkedPull ? pullInsights.get(primaryLinkedPull.number) : null
+    return {
+      id: String(issue.number),
+      type: 'issue',
+      number: issue.number,
+      title: issue.title,
+      state: issue.state,
+      htmlUrl: issue.htmlUrl,
+      createdAt: issue.createdAt,
+      updatedAt: issue.updatedAt,
+      author: issue.user,
+      labels: issue.labels,
+      assignees: issue.assignees,
+      commentCount: issue.comments,
+      isDraft: primaryLinkedPull?.draft ?? false,
+      reviewDecision: linkedInsight?.reviewDecision ?? null,
+      ciStatus: linkedInsight?.ciStatus ?? null,
+      issue,
+      pull: null,
+      linkedPulls: linkedPulls.map(pr => ({
+        type: 'pull' as const,
+        number: pr.number,
+        title: pr.title,
+        state: pr.state,
+        isDraft: pr.draft,
+        htmlUrl: pr.htmlUrl,
+      })),
+      linkedIssues: [],
+    }
+  })
+
+  const standalonePullWorkItems: WorkItem[] = pulls
+    .filter((pr) => {
+      const linkedIssues = linkedIssueNumbersByPull.get(pr.number) ?? []
+      return linkedIssues.length === 0 || linkedIssues.every(number => !issueMap.has(number))
+    })
+    .map((pr) => {
+      const pullInsight = pullInsights.get(pr.number)
+      return {
+        id: String(pr.number),
+        type: 'pull' as const,
+        number: pr.number,
+        title: pr.title,
+        state: pr.state,
+        htmlUrl: pr.htmlUrl,
+        createdAt: pr.createdAt,
+        updatedAt: pr.updatedAt,
+        author: pr.user,
+        labels: pr.labels,
+        assignees: pr.assignees,
+        commentCount: pr.comments,
+        isDraft: pr.draft,
+        reviewDecision: pullInsight?.reviewDecision ?? null,
+        ciStatus: pullInsight?.ciStatus ?? null,
+        issue: null,
+        pull: pr,
+        linkedPulls: [],
+        linkedIssues: (linkedIssueNumbersByPull.get(pr.number) ?? []).map(number => ({
+          type: 'issue' as const,
+          number,
+          title: issueMap.get(number)?.title ?? `#${number}`,
+          state: issueMap.get(number)?.state,
+          htmlUrl: issueMap.get(number)?.htmlUrl ?? `https://github.com/${owner}/${repo}/issues/${number}`,
+        })),
+      }
+    })
+
+  const items = [...issueWorkItems, ...standalonePullWorkItems]
+    .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
+
+  return { items, totalCount: data.total_count }
+}
+
 export default defineEventHandler(async (event) => {
   const { token, login } = await getSessionToken(event)
   const { owner, repo } = getRepoParams(event)
@@ -241,5 +404,20 @@ export default defineEventHandler(async (event) => {
     ? Math.min(Math.floor(limitParam), 100)
     : 30
 
-  return fetchWorkItems(login, token, owner, repo, state, limit)
+  const filters: SearchFilters = {
+    q: (query.q as string) || undefined,
+    assignee: (query.assignee as string) || undefined,
+    author: (query.author as string) || undefined,
+    label: (query.label as string) || undefined,
+    type: query.type === 'issue' || query.type === 'pr' ? query.type : undefined,
+    page: Number(query.page) || undefined,
+  }
+
+  // Use Search API when filters are active, otherwise use cached list
+  if (hasSearchFilters(filters)) {
+    return searchWorkItems(token, owner, repo, state, filters, limit)
+  }
+
+  const items = await fetchWorkItems(login, token, owner, repo, state, limit)
+  return { items, totalCount: items.length }
 })

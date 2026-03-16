@@ -30,6 +30,27 @@ async function setFilter(state: 'open' | 'closed') {
   await store.fetchWorkItems()
 }
 
+let searchTimeout: ReturnType<typeof setTimeout>
+function onSearchInput(value: string) {
+  store.searchQuery = value
+  clearTimeout(searchTimeout)
+  searchTimeout = setTimeout(() => store.fetchWorkItems(), 400)
+}
+
+async function applyFilter() {
+  await store.fetchWorkItems()
+}
+
+async function clearAllFilters() {
+  store.clearFilters()
+  await store.fetchWorkItems()
+}
+
+const knownAuthors = computed(() => {
+  const authors = new Set(store.sortedWorkItems.map(i => i.author.login))
+  return [...authors].sort()
+})
+
 function initRepo() {
   store.selectRepo(repoFullName.value)
 }
@@ -172,6 +193,98 @@ function navigateToItem(item: WorkItem) {
             class="text-xs text-muted"
           >({{ closedCount }})</span>
         </button>
+      </div>
+
+      <!-- Quick filter badges -->
+      <div class="flex flex-wrap items-center gap-1.5">
+        <button
+          v-for="qf in ([
+            { value: 'newest', label: t('workItems.quick.newest'), icon: 'i-lucide-sparkles' },
+            { value: 'most-discussed', label: t('workItems.quick.mostDiscussed'), icon: 'i-lucide-message-circle' },
+            { value: 'stale', label: t('workItems.quick.stale'), icon: 'i-lucide-clock' },
+            { value: 'needs-review', label: t('workItems.quick.needsReview'), icon: 'i-lucide-eye' },
+            { value: 'my-items', label: t('workItems.quick.myItems'), icon: 'i-lucide-user' },
+          ] as const)"
+          :key="qf.value"
+          class="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium transition-colors border"
+          :class="store.quickFilter === qf.value
+            ? 'bg-primary text-white border-primary'
+            : 'text-muted border-default hover:text-highlighted hover:border-primary/40'"
+          @click="store.applyQuickFilter(qf.value)"
+        >
+          <UIcon
+            :name="qf.icon"
+            class="size-3"
+          />
+          {{ qf.label }}
+        </button>
+      </div>
+
+      <!-- Search & filters -->
+      <div class="flex flex-wrap items-center gap-2">
+        <UInput
+          :model-value="store.searchQuery"
+          :placeholder="t('workItems.search.placeholder')"
+          icon="i-lucide-search"
+          size="sm"
+          class="w-64"
+          @update:model-value="onSearchInput"
+        />
+        <div class="inline-flex rounded-md border border-default overflow-hidden">
+          <button
+            v-for="opt in ([
+              { value: '', label: t('workItems.search.allTypes') },
+              { value: 'issue', label: t('workItems.type.issue') },
+              { value: 'pr', label: t('workItems.type.pr') },
+            ] as const)"
+            :key="opt.value"
+            class="px-2.5 py-1 text-xs font-medium transition-colors"
+            :class="store.typeFilter === opt.value ? 'bg-primary text-white' : 'text-muted hover:text-highlighted hover:bg-elevated'"
+            @click="store.typeFilter = opt.value; applyFilter()"
+          >
+            {{ opt.label }}
+          </button>
+        </div>
+        <USelectMenu
+          v-model="store.authorFilter"
+          :items="knownAuthors"
+          :placeholder="t('workItems.search.author')"
+          searchable
+          clear
+          size="sm"
+          icon="i-lucide-user"
+          class="w-40"
+          @update:model-value="applyFilter"
+        />
+        <USelectMenu
+          v-model="store.assigneeFilter"
+          :items="knownAuthors"
+          :placeholder="t('workItems.search.assignee')"
+          searchable
+          clear
+          size="sm"
+          icon="i-lucide-user-check"
+          class="w-40"
+          @update:model-value="applyFilter"
+        />
+        <UInput
+          v-model="store.labelFilter"
+          :placeholder="t('workItems.search.label')"
+          icon="i-lucide-tag"
+          size="sm"
+          class="w-36"
+          @keydown.enter="applyFilter"
+          @blur="applyFilter"
+        />
+        <UButton
+          v-if="store.hasActiveFilters"
+          icon="i-lucide-x"
+          size="xs"
+          color="neutral"
+          variant="ghost"
+          :label="t('workItems.search.clear')"
+          @click="clearAllFilters"
+        />
       </div>
 
       <!-- Loading (filter/state change) -->
