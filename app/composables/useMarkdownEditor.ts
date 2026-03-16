@@ -5,6 +5,7 @@ import { CodeBlockLowlight } from '@tiptap/extension-code-block-lowlight'
 import { common, createLowlight } from 'lowlight'
 import { GitHubReference } from '~/extensions/github-reference'
 import { CommitShaLink } from '~/extensions/commit-sha-link'
+import { ImageUpload } from '~/extensions/image-upload'
 
 const lowlight = createLowlight(common)
 
@@ -36,6 +37,7 @@ export function useMarkdownEditor(options: {
   mentionUsers?: MaybeRef<MentionUser[] | undefined>
 } = {}) {
   const { t } = useI18n()
+  const toast = useToast()
 
   const extensions = [
     TaskList,
@@ -46,6 +48,9 @@ export function useMarkdownEditor(options: {
     }),
     CommitShaLink.configure({
       commitUrlPrefix: options.repoContext ? `https://github.com/${options.repoContext}/commit/` : '',
+    }),
+    ImageUpload.configure({
+      onError: () => toast.add({ title: t('editor.imageUploadError'), color: 'error' }),
     }),
   ]
 

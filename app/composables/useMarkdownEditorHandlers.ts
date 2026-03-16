@@ -1,3 +1,5 @@
+import { uploadImage } from '~/utils/uploadImage'
+
 type ImageHandlerEditor = {
   can: () => {
     setImage: (options: { src: string }) => boolean
@@ -22,28 +24,24 @@ type ImageHandlerEditor = {
   }
 }
 
-function pickImageAndInsert(onSelect: (src: string) => void, onError?: (error: Error) => void) {
+function pickImageAndUpload(onSelect: (src: string) => void, onError?: (error: Error) => void) {
   if (!import.meta.client) return
 
   const input = document.createElement('input')
   input.type = 'file'
   input.accept = 'image/*'
 
-  input.onchange = () => {
+  input.onchange = async () => {
     const file = input.files?.[0]
     if (!file) return
 
-    const reader = new FileReader()
-    reader.onload = () => {
-      if (typeof reader.result === 'string') {
-        onSelect(reader.result)
-      }
+    try {
+      const url = await uploadImage(file)
+      onSelect(url)
     }
-    reader.onerror = () => {
-      const error = reader.error ?? new Error('Failed to read the selected image file.')
-      onError?.(error)
+    catch (e) {
+      onError?.(e instanceof Error ? e : new Error('Upload failed'))
     }
-    reader.readAsDataURL(file)
   }
 
   input.click()
@@ -57,10 +55,10 @@ export function useMarkdownEditorHandlers() {
     image: {
       canExecute: (editor: ImageHandlerEditor) => editor.can().setImage({ src: '' }),
       execute: (editor: ImageHandlerEditor) => {
-        pickImageAndInsert((src) => {
+        pickImageAndUpload((src) => {
           editor.chain().focus().setImage({ src }).run()
         }, () => {
-          toast.add({ title: t('editor.imageReadError'), color: 'error' })
+          toast.add({ title: t('editor.imageUploadError'), color: 'error' })
         })
 
         return editor.chain()

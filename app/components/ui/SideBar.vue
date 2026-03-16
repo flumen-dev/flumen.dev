@@ -436,6 +436,11 @@ const mainItems = computed<NavigationMenuItem[]>(() => [
         </template>
       </UButton>
 
+      <!-- Rate limit indicator -->
+      <ClientOnly>
+        <UiRateLimitIndicator v-if="loggedIn && !collapsed" />
+      </ClientOnly>
+
       <UNavigationMenu
         :collapsed="collapsed"
         :items="mainItems"

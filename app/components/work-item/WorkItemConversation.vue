@@ -21,7 +21,31 @@ const idRef = toRef(props, 'id')
 const isIssuePrimary = computed(() => workItemRef.value?.primaryType === 'issue')
 const issueNumber = computed(() => isIssuePrimary.value ? workItemRef.value?.number : undefined)
 
-const { issue, submitComment } = useIssueDetail(repo, issueNumber)
+const { issue, submitComment: issueSubmitComment } = useIssueDetail(repo, issueNumber)
+
+async function submitComment(subjectId: string, body: string) {
+  const comment = await issueSubmitComment(subjectId, body)
+  if (comment && workItemRef.value) {
+    workItemRef.value = {
+      ...workItemRef.value,
+      timeline: [...workItemRef.value.timeline, {
+        id: comment.id,
+        subjectId: comment.id,
+        source: workItemRef.value.primaryType === 'issue' ? 'issue' as const : 'pull' as const,
+        sourceNumber: workItemRef.value.number,
+        kind: 'comment' as const,
+        author: comment.author.login,
+        authorAvatarUrl: comment.author.avatarUrl,
+        createdAt: comment.createdAt,
+        body: comment.body,
+        reactionGroups: [],
+        viewerCanUpdate: true,
+        viewerCanDelete: true,
+      }],
+    }
+  }
+  return comment
+}
 
 const primarySubjectId = computed(() => {
   if (issue.value) return issue.value.id
@@ -587,9 +611,6 @@ function handleDelete(item: WorkItemTimelineUiItem) {
   if (!subjectId) return
   deleteTimelineComment(item.id, subjectId, { sourceNumber: item.sourceNumber })
 }
-
-// --- Comment form ---
-const commentFormRef = ref<{ active: boolean }>()
 </script>
 
 <template>
@@ -808,19 +829,14 @@ const commentFormRef = ref<{ active: boolean }>()
         </UTimeline>
       </div>
 
-      <div
+      <IssueCommentForm
         v-if="loggedIn && primarySubjectId"
-        :class="commentFormRef?.active ? 'sticky bottom-0 z-10' : ''"
-      >
-        <IssueCommentForm
-          ref="commentFormRef"
-          :issue-id="primarySubjectId"
-          :repo-context="repo"
-          :mention-users="mentionUsers"
-          :submit-comment="submitComment"
-          @submitted="toast.add({ title: t('issues.comment.submitted'), color: 'success' })"
-        />
-      </div>
+        :issue-id="primarySubjectId"
+        :repo-context="repo"
+        :mention-users="mentionUsers"
+        :submit-comment="submitComment"
+        @submitted="toast.add({ title: t('issues.comment.submitted'), color: 'success' })"
+      />
     </div>
 
     <div

@@ -22,7 +22,7 @@ const repoRef = computed(() => props.repo)
 const prNumberRef = computed(() => props.prNumber)
 
 const { user } = useUserSession()
-const { submitting, submitReview, getReviewerColor, getReviewerIcon } = useReviewActions(ownerRef, repoRef, prNumberRef)
+const { submitting, error, submitReview, getReviewerColor, getReviewerIcon } = useReviewActions(ownerRef, repoRef, prNumberRef)
 
 // Current user's review state
 const myReview = computed(() => {
@@ -93,7 +93,7 @@ async function handleSubmit() {
     emit('reviewed')
   }
   else {
-    toast.add({ title: t('workItems.review.reviewFailed'), color: 'error' })
+    toast.add({ title: t('workItems.review.reviewFailed'), description: error.value ?? undefined, color: 'error' })
   }
 }
 </script>

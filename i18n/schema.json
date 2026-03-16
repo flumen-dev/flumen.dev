@@ -1348,6 +1348,36 @@
     "workItems": {
       "type": "object",
       "properties": {
+        "source": {
+          "type": "object",
+          "properties": {
+            "issue": {
+              "type": "string"
+            },
+            "pr": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "type": {
+          "type": "object",
+          "properties": {
+            "issue": {
+              "type": "string"
+            },
+            "pr": {
+              "type": "string"
+            },
+            "issueWithPr": {
+              "type": "string"
+            },
+            "prWithIssue": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
         "open": {
           "type": "string"
         },
@@ -1442,6 +1472,24 @@
               "type": "string"
             },
             "confirmMerge": {
+              "type": "string"
+            },
+            "mergeBypass": {
+              "type": "string"
+            },
+            "bypassHint": {
+              "type": "string"
+            },
+            "draftHint": {
+              "type": "string"
+            },
+            "markReady": {
+              "type": "string"
+            },
+            "markedReady": {
+              "type": "string"
+            },
+            "markReadyFailed": {
               "type": "string"
             },
             "mergeSuccess": {
@@ -1855,7 +1903,7 @@
         "editedAgo": {
           "type": "string"
         },
-        "imageReadError": {
+        "imageUploadError": {
           "type": "string"
         },
         "toolbar": {
@@ -2042,9 +2090,6 @@
           "type": "string"
         },
         "nothingToPush": {
-          "type": "string"
-        },
-        "viewPr": {
           "type": "string"
         }
       },
@@ -2676,6 +2721,60 @@
             }
           },
           "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "rateLimit": {
+      "type": "object",
+      "properties": {
+        "label": {
+          "type": "string"
+        },
+        "resetsIn": {
+          "type": "string"
+        },
+        "resetsNow": {
+          "type": "string"
+        },
+        "tooltip": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "pendingPr": {
+      "type": "object",
+      "properties": {
+        "hadRecentPush": {
+          "type": "string"
+        },
+        "createPr": {
+          "type": "string"
+        },
+        "created": {
+          "type": "string"
+        },
+        "createFailed": {
+          "type": "string"
+        },
+        "prTitle": {
+          "type": "string"
+        },
+        "draftPr": {
+          "type": "string"
+        },
+        "commitsAhead": {
+          "type": "string"
+        },
+        "linkIssue": {
+          "type": "string"
+        },
+        "searchIssue": {
+          "type": "string"
+        },
+        "draftHint": {
+          "type": "string"
         }
       },
       "additionalProperties": false

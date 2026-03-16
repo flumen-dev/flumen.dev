@@ -28,9 +28,13 @@ const prNumbers = computed<number[]>(() => {
   if (wi.primaryType === 'pull') {
     return [wi.number]
   }
-  return wi.linkedPulls
+  const fromLinked = wi.linkedPulls
     .filter(p => !p.state || p.state === 'OPEN')
     .map(p => p.number)
+  const fromContributions = (wi as WorkItemDetail).contributions
+    ?.filter(c => c.state === 'OPEN')
+    .map(c => c.number) ?? []
+  return [...new Set([...fromLinked, ...fromContributions])]
 })
 
 const [ownerRef, repoRef] = (() => {
@@ -47,11 +51,16 @@ const emit = defineEmits<{
   reviewed: []
 }>()
 
-const { result: checkResult, statusChanged } = useCheckRuns(ownerRef, repoRef, prNumbers)
+const { result: checkResult, statusChanged, refetch: refetchChecks } = useCheckRuns(ownerRef, repoRef, prNumbers)
 const ciExpanded = ref(false)
 
 watch(statusChanged, () => {
   emit('ciStatusChanged')
+})
+
+// Refetch checks when work item data changes (e.g. after push detected by polling)
+watch(() => props.workItem.updatedAt, () => {
+  refetchChecks()
 })
 
 // --- Row 1: State ---
@@ -117,7 +126,21 @@ function openLogDialog(check: CheckRunDetail) {
   logDialogOpen.value = true
 }
 
-// --- Row 5: Merge ---
+// --- Row 5: Draft → Ready ---
+
+async function handleMarkReady() {
+  if (!activePr.value) return
+  const ok = await markReady(activePr.value.number)
+  if (ok) {
+    toast.add({ title: t('workItems.merge.markedReady'), color: 'success' })
+    emit('ciStatusChanged')
+  }
+  else {
+    toast.add({ title: t('workItems.merge.markReadyFailed'), color: 'error' })
+  }
+}
+
+// --- Row 6: Merge ---
 
 const mergeExpanded = ref(false)
 const mergeStrategy = ref<'merge' | 'squash' | 'rebase'>('squash')
@@ -147,10 +170,17 @@ const showDeleteBranch = computed(() =>
 )
 
 const isPR = computed(() => props.workItem.primaryType === 'pull')
-const isPRNotClosed = computed(() => isPR.value && props.workItem.state !== 'MERGED' && props.workItem.state !== 'CLOSED' && !justMerged.value)
-const isPROpen = computed(() => isPRNotClosed.value && props.workItem.state === 'OPEN')
-const mergeNumber = computed(() => isPROpen.value ? props.workItem.number : null)
-const { status: mergeStatus, loading: mergeLoading, error: mergeError, fetch: fetchMergeStatus, merge: executeMerge } = useMergeStatus(ownerRef, repoRef, mergeNumber)
+const hasPr = inject<Ref<boolean>>('hasPr', computed(() => isPR.value || props.workItem.contributions.length > 0))
+const activePr = computed(() => {
+  if (isPR.value) return { number: props.workItem.number, state: props.workItem.state, isDraft: props.workItem.isDraft }
+  const contribution = props.workItem.contributions[0]
+  return contribution ? { number: contribution.number, state: contribution.state, isDraft: contribution.isDraft } : null
+})
+const isPRDraft = computed(() => !!activePr.value?.isDraft)
+const isPRNotClosed = computed(() => hasPr.value && activePr.value && activePr.value.state !== 'MERGED' && activePr.value.state !== 'CLOSED' && !justMerged.value)
+const isPROpen = computed(() => isPRNotClosed.value && activePr.value?.state === 'OPEN')
+const mergeNumber = computed(() => isPROpen.value && activePr.value ? activePr.value.number : null)
+const { status: mergeStatus, loading: mergeLoading, error: mergeError, fetch: fetchMergeStatus, merge: executeMerge, markReady, markingReady } = useMergeStatus(ownerRef, repoRef, mergeNumber)
 
 // Lazy fetch: only when expanded for the first time
 watch(mergeExpanded, (expanded) => {
@@ -184,9 +214,10 @@ const mergeStrategies = computed(() => {
 const activeStrategy = computed(() => mergeStrategies.value.find(s => s.value === mergeStrategy.value) ?? mergeStrategies.value[0])
 const showCommitFields = computed(() => mergeStrategy.value !== 'rebase')
 const canMerge = computed(() => mergeStatus.value?.canMerge === true)
+const canBypassRules = computed(() => !canMerge.value && mergeStatus.value?.canBypassRules === true)
 
 async function handleMerge() {
-  if (!canMerge.value || merging.value) return
+  if ((!canMerge.value && !canBypassRules.value) || merging.value) return
   merging.value = true
   try {
     await executeMerge(
@@ -356,6 +387,7 @@ async function handleDeleteBranch() {
         v-if="issue"
         :issue="issue"
         :repo="repo"
+        @claimed="emit('ciStatusChanged')"
       />
 
       <!-- Timestamps + comment count -->
@@ -551,18 +583,18 @@ async function handleDeleteBranch() {
 
     <!-- Row 5: Review Actions (PR only, open) -->
     <WorkItemReviewActions
-      v-if="isPRNotClosed"
+      v-if="isPRNotClosed && activePr"
       :reviewers="workItem.reviewers ?? []"
       :owner="ownerRef"
       :repo="repoRef"
-      :pr-number="workItem.number"
+      :pr-number="activePr?.number ?? workItem.number"
       :work-item-id="workItem.id"
       @reviewed="emit('reviewed')"
     />
 
     <!-- Row 6: Merge (PR only) -->
     <div
-      v-if="isPR"
+      v-if="hasPr"
       class="border-t border-accented bg-primary/5"
     >
       <!-- Already merged (locally or after refresh) -->
@@ -597,6 +629,27 @@ async function handleDeleteBranch() {
         </span>
       </div>
 
+      <!-- Draft PR: show hint + mark ready button -->
+      <div
+        v-else-if="isPRDraft && isPRNotClosed"
+        class="flex items-center gap-2 px-3 sm:px-4 py-2.5"
+      >
+        <UIcon
+          name="i-lucide-pencil-line"
+          class="size-3.5 shrink-0 text-muted"
+        />
+        <span class="text-xs text-muted flex-1">{{ t('workItems.merge.draftHint') }}</span>
+        <UButton
+          :label="t('workItems.merge.markReady')"
+          icon="i-lucide-check"
+          size="xs"
+          variant="soft"
+          color="primary"
+          :loading="markingReady"
+          @click="handleMarkReady"
+        />
+      </div>
+
       <!-- Open PR: merge controls -->
       <template v-else-if="isPROpen">
         <!-- Collapsed: summary + merge button -->
@@ -611,7 +664,7 @@ async function handleDeleteBranch() {
             <UIcon
               name="i-lucide-git-merge"
               class="size-3.5 shrink-0"
-              :class="canMerge ? 'text-emerald-500' : 'text-muted'"
+              :class="canMerge ? 'text-emerald-500' : canBypassRules ? 'text-warning' : 'text-muted'"
             />
             <span class="text-muted truncate">
               {{ mergeLoading ? t('common.loading') : t('workItems.merge.readyToMerge') }}
@@ -621,17 +674,6 @@ async function handleDeleteBranch() {
               class="size-3.5 text-muted shrink-0"
             />
           </button>
-
-          <UButton
-            :label="t('workItems.merge.merge')"
-            icon="i-lucide-git-merge"
-            size="xs"
-            color="primary"
-            :disabled="!canMerge || merging"
-            :loading="merging"
-            class="shrink-0"
-            @click="mergeExpanded = true"
-          />
         </div>
 
         <!-- Expanded: strategy picker + commit message -->
@@ -721,7 +763,7 @@ async function handleDeleteBranch() {
                 size="sm"
                 variant="none"
                 :disabled="merging"
-                class="font-mono text-xs"
+                class="font-mono text-xs w-full"
               />
               <div class="border-t border-accented" />
               <UTextarea
@@ -732,17 +774,29 @@ async function handleDeleteBranch() {
                 :rows="2"
                 :disabled="merging"
                 autoresize
-                class="font-mono text-xs"
+                class="font-mono text-xs w-full"
               />
+            </div>
+
+            <!-- Bypass hint -->
+            <div
+              v-if="canBypassRules"
+              class="flex items-center gap-1.5 text-xs text-warning"
+            >
+              <UIcon
+                name="i-lucide-shield-alert"
+                class="size-3.5 shrink-0"
+              />
+              {{ t('workItems.merge.bypassHint') }}
             </div>
 
             <!-- Merge button -->
             <UButton
-              :label="t('workItems.merge.confirmMerge')"
+              :label="canBypassRules ? t('workItems.merge.mergeBypass') : t('workItems.merge.confirmMerge')"
               icon="i-lucide-git-merge"
-              color="primary"
+              :color="canBypassRules ? 'warning' : 'primary'"
               block
-              :disabled="!canMerge || merging"
+              :disabled="(!canMerge && !canBypassRules) || merging"
               :loading="merging"
               size="sm"
               @click="handleMerge"

@@ -24,7 +24,7 @@ const id = computed(() => route.params.id as string)
 const repo = computed(() => `${owner.value}/${repoName.value}`)
 const requestFetch = useRequestFetch()
 
-const { data: workItem, status: workItemStatus, error: workItemError, refresh: refreshWorkItem } = await useAsyncData(
+const { data: workItem, status: workItemStatus, error: workItemError } = await useAsyncData(
   () => `work-item-detail-${owner.value}-${repoName.value}-${id.value}`,
   () => requestFetch<WorkItemDetail>(`/api/repository/${owner.value}/${repoName.value}/work-items/${id.value}`),
   {
@@ -32,9 +32,8 @@ const { data: workItem, status: workItemStatus, error: workItemError, refresh: r
   },
 )
 
-function delayedRefreshWorkItem() {
-  globalThis.setTimeout(() => refreshWorkItem(), 10_000)
-}
+const workItemUrl = computed(() => `/api/repository/${owner.value}/${repoName.value}/work-items/${id.value}`)
+const { trigger: triggerPolling } = useWorkItemPolling(workItem, workItemUrl)
 
 const number = computed(() => {
   if (workItem.value?.number) return workItem.value.number
@@ -77,6 +76,7 @@ const activePullHeadSha = computed(() => {
 })
 
 provide('workItemRef', workItem)
+provide('hasPr', hasPr)
 
 const activeTab = ref('conversation')
 
@@ -119,9 +119,9 @@ const tabItems = computed(() => {
       v-if="workItem"
       :work-item="workItem"
       :repo="repo"
-      @ci-status-changed="delayedRefreshWorkItem"
-      @merged="delayedRefreshWorkItem"
-      @reviewed="delayedRefreshWorkItem"
+      @ci-status-changed="triggerPolling"
+      @merged="triggerPolling"
+      @reviewed="triggerPolling"
     />
 
     <div class="p-4">

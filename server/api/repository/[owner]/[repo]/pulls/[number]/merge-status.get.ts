@@ -12,6 +12,7 @@ query($owner: String!, $repo: String!, $number: Int!) {
     pullRequest(number: $number) {
       mergeable
       mergeStateStatus
+      viewerCanMergeAsAdmin
       headRefName
       baseRefName
       commits(last: 1) { totalCount nodes { commit { oid } } }
@@ -31,6 +32,7 @@ interface GraphQLResult {
     pullRequest: {
       mergeable: MergeableState
       mergeStateStatus: MergeStateStatus
+      viewerCanMergeAsAdmin: boolean
       headRefName: string
       baseRefName: string
       commits: { totalCount: number, nodes: { commit: { oid: string } }[] }
@@ -90,5 +92,6 @@ export default defineEventHandler(async (event) => {
     defaultTitle,
     defaultBody: pr.body ?? '',
     headSha: pr.commits.nodes[0]?.commit.oid ?? '',
+    canBypassRules: pr.viewerCanMergeAsAdmin,
   } satisfies MergeStatusResult
 })

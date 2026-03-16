@@ -35,8 +35,8 @@ export function useReviewActions(
       )
     }
     catch (e: unknown) {
-      const fetchErr = e as { data?: { data?: { errorKey?: string } }, message?: string }
-      error.value = fetchErr.data?.data?.errorKey ?? fetchErr.message ?? 'unknown'
+      const fetchErr = e as { data?: { data?: { errorKey?: string, message?: string } }, message?: string }
+      error.value = fetchErr.data?.data?.message ?? fetchErr.data?.data?.errorKey ?? fetchErr.message ?? 'unknown'
       return null
     }
     finally {
@@ -55,8 +55,8 @@ export function useReviewActions(
       )
     }
     catch (e: unknown) {
-      const fetchErr = e as { data?: { data?: { errorKey?: string } }, message?: string }
-      error.value = fetchErr.data?.data?.errorKey ?? fetchErr.message ?? 'unknown'
+      const fetchErr = e as { data?: { data?: { errorKey?: string, message?: string } }, message?: string }
+      error.value = fetchErr.data?.data?.message ?? fetchErr.data?.data?.errorKey ?? fetchErr.message ?? 'unknown'
       return null
     }
     finally {

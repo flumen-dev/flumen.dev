@@ -447,6 +447,16 @@
     }
   },
   "workItems": {
+    "source": {
+      "issue": "From issue thread",
+      "pr": "From pull request"
+    },
+    "type": {
+      "issue": "Issue",
+      "pr": "Pull Request",
+      "issueWithPr": "Issue with linked Pull Request",
+      "prWithIssue": "Pull Request with linked Issue"
+    },
     "open": "Open",
     "closed": "Closed",
     "noResults": "No work items found.",
@@ -479,6 +489,12 @@
       "commitTitle": "Commit title",
       "commitMessage": "Additional details (optional)",
       "confirmMerge": "Merge this pull request",
+      "mergeBypass": "Merge without waiting for requirements",
+      "bypassHint": "Requirements have not been met. You can merge as an administrator.",
+      "draftHint": "This pull request is still a draft.",
+      "markReady": "Ready for review",
+      "markedReady": "Marked as ready for review",
+      "markReadyFailed": "Failed to mark as ready",
       "mergeSuccess": "Pull request merged",
       "mergeFailed": "Merge failed",
       "deleteBranch": "Delete branch",
@@ -616,7 +632,7 @@
     "source": "Source",
     "wysiwyg": "Preview",
     "editedAgo": "edited {time}",
-    "imageReadError": "Could not read the selected image.",
+    "imageUploadError": "Image upload failed.",
     "toolbar": {
       "headings": "Headings",
       "heading1": "Heading 1",
@@ -678,8 +694,7 @@
     "pushAndCreatePr": "Push & Create PR",
     "pushWithPr": "Pushed & PR created",
     "pushFailed": "Push failed",
-    "nothingToPush": "Nothing to push",
-    "viewPr": "View PR"
+    "nothingToPush": "Nothing to push"
   },
   "dashboard": {
     "description": "What needs your attention right now.",
@@ -890,5 +905,23 @@
       "skinGrass": "Grass",
       "skinFire": "Fire"
     }
+  },
+  "rateLimit": {
+    "label": "API Usage",
+    "resetsIn": "resets in {min}min",
+    "resetsNow": "resetting...",
+    "tooltip": "GitHub API requests used this hour. Resets automatically. High usage may temporarily limit Flumen's functionality."
+  },
+  "pendingPr": {
+    "hadRecentPush": "{count} commit ahead | {count} commits ahead",
+    "createPr": "Create Pull Request",
+    "created": "Pull request created!",
+    "createFailed": "Failed to create pull request",
+    "prTitle": "Pull request title",
+    "draftPr": "Create as draft",
+    "commitsAhead": "{count} commit ahead | {count} commits ahead",
+    "linkIssue": "Link issue",
+    "searchIssue": "Search issues...",
+    "draftHint": "Created as draft. Mark as ready when you're done."
   }
 }

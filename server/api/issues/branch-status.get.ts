@@ -13,6 +13,8 @@ export interface BranchStatus {
   suggestedBranch: string
   cloneUrl: string | null
   claims: IssueClaim[]
+  aheadBy: number
+  hasOpenPr: boolean
 }
 
 interface BranchStatusQueryResult {
@@ -21,6 +23,7 @@ interface BranchStatusQueryResult {
     defaultBranchRef: { name: string } | null
     url: string
     ref: { name: string } | null
+    pullRequests: { totalCount: number }
   } | null
   fork: {
     isFork: boolean
@@ -30,15 +33,23 @@ interface BranchStatusQueryResult {
   } | null
 }
 
-const BRANCH_STATUS_QUERY = /* GraphQL */ `
-  query BranchStatus($owner: String!, $repo: String!, $branchRef: String!, $forkOwner: String!) {
+const REPO_QUERY = /* GraphQL */ `
+  query BranchStatus($owner: String!, $repo: String!, $branchRef: String!, $branchName: String!) {
     repository(owner: $owner, name: $repo) {
       viewerPermission
       defaultBranchRef { name }
       url
       ref(qualifiedName: $branchRef) { name }
+      pullRequests(headRefName: $branchName, states: OPEN, first: 1) {
+        totalCount
+      }
     }
-    fork: repository(owner: $forkOwner, name: $repo) {
+  }
+`
+
+const FORK_QUERY = /* GraphQL */ `
+  query ForkStatus($forkOwner: String!, $repo: String!, $branchRef: String!) {
+    repository(owner: $forkOwner, name: $repo) {
       isFork
       nameWithOwner
       url
@@ -72,38 +83,72 @@ export default defineEventHandler(async (event): Promise<BranchStatus> => {
   // 2. Single GraphQL query: repo permissions, default branch, fork status, branch existence
   const branchRef = `refs/heads/${suggestedBranch}`
 
-  const data = await githubGraphQL<BranchStatusQueryResult>(token, BRANCH_STATUS_QUERY, {
+  const repoData = await githubGraphQL<{ repository: BranchStatusQueryResult['repository'] }>(token, REPO_QUERY, {
     owner,
     repo: repoName,
     branchRef,
-    forkOwner: login,
+    branchName: suggestedBranch,
   })
 
-  if (!data.repository) {
+  if (!repoData.repository) {
     throw createError({ statusCode: 404, message: 'Repository not found' })
   }
 
-  const { viewerPermission, defaultBranchRef } = data.repository
+  // Fork query may fail if user has no fork — that's ok
+  let forkData: BranchStatusQueryResult['fork'] = null
+  try {
+    const result = await githubGraphQL<{ repository: BranchStatusQueryResult['fork'] }>(token, FORK_QUERY, {
+      forkOwner: login,
+      repo: repoName,
+      branchRef,
+    })
+    if (result.repository?.isFork) {
+      forkData = result.repository
+    }
+  }
+  catch (e) {
+    const isForkNotFound = e instanceof GitHubError && e.message.includes('Could not resolve to a Repository')
+    if (!isForkNotFound) throw e
+  }
+
+  const repoInfo = repoData.repository
+  const { viewerPermission, defaultBranchRef } = repoInfo
   const isCollaborator = !!viewerPermission && ['ADMIN', 'MAINTAIN', 'WRITE'].includes(viewerPermission)
   const defaultBranch = defaultBranchRef?.name ?? 'main'
 
   // 3. Determine branch existence + clone URL based on collaborator status
-  const hasFork = !!data.fork?.isFork
-  const forkFullName = hasFork ? data.fork!.nameWithOwner : null
+  const hasFork = !!forkData?.isFork
+  const forkFullName = hasFork ? forkData!.nameWithOwner : null
 
   let branchExists: boolean
   let cloneUrl: string | null
 
   if (isCollaborator) {
-    branchExists = !!data.repository.ref
-    cloneUrl = data.repository.url + '.git'
+    branchExists = !!repoInfo.ref
+    cloneUrl = repoInfo.url + '.git'
   }
   else {
-    branchExists = !!data.fork?.ref
-    cloneUrl = hasFork ? data.fork!.url + '.git' : null
+    branchExists = !!forkData?.ref
+    cloneUrl = hasFork ? forkData!.url + '.git' : null
   }
 
-  // 4. Clean up current user's claim if their branch was deleted
+  // 4. Check ahead-by count + open PR
+  const hasOpenPr = (repoInfo.pullRequests?.totalCount ?? 0) > 0
+  let aheadBy = 0
+  if (branchExists) {
+    try {
+      const headRef = isCollaborator ? suggestedBranch : `${login}:${suggestedBranch}`
+      const { data: compareData } = await githubFetchWithToken<{ ahead_by: number }>(
+        token, `/repos/${owner}/${repoName}/compare/${defaultBranch}...${headRef}`,
+      )
+      aheadBy = compareData.ahead_by
+    }
+    catch {
+      // Compare may fail for unrelated histories — default to 0
+    }
+  }
+
+  // 5. Clean up current user's claim if their branch was deleted
   if (myClaim && !branchExists) {
     const updatedClaims = claims.filter(c => c.login !== login)
     if (updatedClaims.length > 0) {
@@ -121,6 +166,8 @@ export default defineEventHandler(async (event): Promise<BranchStatus> => {
       suggestedBranch,
       cloneUrl,
       claims: updatedClaims,
+      aheadBy: 0,
+      hasOpenPr,
     }
   }
 
@@ -133,5 +180,7 @@ export default defineEventHandler(async (event): Promise<BranchStatus> => {
     suggestedBranch,
     cloneUrl,
     claims,
+    aheadBy,
+    hasOpenPr,
   }
 })

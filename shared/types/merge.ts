@@ -14,4 +14,5 @@ export interface MergeStatusResult {
   defaultTitle: string
   defaultBody: string
   headSha: string
+  canBypassRules: boolean
 }

@@ -1,5 +1,36 @@
 import type { H3Event } from 'h3'
 
+// --- In-memory rate limit cache (updated from every GitHub response) ---
+export interface RateLimitInfo {
+  limit: number
+  remaining: number
+  reset: number
+}
+
+const rateLimitsPerUser = new Map<number, Record<string, RateLimitInfo>>()
+
+export function getRateLimit(userId: number): RateLimitInfo {
+  const rateLimits = rateLimitsPerUser.get(userId)
+  if (!rateLimits) return { limit: 0, remaining: 0, reset: 0 }
+  const entries = Object.values(rateLimits)
+  if (!entries.length) return { limit: 0, remaining: 0, reset: 0 }
+  return {
+    limit: entries.reduce((s, e) => s + e.limit, 0),
+    remaining: entries.reduce((s, e) => s + e.remaining, 0),
+    reset: Math.max(...entries.map(e => e.reset)),
+  }
+}
+
+export function updateRateLimitFromHeaders(headers: Headers, source: 'rest' | 'graphql' = 'rest', userId?: number) {
+  const limit = Number(headers.get('x-ratelimit-limit'))
+  const remaining = Number(headers.get('x-ratelimit-remaining'))
+  const reset = Number(headers.get('x-ratelimit-reset'))
+  if (limit > 0 && userId != null) {
+    if (!rateLimitsPerUser.has(userId)) rateLimitsPerUser.set(userId, {})
+    rateLimitsPerUser.get(userId)![source] = { limit, remaining, reset }
+  }
+}
+
 /**
  * Invalidate the server-side issue detail cache after mutations.
  * Matches the key format used by defineCachedFunction in [number].get.ts
@@ -26,6 +57,7 @@ export interface GitHubRequestOptions {
   method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
   body?: unknown
   params?: Record<string, string | number>
+  userId?: number
 }
 
 export interface GitHubResponse<T> {
@@ -98,8 +130,12 @@ export async function githubFetchWithToken<T>(
   })
 
   if (!response.ok) {
-    throw new GitHubError(response.status, endpoint, `GitHub API ${response.status}: ${response.statusText}`)
+    const errorBody = await response.json().catch(() => null) as { message?: string, errors?: { message?: string }[] } | null
+    const detail = errorBody?.errors?.[0]?.message ?? errorBody?.message ?? response.statusText
+    throw new GitHubError(response.status, endpoint, detail)
   }
+
+  updateRateLimitFromHeaders(response.headers, 'rest', options.userId)
 
   const data = await response.json() as T
   return { data, status: response.status, headers: response.headers }
@@ -153,6 +189,8 @@ export async function githubCachedFetchWithToken<T>(
     headers,
     body: options.body ? JSON.stringify(options.body) : undefined,
   })
+
+  updateRateLimitFromHeaders(response.headers, 'rest', userId)
 
   if (response.status === 304 && cached) {
     return { data: cached.data, status: 304, headers: response.headers }

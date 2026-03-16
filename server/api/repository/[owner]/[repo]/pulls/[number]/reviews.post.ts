@@ -106,7 +106,7 @@ export default defineEventHandler(async (event) => {
     const errorKey = e instanceof GitHubError ? REVIEW_ERROR_MAP[e.status] ?? 'unknown' : 'unknown'
     throw createError({
       statusCode: e instanceof GitHubError ? e.status : 500,
-      data: { errorKey },
+      data: { errorKey, message: e instanceof GitHubError ? e.message : undefined },
     })
   }
 })
