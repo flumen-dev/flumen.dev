@@ -1,4 +1,4 @@
-import { runSharedRepoMaintenanceCycle } from '~~/server/utils/shared-repo-data'
+import { runSharedRepoMaintenanceCycle } from '~~/server/utils/repo-sync-service'
 
 export default defineTask({
   meta: {

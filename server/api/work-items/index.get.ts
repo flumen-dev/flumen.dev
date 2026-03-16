@@ -1,6 +1,6 @@
 import type { WorkItem } from '~~/shared/types/work-item'
 import type { PaginatedResponse } from '~~/shared/types/pagination'
-import { getRepoWorkItemsForRequest } from '~~/server/utils/shared-repo-data'
+import { getRepoWorkItemsForRequest } from '~~/server/utils/repo-sync-service'
 
 export default defineEventHandler(async (event): Promise<PaginatedResponse<WorkItem>> => {
   const { state = 'open', repo, first = '20', after } = getQuery<{

@@ -1,4 +1,4 @@
-import { getRepoWorkItemsForRequest } from '~~/server/utils/shared-repo-data'
+import { getRepoWorkItemsForRequest } from '~~/server/utils/repo-sync-service'
 
 export default defineEventHandler(async (event) => {
   const { owner, repo } = getRepoParams(event)
