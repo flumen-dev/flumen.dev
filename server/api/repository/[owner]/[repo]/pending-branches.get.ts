@@ -42,7 +42,7 @@ export default defineEventHandler(async (event): Promise<PendingBranch[]> => {
 
   await Promise.allSettled(withoutPr.slice(0, 5).map(async (branch) => {
     const { data } = await githubFetchWithToken<{ ahead_by: number, commits: { author: { login: string } | null }[] }>(
-      token, `/repos/${owner}/${repo}/compare/${defaultBranch}...${branch}`,
+      token, `/repos/${owner}/${repo}/compare/${encodeURIComponent(defaultBranch)}...${encodeURIComponent(branch)}`,
     )
     if (data.ahead_by === 0) return
 
