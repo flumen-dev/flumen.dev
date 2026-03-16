@@ -13,6 +13,8 @@ export interface BranchStatus {
   suggestedBranch: string
   cloneUrl: string | null
   claims: IssueClaim[]
+  aheadBy: number
+  hasOpenPr: boolean
 }
 
 interface BranchStatusQueryResult {
@@ -21,6 +23,7 @@ interface BranchStatusQueryResult {
     defaultBranchRef: { name: string } | null
     url: string
     ref: { name: string } | null
+    pullRequests: { totalCount: number }
   } | null
   fork: {
     isFork: boolean
@@ -31,12 +34,15 @@ interface BranchStatusQueryResult {
 }
 
 const REPO_QUERY = /* GraphQL */ `
-  query BranchStatus($owner: String!, $repo: String!, $branchRef: String!) {
+  query BranchStatus($owner: String!, $repo: String!, $branchRef: String!, $branchName: String!) {
     repository(owner: $owner, name: $repo) {
       viewerPermission
       defaultBranchRef { name }
       url
       ref(qualifiedName: $branchRef) { name }
+      pullRequests(headRefName: $branchName, states: OPEN, first: 1) {
+        totalCount
+      }
     }
   }
 `
@@ -81,6 +87,7 @@ export default defineEventHandler(async (event): Promise<BranchStatus> => {
     owner,
     repo: repoName,
     branchRef,
+    branchName: suggestedBranch,
   })
 
   if (!repoData.repository) {
@@ -125,7 +132,23 @@ export default defineEventHandler(async (event): Promise<BranchStatus> => {
     cloneUrl = hasFork ? forkData!.url + '.git' : null
   }
 
-  // 4. Clean up current user's claim if their branch was deleted
+  // 4. Check ahead-by count + open PR
+  const hasOpenPr = (repoInfo.pullRequests?.totalCount ?? 0) > 0
+  let aheadBy = 0
+  if (branchExists) {
+    try {
+      const headRef = isCollaborator ? suggestedBranch : `${login}:${suggestedBranch}`
+      const { data: compareData } = await githubFetchWithToken<{ ahead_by: number }>(
+        token, `/repos/${owner}/${repoName}/compare/${defaultBranch}...${headRef}`,
+      )
+      aheadBy = compareData.ahead_by
+    }
+    catch {
+      // Compare may fail for unrelated histories — default to 0
+    }
+  }
+
+  // 5. Clean up current user's claim if their branch was deleted
   if (myClaim && !branchExists) {
     const updatedClaims = claims.filter(c => c.login !== login)
     if (updatedClaims.length > 0) {
@@ -143,6 +166,8 @@ export default defineEventHandler(async (event): Promise<BranchStatus> => {
       suggestedBranch,
       cloneUrl,
       claims: updatedClaims,
+      aheadBy: 0,
+      hasOpenPr,
     }
   }
 
@@ -155,5 +180,7 @@ export default defineEventHandler(async (event): Promise<BranchStatus> => {
     suggestedBranch,
     cloneUrl,
     claims,
+    aheadBy,
+    hasOpenPr,
   }
 })

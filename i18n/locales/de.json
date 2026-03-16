@@ -481,6 +481,10 @@
       "confirmMerge": "Pull Request mergen",
       "mergeBypass": "Ohne Anforderungen mergen",
       "bypassHint": "Anforderungen nicht erfüllt. Du kannst als Administrator mergen.",
+      "draftHint": "Dieser Pull Request ist noch ein Entwurf.",
+      "markReady": "Bereit für Review",
+      "markedReady": "Als bereit markiert",
+      "markReadyFailed": "Konnte nicht als bereit markiert werden",
       "mergeSuccess": "Pull Request gemergt",
       "mergeFailed": "Merge fehlgeschlagen",
       "deleteBranch": "Branch löschen",
@@ -898,5 +902,19 @@
     "resetsIn": "Reset in {min}min",
     "resetsNow": "wird zurückgesetzt...",
     "tooltip": "GitHub API-Anfragen in dieser Stunde. Wird automatisch zurückgesetzt. Hohe Nutzung kann Flumens Funktionen vorübergehend einschränken."
+  },
+  "pendingPr": {
+    "hadRecentPush": "{count} Commit voraus | {count} Commits voraus",
+    "createPr": "Pull Request erstellen",
+    "created": "Pull Request erstellt!",
+    "createFailed": "Pull Request konnte nicht erstellt werden",
+    "prTitle": "Pull-Request-Titel",
+    "draftPr": "Als Entwurf erstellen",
+    "commitsAhead": "{count} Commit voraus | {count} Commits voraus",
+    "linkIssue": "Issue verknüpfen",
+    "searchIssue": "Issues suchen...",
+    "noIssues": "Keine Issues gefunden",
+    "closesIssue": "Schließt #{number}",
+    "draftHint": "Als Entwurf erstellt. Markiere als bereit wenn du fertig bist."
   }
 }

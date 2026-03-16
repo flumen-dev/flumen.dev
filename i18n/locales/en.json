@@ -481,6 +481,10 @@
       "confirmMerge": "Merge this pull request",
       "mergeBypass": "Merge without waiting for requirements",
       "bypassHint": "Requirements have not been met. You can merge as an administrator.",
+      "draftHint": "This pull request is still a draft.",
+      "markReady": "Ready for review",
+      "markedReady": "Marked as ready for review",
+      "markReadyFailed": "Failed to mark as ready",
       "mergeSuccess": "Pull request merged",
       "mergeFailed": "Merge failed",
       "deleteBranch": "Delete branch",
@@ -898,5 +902,19 @@
     "resetsIn": "resets in {min}min",
     "resetsNow": "resetting...",
     "tooltip": "GitHub API requests used this hour. Resets automatically. High usage may temporarily limit Flumen's functionality."
+  },
+  "pendingPr": {
+    "hadRecentPush": "{count} commit ahead | {count} commits ahead",
+    "createPr": "Create Pull Request",
+    "created": "Pull request created!",
+    "createFailed": "Failed to create pull request",
+    "prTitle": "Pull request title",
+    "draftPr": "Create as draft",
+    "commitsAhead": "{count} commit ahead | {count} commits ahead",
+    "linkIssue": "Link issue",
+    "searchIssue": "Search issues...",
+    "noIssues": "No issues found",
+    "closesIssue": "Closes #{number}",
+    "draftHint": "Created as draft. Mark as ready when you're done."
   }
 }

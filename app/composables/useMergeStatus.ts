@@ -38,5 +38,23 @@ export function useMergeStatus(
     )
   }
 
-  return { status, loading, error, fetch, merge }
+  const markingReady = ref(false)
+
+  async function markReady(number: number) {
+    markingReady.value = true
+    try {
+      await $fetch(`/api/repository/${owner.value}/${repo.value}/pulls/${number}/ready`, {
+        method: 'POST',
+      })
+      return true
+    }
+    catch {
+      return false
+    }
+    finally {
+      markingReady.value = false
+    }
+  }
+
+  return { status, loading, error, fetch, merge, markingReady: readonly(markingReady), markReady }
 }

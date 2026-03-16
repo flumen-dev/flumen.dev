@@ -79,6 +79,12 @@ const repoBase = computed(() => `/repos/${owner.value}/${repo.value}`)
 
     <!-- Content -->
     <template v-else-if="repoDetail">
+      <!-- Pending PR banners -->
+      <RepoPendingPrBanner
+        :owner="owner"
+        :repo="repo"
+      />
+
       <!-- Full-width file viewer when viewing a file -->
       <RepoFileBrowser
         v-if="isViewingFile"

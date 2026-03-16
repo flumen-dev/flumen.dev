@@ -126,7 +126,21 @@ function openLogDialog(check: CheckRunDetail) {
   logDialogOpen.value = true
 }
 
-// --- Row 5: Merge ---
+// --- Row 5: Draft → Ready ---
+
+async function handleMarkReady() {
+  if (!activePr.value) return
+  const ok = await markReady(activePr.value.number)
+  if (ok) {
+    toast.add({ title: t('workItems.merge.markedReady'), color: 'success' })
+    emit('ciStatusChanged')
+  }
+  else {
+    toast.add({ title: t('workItems.merge.markReadyFailed'), color: 'error' })
+  }
+}
+
+// --- Row 6: Merge ---
 
 const mergeExpanded = ref(false)
 const mergeStrategy = ref<'merge' | 'squash' | 'rebase'>('squash')
@@ -158,14 +172,15 @@ const showDeleteBranch = computed(() =>
 const isPR = computed(() => props.workItem.primaryType === 'pull')
 const hasPr = inject<Ref<boolean>>('hasPr', computed(() => isPR.value || props.workItem.contributions.length > 0))
 const activePr = computed(() => {
-  if (isPR.value) return { number: props.workItem.number, state: props.workItem.state }
+  if (isPR.value) return { number: props.workItem.number, state: props.workItem.state, isDraft: props.workItem.isDraft }
   const contribution = props.workItem.contributions[0]
-  return contribution ? { number: contribution.number, state: contribution.state } : null
+  return contribution ? { number: contribution.number, state: contribution.state, isDraft: contribution.isDraft } : null
 })
+const isPRDraft = computed(() => !!activePr.value?.isDraft)
 const isPRNotClosed = computed(() => hasPr.value && activePr.value && activePr.value.state !== 'MERGED' && activePr.value.state !== 'CLOSED' && !justMerged.value)
 const isPROpen = computed(() => isPRNotClosed.value && activePr.value?.state === 'OPEN')
 const mergeNumber = computed(() => isPROpen.value && activePr.value ? activePr.value.number : null)
-const { status: mergeStatus, loading: mergeLoading, error: mergeError, fetch: fetchMergeStatus, merge: executeMerge } = useMergeStatus(ownerRef, repoRef, mergeNumber)
+const { status: mergeStatus, loading: mergeLoading, error: mergeError, fetch: fetchMergeStatus, merge: executeMerge, markReady, markingReady } = useMergeStatus(ownerRef, repoRef, mergeNumber)
 
 // Lazy fetch: only when expanded for the first time
 watch(mergeExpanded, (expanded) => {
@@ -611,6 +626,27 @@ async function handleDeleteBranch() {
         >
           {{ t('workItems.merge.branchDeletedLabel') }}
         </span>
+      </div>
+
+      <!-- Draft PR: show hint + mark ready button -->
+      <div
+        v-else-if="isPRDraft && isPRNotClosed"
+        class="flex items-center gap-2 px-3 sm:px-4 py-2.5"
+      >
+        <UIcon
+          name="i-lucide-pencil-line"
+          class="size-3.5 shrink-0 text-muted"
+        />
+        <span class="text-xs text-muted flex-1">{{ t('workItems.merge.draftHint') }}</span>
+        <UButton
+          :label="t('workItems.merge.markReady')"
+          icon="i-lucide-check"
+          size="xs"
+          variant="soft"
+          color="primary"
+          :loading="markingReady"
+          @click="handleMarkReady"
+        />
       </div>
 
       <!-- Open PR: merge controls -->
