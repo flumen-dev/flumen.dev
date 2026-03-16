@@ -59,7 +59,7 @@
   },
   "devDependencies": {
     "@iconify-json/lucide": "1.2.95",
-    "@iconify-json/simple-icons": "1.2.71",
+    "@iconify-json/simple-icons": "1.2.74",
     "@nuxt/a11y": "1.0.0-alpha.1",
     "@nuxt/eslint": "1.15.2",
     "@nuxt/test-utils": "4.0.0",
