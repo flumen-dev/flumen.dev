@@ -7,6 +7,7 @@ interface CreatePrRequest {
   title: string
   body: string
   draft?: boolean
+  workItemId?: string
 }
 
 interface GitHubPrResponse {
@@ -16,7 +17,7 @@ interface GitHubPrResponse {
 }
 
 export default defineEventHandler(async (event) => {
-  const { token } = await getSessionToken(event)
+  const { token, login } = await getSessionToken(event)
   const input = await readBody<CreatePrRequest>(event)
 
   if (!input?.repo || !input.head || !input.base || !input.title) {
@@ -41,6 +42,11 @@ export default defineEventHandler(async (event) => {
       draft: input.draft ?? false,
     },
   })
+
+  // Invalidate work item cache so polling picks up the new PR
+  if (input.workItemId) {
+    await invalidateWorkItemDetailCache(login, owner, repoName, input.workItemId)
+  }
 
   return {
     number: data.number,

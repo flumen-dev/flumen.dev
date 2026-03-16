@@ -85,6 +85,7 @@ async function createPr() {
         title: prTitle.value,
         body: linkedIssueNumber.value ? `Closes #${linkedIssueNumber.value}` : '',
         draft: prDraft.value,
+        workItemId: linkedIssueNumber.value ? String(linkedIssueNumber.value) : undefined,
       },
     })
 
