@@ -673,7 +673,7 @@ async function handleDeleteBranch() {
               class="truncate"
               :class="hasConflicts ? 'text-red-500 font-medium' : 'text-muted'"
             >
-              {{ mergeLoading ? t('common.loading') : hasConflicts ? t('workItems.merge.hasConflicts') : t('workItems.merge.readyToMerge') }}
+              {{ mergeLoading ? t('common.loading') : hasConflicts ? t('workItems.merge.hasConflicts') : canMerge ? t('workItems.merge.readyToMerge') : canBypassRules ? t('workItems.merge.blockedBypass') : mergeStatus ? t('workItems.merge.blocked') : t('workItems.merge.readyToMerge') }}
             </span>
             <UIcon
               :name="mergeExpanded ? 'i-lucide-chevron-up' : 'i-lucide-chevron-down'"

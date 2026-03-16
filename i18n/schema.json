@@ -1492,6 +1492,12 @@
             "hasConflicts": {
               "type": "string"
             },
+            "blocked": {
+              "type": "string"
+            },
+            "blockedBypass": {
+              "type": "string"
+            },
             "merge": {
               "type": "string"
             },

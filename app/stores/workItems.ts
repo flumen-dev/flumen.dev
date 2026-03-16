@@ -32,6 +32,7 @@ export const useWorkItemStore = defineStore('workItems', () => {
     authorFilter.value = ''
     labelFilter.value = ''
     typeFilter.value = ''
+    quickFilter.value = null
   }
 
   const hasActiveFilters = computed(() =>
@@ -64,7 +65,7 @@ export const useWorkItemStore = defineStore('workItems', () => {
           searchQuery.value = 'review:required'
           break
         case 'my-items':
-          if (login) assigneeFilter.value = login
+          if (login) searchQuery.value = `involves:${login}`
           break
       }
     }

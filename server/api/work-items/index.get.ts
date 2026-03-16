@@ -305,7 +305,7 @@ async function searchWorkItems(
       labels: item.labels ?? [],
       assignees: (item.assignees ?? []).map(a => ({ login: a.login, avatarUrl: a.avatar_url })),
       commentCount: item.comments ?? 0,
-      isDraft: false,
+      isDraft: isPr && 'draft' in item ? Boolean(item.draft) : false,
       reviewDecision: null,
       ciStatus: null,
       issue: null,
