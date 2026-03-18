@@ -875,14 +875,14 @@ async function warmRepoByActivity(token: string, owner: string, repo: string, me
 
 export interface SharedRepoMaintenanceResult {
   inspected: number
-  warmed: number
-  skipped: number
+  warmed: string[]
+  skipped: string[]
 }
 
 export async function runSharedRepoMaintenanceCycle(): Promise<SharedRepoMaintenanceResult> {
   const token = getSharedToken()
   if (!token) {
-    return { inspected: 0, warmed: 0, skipped: 0 }
+    return { inspected: 0, warmed: [], skipped: [] }
   }
 
   const knownRepos = await listKnownRepoMetaEntries()
@@ -890,18 +890,19 @@ export async function runSharedRepoMaintenanceCycle(): Promise<SharedRepoMainten
     .sort((a, b) => (b.meta.lastRequestedAt ?? 0) - (a.meta.lastRequestedAt ?? 0))
     .slice(0, MAINTENANCE_MAX_REPOS_PER_RUN)
 
-  let warmed = 0
-  let skipped = 0
+  const warmed: string[] = []
+  const skipped: string[] = []
 
   for (const repoEntry of sorted) {
+    const fullName = `${repoEntry.owner}/${repoEntry.repo}`
     const activity = classifyRepoActivity(repoEntry.meta)
     if (activity === 'cold') {
-      skipped += 1
+      skipped.push(fullName)
       continue
     }
 
     await warmRepoByActivity(token, repoEntry.owner, repoEntry.repo, repoEntry.meta, activity)
-    warmed += 1
+    warmed.push(fullName)
   }
 
   return {

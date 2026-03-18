@@ -40,6 +40,9 @@ export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
 
   nitro: {
+    experimental: {
+      tasks: true,
+    },
     externals: {
       inline: ['unhead'],
     },
@@ -52,7 +55,7 @@ export default defineNuxtConfig({
       },
     },
     scheduledTasks: {
-      '*/5 * * * *': ['shared-repo:warm-cache'],
+      '0 * * * *': ['shared-repo:warm-cache'],
     },
   },
   vite: {
