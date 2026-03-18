@@ -23,6 +23,8 @@ const syncStatus = ref<'idle' | 'running' | 'failed'>('idle')
 const syncLastSyncedAt = ref<number | null>(null)
 const syncIsPartial = ref(false)
 const syncLastError = ref<string | null>(null)
+const authorFilter = ref('')
+const assigneeFilter = ref('')
 
 const repoFullName = computed(() => `${owner.value}/${repo.value}`)
 
@@ -34,6 +36,13 @@ function applySyncState(res: WorkItemsPageResponse) {
   availableLabels.value = res.availableLabels
 }
 
+const allFilters = computed(() => {
+  const f = [...activeFilters.value]
+  if (authorFilter.value) f.push(`author:${authorFilter.value}`)
+  if (assigneeFilter.value) f.push(`assignee:${assigneeFilter.value}`)
+  return f
+})
+
 const section = usePaginatedSection<WorkItem, WorkItemsPageResponse>(
   requestFetch,
   '/api/work-items',
@@ -43,7 +52,7 @@ const section = usePaginatedSection<WorkItem, WorkItemsPageResponse>(
     state: state.value,
     search: search.value.trim(),
     sort: sortKey.value,
-    filters: activeFilters.value.join('|'),
+    filters: allFilters.value.join('|'),
   }),
   applySyncState,
 )
@@ -108,7 +117,7 @@ watch(search, () => {
   }, 250)
 })
 
-watch([sortKey, activeFilters], () => {
+watch([sortKey, activeFilters, authorFilter, assigneeFilter], () => {
   section.resetPagination()
   refresh()
 }, { deep: true })
@@ -126,6 +135,60 @@ function toggleFilter(key: string) {
     activeFilters.value = [...current, key]
   }
 }
+
+type QuickFilter = 'newest' | 'most-discussed' | 'stale' | 'needs-review' | 'my-items' | null
+const quickFilter = ref<QuickFilter>(null)
+
+function applyQuickFilter(filter: QuickFilter) {
+  const wasActive = quickFilter.value === filter
+  quickFilter.value = wasActive ? null : filter
+
+  // Remove previous quick:* and involves:* filters added by quick filters
+  activeFilters.value = activeFilters.value.filter(f => !f.startsWith('quick:') && !f.startsWith('involves:'))
+
+  if (!wasActive && filter) {
+    const session = useUserSession()
+    const login = session.user.value?.login
+
+    switch (filter) {
+      case 'newest':
+        sortKey.value = 'newest'
+        break
+      case 'most-discussed':
+        sortKey.value = 'mostCommented'
+        break
+      case 'stale':
+        activeFilters.value = [...activeFilters.value, 'quick:stale']
+        break
+      case 'needs-review':
+        activeFilters.value = [...activeFilters.value, 'quick:needs-review']
+        break
+      case 'my-items':
+        if (login) {
+          activeFilters.value = [...activeFilters.value, `involves:${login}`]
+        }
+        break
+    }
+  }
+}
+
+function clearAllFilters() {
+  search.value = ''
+  activeFilters.value = []
+  authorFilter.value = ''
+  assigneeFilter.value = ''
+  quickFilter.value = null
+  sortKey.value = 'newest'
+}
+
+const hasActiveFilters = computed(() =>
+  !!(search.value || activeFilters.value.length || authorFilter.value || assigneeFilter.value),
+)
+
+const knownAuthors = computed(() => {
+  const authors = new Set(workItems.value.map(i => i.author.login))
+  return [...authors].sort()
+})
 
 const sortOptions = computed(() => [
   { label: t('workItems.sort.newest'), value: 'newest' },
@@ -183,10 +246,32 @@ const { stateBadgeColor, stateBadgeLabel, prStatusLabel, ciIcon } = useWorkItemB
     </div>
 
     <template v-else>
-      <RepoStateFilterButtons
-        v-model="state"
-        :all-label="t('workItems.filter.all')"
-      />
+      <!-- State tabs -->
+      <div class="flex items-center gap-2">
+        <UButton
+          size="xs"
+          :variant="state === 'open' ? 'solid' : 'outline'"
+          icon="i-lucide-circle-dot"
+          @click="state = 'open'"
+        >
+          {{ t('workItems.open') }}
+        </UButton>
+        <UButton
+          size="xs"
+          :variant="state === 'closed' ? 'solid' : 'outline'"
+          icon="i-lucide-check-circle"
+          @click="state = 'closed'"
+        >
+          {{ t('workItems.closed') }}
+        </UButton>
+        <UButton
+          size="xs"
+          :variant="state === 'all' ? 'solid' : 'outline'"
+          @click="state = 'all'"
+        >
+          {{ t('workItems.filter.all') }}
+        </UButton>
+      </div>
 
       <div
         v-if="showSyncInfo"
@@ -200,53 +285,99 @@ const { stateBadgeColor, stateBadgeLabel, prStatusLabel, ciIcon } = useWorkItemB
         <span class="text-muted">{{ syncCompactText }}</span>
       </div>
 
+      <!-- Quick filter badges -->
+      <div class="flex flex-wrap items-center gap-1.5">
+        <button
+          v-for="qf in ([
+            { value: 'newest', label: t('workItems.quick.newest'), icon: 'i-lucide-sparkles' },
+            { value: 'most-discussed', label: t('workItems.quick.mostDiscussed'), icon: 'i-lucide-message-circle' },
+            { value: 'stale', label: t('workItems.quick.stale'), icon: 'i-lucide-clock' },
+            { value: 'needs-review', label: t('workItems.quick.needsReview'), icon: 'i-lucide-eye' },
+            { value: 'my-items', label: t('workItems.quick.myItems'), icon: 'i-lucide-user' },
+          ] as const)"
+          :key="qf.value"
+          class="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium transition-colors border cursor-pointer"
+          :class="quickFilter === qf.value
+            ? 'bg-primary text-inverted border-primary'
+            : 'text-muted border-default hover:text-highlighted hover:border-primary/40'"
+          @click="applyQuickFilter(qf.value)"
+        >
+          <UIcon
+            :name="qf.icon"
+            class="size-3"
+          />
+          {{ qf.label }}
+        </button>
+      </div>
+
       <!-- Toolbar: search + filters + sort -->
       <div class="flex flex-col gap-3">
-        <div class="flex items-center gap-3">
+        <div class="flex flex-wrap items-center gap-2">
           <UInput
             v-model="search"
-            :placeholder="t('workItems.search')"
+            :placeholder="t('workItems.search.placeholder')"
             icon="i-lucide-search"
-            class="flex-1"
+            size="sm"
+            class="w-64"
           />
-          <span class="text-sm text-muted shrink-0">
-            {{ t('workItems.count', totalCount) }}
-          </span>
-        </div>
-        <div class="flex items-center gap-2 flex-wrap">
-          <button
-            class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium transition-colors cursor-pointer"
-            :class="activeFilters.includes('type:issue')
-              ? 'bg-primary text-inverted'
-              : 'bg-muted text-toned hover:bg-accented'"
-            @click="toggleFilter('type:issue')"
-          >
-            <UIcon
-              name="i-lucide-circle-dot"
-              class="size-3.5"
-            />
-            {{ t('nav.issues') }}
-          </button>
-          <button
-            class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium transition-colors cursor-pointer"
-            :class="activeFilters.includes('type:pull')
-              ? 'bg-primary text-inverted'
-              : 'bg-muted text-toned hover:bg-accented'"
-            @click="toggleFilter('type:pull')"
-          >
-            <UIcon
-              name="i-lucide-git-pull-request"
-              class="size-3.5"
-            />
-            {{ t('nav.pullRequests') }}
-          </button>
-          <div class="ml-auto">
+          <div class="inline-flex rounded-md border border-default overflow-hidden">
+            <button
+              v-for="opt in ([
+                { value: '', label: t('workItems.search.allTypes') },
+                { value: 'type:issue', label: t('workItems.type.issue') },
+                { value: 'type:pull', label: t('workItems.type.pr') },
+              ] as const)"
+              :key="opt.value"
+              class="px-2.5 py-1 text-xs font-medium transition-colors cursor-pointer"
+              :class="(opt.value === '' ? !activeFilters.includes('type:issue') && !activeFilters.includes('type:pull') : activeFilters.includes(opt.value))
+                ? 'bg-primary text-inverted'
+                : 'text-muted hover:text-highlighted hover:bg-elevated'"
+              @click="opt.value ? toggleFilter(opt.value) : (activeFilters = activeFilters.filter(f => f !== 'type:issue' && f !== 'type:pull'))"
+            >
+              {{ opt.label }}
+            </button>
+          </div>
+          <USelectMenu
+            v-model="authorFilter"
+            :items="knownAuthors"
+            :placeholder="t('workItems.search.author')"
+            searchable
+            clear
+            size="sm"
+            icon="i-lucide-user"
+            class="w-40"
+          />
+          <USelectMenu
+            v-model="assigneeFilter"
+            :items="knownAuthors"
+            :placeholder="t('workItems.search.assignee')"
+            searchable
+            clear
+            size="sm"
+            icon="i-lucide-user-check"
+            class="w-40"
+          />
+          <div class="ml-auto flex items-center gap-2">
+            <span class="text-sm text-muted shrink-0">
+              {{ t('workItems.count', totalCount) }}
+            </span>
             <USelect
               v-model="sortKey"
               :items="sortOptions"
               size="xs"
             />
           </div>
+        </div>
+        <div class="flex items-center gap-2 flex-wrap">
+          <UButton
+            v-if="hasActiveFilters"
+            icon="i-lucide-x"
+            size="xs"
+            color="neutral"
+            variant="ghost"
+            :label="t('workItems.search.clear')"
+            @click="clearAllFilters"
+          />
         </div>
         <div
           v-if="availableLabels.length"

@@ -15,7 +15,7 @@ export function useWorkItemPolling(
     if (!wi) return `${fetchUrl.value}/check`
     const prNums: number[] = []
     if (wi.primaryType === 'pull') {
-      // Primary is PR — issue endpoint already covers it
+      prNums.push(wi.number)
     }
     else {
       // Issue-primary: also check linked PRs

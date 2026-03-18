@@ -19,8 +19,6 @@
   },
   "nav": {
     "dashboard": "Dashboard",
-    "issues": "Issues",
-    "pullRequests": "Pull Requests",
     "notifications": "Benachrichtigungen",
     "repos": "Repositories",
     "settings": "Einstellungen",
@@ -396,7 +394,8 @@
     }
   },
   "workItems": {
-    "search": "Arbeitselemente durchsuchen...",
+    "open": "Offen",
+    "closed": "Geschlossen",
     "count": "Keine Elemente | {count} Element | {count} Elemente",
     "sync": {
       "runningTitle": "Synchronisierung läuft",
@@ -433,6 +432,20 @@
       "restored": "Entwurf wiederhergestellt.",
       "discard": "Entwurf verwerfen"
     },
+    "quick": {
+      "newest": "Neueste",
+      "mostDiscussed": "Meistdiskutiert",
+      "stale": "Veraltet",
+      "needsReview": "Review nötig",
+      "myItems": "Meine Items"
+    },
+    "search": {
+      "placeholder": "Work Items suchen...",
+      "allTypes": "Alle Typen",
+      "author": "Autor",
+      "assignee": "Zugewiesen",
+      "clear": "Filter zurücksetzen"
+    },
     "source": {
       "issue": "Aus Issue-Thread",
       "pr": "Aus Pull Request"
@@ -462,6 +475,9 @@
     },
     "merge": {
       "readyToMerge": "Bereit zum Mergen",
+      "hasConflicts": "Merge-Konflikte — vor dem Mergen auflösen",
+      "blocked": "Checks oder Reviews blockieren den Merge",
+      "blockedBypass": "Blockiert — du kannst als Admin umgehen",
       "merge": "Mergen",
       "keepAll": "Alle Commits behalten",
       "keepAllDesc": "Alle {count} Commits werden mit einem Merge-Commit in den Zielbranch übernommen.",

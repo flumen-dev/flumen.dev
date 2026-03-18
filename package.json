@@ -49,6 +49,7 @@
     "pinia": "3.0.4",
     "pinia-plugin-persistedstate": "4.7.1",
     "sanitize-html": "2.17.1",
+    "unhead": "^2.1.12",
     "unstorage": "1.17.4",
     "vorm-nuxt": "1.2.1",
     "vorm-vue": "1.2.5",

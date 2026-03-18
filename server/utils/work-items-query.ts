@@ -57,6 +57,36 @@ export function applyWorkItemsQuery(allItems: WorkItem[], options: WorkItemsQuer
     if (filters.includes('type:pull')) {
       items = items.filter(item => item.type === 'pull' || item.linkedPulls.length > 0)
     }
+
+    const authorFilter = filters.find(f => f.startsWith('author:'))
+    if (authorFilter) {
+      const login = authorFilter.slice(7).toLowerCase()
+      items = items.filter(item => item.author.login.toLowerCase() === login)
+    }
+
+    const assigneeFilter = filters.find(f => f.startsWith('assignee:'))
+    if (assigneeFilter) {
+      const login = assigneeFilter.slice(9).toLowerCase()
+      items = items.filter(item => item.assignees.some(a => a.login.toLowerCase() === login))
+    }
+
+    const involvesFilter = filters.find(f => f.startsWith('involves:'))
+    if (involvesFilter) {
+      const login = involvesFilter.slice(9).toLowerCase()
+      items = items.filter(item =>
+        item.author.login.toLowerCase() === login
+        || item.assignees.some(a => a.login.toLowerCase() === login),
+      )
+    }
+
+    if (filters.includes('quick:stale')) {
+      const thirtyDaysAgo = Date.now() - 30 * 24 * 60 * 60 * 1000
+      items = items.filter(item => new Date(item.updatedAt).getTime() < thirtyDaysAgo)
+    }
+
+    if (filters.includes('quick:needs-review')) {
+      items = items.filter(item => item.type === 'pull' && item.reviewDecision === 'REVIEW_REQUIRED')
+    }
   }
 
   const sort = options.sort ?? 'newest'

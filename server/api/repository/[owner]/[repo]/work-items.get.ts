@@ -1,6 +1,7 @@
 import type { WorkItemsPageResponse } from '~~/shared/types/work-item'
 import { getRepoWorkItemsForRequest, getRepoWorkItemsSyncSnapshot } from '~~/server/utils/repo-sync-service'
 import { applyWorkItemsQuery, parseWorkItemFilters, resolveWorkItemsSort } from '~~/server/utils/work-items-query'
+import { getRepoParams } from '~~/server/utils/github'
 
 export default defineEventHandler(async (event) => {
   const { owner, repo } = getRepoParams(event)

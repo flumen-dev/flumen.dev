@@ -183,11 +183,12 @@ const mergeNumber = computed(() => isPROpen.value && activePr.value ? activePr.v
 const { status: mergeStatus, loading: mergeLoading, error: mergeError, fetch: fetchMergeStatus, merge: executeMerge, markReady, markingReady } = useMergeStatus(ownerRef, repoRef, mergeNumber)
 
 // Lazy fetch: only when expanded for the first time
-watch(mergeExpanded, (expanded) => {
-  if (expanded && !mergeStatus.value && !mergeLoading.value) {
+// Fetch merge status eagerly so canBypassRules is available immediately
+watch(mergeNumber, (num) => {
+  if (num && !mergeStatus.value && !mergeLoading.value) {
     fetchMergeStatus()
   }
-})
+}, { immediate: true })
 
 // Sync defaults from API when loaded
 watch(mergeStatus, (ms) => {
@@ -215,11 +216,14 @@ const activeStrategy = computed(() => mergeStrategies.value.find(s => s.value ==
 const showCommitFields = computed(() => mergeStrategy.value !== 'rebase')
 const canMerge = computed(() => mergeStatus.value?.canMerge === true)
 const canBypassRules = computed(() => !canMerge.value && mergeStatus.value?.canBypassRules === true)
+const hasConflicts = computed(() => mergeStatus.value?.mergeable === 'CONFLICTING')
 
 async function handleMerge() {
   if ((!canMerge.value && !canBypassRules.value) || merging.value) return
   merging.value = true
   try {
+    // Refresh merge status to get latest headSha (avoids "head branch was modified" errors)
+    await fetchMergeStatus()
     await executeMerge(
       mergeStrategy.value,
       mergeStrategy.value !== 'rebase' ? mergeTitle.value : undefined,
@@ -231,11 +235,12 @@ async function handleMerge() {
     emit('merged')
   }
   catch (e: unknown) {
-    const fetchErr = e as { data?: { data?: { errorKey?: string } } }
+    const fetchErr = e as { data?: { data?: { errorKey?: string, message?: string } } }
+    const message = fetchErr.data?.data?.message
     const errorKey = fetchErr.data?.data?.errorKey ?? 'unknown'
     toast.add({
       title: t('workItems.merge.mergeFailed'),
-      description: t(`workItems.merge.error.${errorKey}`),
+      description: message ?? t(`workItems.merge.error.${errorKey}`),
       color: 'error',
     })
   }
@@ -662,12 +667,15 @@ async function handleDeleteBranch() {
             @click="mergeExpanded = !mergeExpanded"
           >
             <UIcon
-              name="i-lucide-git-merge"
+              :name="hasConflicts ? 'i-lucide-git-merge' : 'i-lucide-git-merge'"
               class="size-3.5 shrink-0"
-              :class="canMerge ? 'text-emerald-500' : canBypassRules ? 'text-warning' : 'text-muted'"
+              :class="hasConflicts ? 'text-red-500' : canMerge ? 'text-emerald-500' : canBypassRules ? 'text-warning' : 'text-muted'"
             />
-            <span class="text-muted truncate">
-              {{ mergeLoading ? t('common.loading') : t('workItems.merge.readyToMerge') }}
+            <span
+              class="truncate"
+              :class="hasConflicts ? 'text-red-500 font-medium' : 'text-muted'"
+            >
+              {{ mergeLoading ? t('common.loading') : hasConflicts ? t('workItems.merge.hasConflicts') : canMerge ? t('workItems.merge.readyToMerge') : canBypassRules ? t('workItems.merge.blockedBypass') : mergeStatus ? t('workItems.merge.blocked') : t('workItems.merge.readyToMerge') }}
             </span>
             <UIcon
               :name="mergeExpanded ? 'i-lucide-chevron-up' : 'i-lucide-chevron-down'"

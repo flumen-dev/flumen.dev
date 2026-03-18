@@ -19,8 +19,6 @@
   },
   "nav": {
     "dashboard": "Dashboard",
-    "issues": "Issues",
-    "pullRequests": "Pull Requests",
     "notifications": "Notifications",
     "repos": "Repositories",
     "settings": "Settings",
@@ -396,7 +394,8 @@
     }
   },
   "workItems": {
-    "search": "Search work items...",
+    "open": "Open",
+    "closed": "Closed",
     "count": "No items | {count} item | {count} items",
     "sync": {
       "runningTitle": "Sync in progress",
@@ -433,6 +432,20 @@
       "restored": "Draft restored.",
       "discard": "Discard draft"
     },
+    "quick": {
+      "newest": "Newest",
+      "mostDiscussed": "Most discussed",
+      "stale": "Stale",
+      "needsReview": "Needs review",
+      "myItems": "My items"
+    },
+    "search": {
+      "placeholder": "Search work items...",
+      "allTypes": "All types",
+      "author": "Author",
+      "assignee": "Assignee",
+      "clear": "Clear filters"
+    },
     "source": {
       "issue": "From issue thread",
       "pr": "From pull request"
@@ -462,6 +475,9 @@
     },
     "merge": {
       "readyToMerge": "Ready to merge",
+      "hasConflicts": "Merge conflicts — resolve before merging",
+      "blocked": "Checks or reviews are blocking merge",
+      "blockedBypass": "Blocked — you can bypass as admin",
       "merge": "Merge",
       "keepAll": "Keep all commits",
       "keepAllDesc": "All {count} commits are added to the base branch with a merge commit.",
