@@ -177,6 +177,9 @@ importers:
       vue-i18n-extract:
         specifier: 2.0.7
         version: 2.0.7
+      vue-tsc:
+        specifier: 3.2.6
+        version: 3.2.6(typescript@5.9.3)
 
 packages:
 
@@ -3692,9 +3695,6 @@ packages:
 
   '@vue/devtools-shared@8.0.6':
     resolution: {integrity: sha512-Pp1JylTqlgMJvxW6MGyfTF8vGvlBSCAvMFaDCYa82Mgw7TT5eE5kkHgDvmOGHWeJE4zIDfCpCxHapsK2LtIAJg==}
-
-  '@vue/language-core@3.2.5':
-    resolution: {integrity: sha512-d3OIxN/+KRedeM5wQ6H6NIpwS3P5gC9nmyaHgBk+rO6dIsjY+tOh4UlPpiZbAh3YtLdCGEX4M16RmsBqPmJV+g==}
 
   '@vue/language-core@3.2.6':
     resolution: {integrity: sha512-xYYYX3/aVup576tP/23sEUpgiEnujrENaoNRbaozC1/MA9I6EGFQRJb4xrt/MmUCAGlxTKL2RmT8JLTPqagCkg==}
@@ -11013,7 +11013,6 @@ snapshots:
       '@volar/language-core': 2.4.28
       path-browserify: 1.0.1
       vscode-uri: 3.1.0
-    optional: true
 
   '@vue-macros/common@3.1.2(vue@3.5.30(typescript@5.9.3))':
     dependencies:
@@ -11164,16 +11163,6 @@ snapshots:
     dependencies:
       rfdc: 1.4.1
 
-  '@vue/language-core@3.2.5':
-    dependencies:
-      '@volar/language-core': 2.4.28
-      '@vue/compiler-dom': 3.5.30
-      '@vue/shared': 3.5.30
-      alien-signals: 3.1.2
-      muggle-string: 0.4.1
-      path-browserify: 1.0.1
-      picomatch: 4.0.3
-
   '@vue/language-core@3.2.6':
     dependencies:
       '@volar/language-core': 2.4.28
@@ -11183,7 +11172,6 @@ snapshots:
       muggle-string: 0.4.1
       path-browserify: 1.0.1
       picomatch: 4.0.3
-    optional: true
 
   '@vue/reactivity@3.5.30':
     dependencies:
@@ -14618,7 +14606,7 @@ snapshots:
       '@babel/generator': 7.29.1
       '@vue-macros/common': 3.1.2(vue@3.5.30(typescript@5.9.3))
       '@vue/compiler-sfc': 3.5.29
-      '@vue/language-core': 3.2.5
+      '@vue/language-core': 3.2.6
       ast-walker-scope: 0.8.3
       chokidar: 4.0.3
       json5: 2.2.3
@@ -14643,7 +14631,7 @@ snapshots:
       '@babel/generator': 7.29.1
       '@vue-macros/common': 3.1.2(vue@3.5.30(typescript@5.9.3))
       '@vue/compiler-sfc': 3.5.30
-      '@vue/language-core': 3.2.5
+      '@vue/language-core': 3.2.6
       ast-walker-scope: 0.8.3
       chokidar: 5.0.0
       json5: 2.2.3
@@ -15000,7 +14988,6 @@ snapshots:
       '@volar/typescript': 2.4.28
       '@vue/language-core': 3.2.6
       typescript: 5.9.3
-    optional: true
 
   vue@3.5.30(typescript@5.9.3):
     dependencies:
