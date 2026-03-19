@@ -4,7 +4,7 @@ export default defineEventHandler(async (event) => {
 
   const sharedToken = getSharedToken()
   if (!sharedToken) {
-    return { limit: 0, remaining: 0, reset: 0 }
+    return { limit: 0, remaining: 0, reset: 0, configured: false }
   }
 
   const info = getSharedRateLimit()
@@ -31,8 +31,14 @@ export default defineEventHandler(async (event) => {
       'x-ratelimit-reset': String(graphql.reset),
     }), 'graphql', undefined, true)
 
-    return getSharedRateLimit()
+    return {
+      ...getSharedRateLimit(),
+      configured: true,
+    }
   }
 
-  return info
+  return {
+    ...info,
+    configured: true,
+  }
 })
