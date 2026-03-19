@@ -34,7 +34,7 @@ export default defineEventHandler(async (event): Promise<WorkItemsPageResponse> 
   const start = (page - 1) * pageSize
   const end = start + pageSize
   const items = queryResult.items.slice(start, end)
-  const hasNextPage = end < queryResult.items.length || (sync.isPartial && sync.status === 'running' && items.length > 0)
+  const hasNextPage = end < queryResult.items.length || (sync.isPartial && items.length > 0)
 
   return {
     items,

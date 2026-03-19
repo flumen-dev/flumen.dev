@@ -55,7 +55,12 @@ export default defineNuxtConfig({
       },
     },
     scheduledTasks: {
-      '0 * * * *': ['shared-repo:warm-cache'],
+      '*/5 * * * *': ['shared-repo:warm-cache'],
+    },
+    vercel: {
+      functions: {
+        maxDuration: 300,
+      },
     },
   },
   vite: {

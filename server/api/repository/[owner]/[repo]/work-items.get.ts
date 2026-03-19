@@ -35,7 +35,7 @@ export default defineEventHandler(async (event) => {
     const end = start + pageSize
     const items = queryResult.items.slice(start, end)
     const sync = await getRepoWorkItemsSyncSnapshot(owner, repo)
-    const hasNextPage = end < queryResult.items.length || (sync.isPartial && sync.status === 'running' && items.length > 0)
+    const hasNextPage = end < queryResult.items.length || (sync.isPartial && items.length > 0)
 
     const response: WorkItemsPageResponse = {
       items,

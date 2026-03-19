@@ -1,4 +1,5 @@
 import type { H3Event } from 'h3'
+import { runTask } from 'nitropack/runtime'
 import type { GitHubRepoDetail, GitHubPullRequest, RepoDetail } from '~~/shared/types/repository'
 import type { WorkItem } from '~~/shared/types/work-item'
 import type { RepoSyncMeta } from '~~/server/utils/repo-cache'
@@ -6,6 +7,7 @@ import { getSessionToken, githubFetchAllWithToken, githubCachedFetchWithToken, g
 import { getSharedToken } from '~~/server/utils/github-app'
 import { toRepoDetail } from '~~/shared/utils/repository'
 import {
+  SYNC_LOCK_TTL_MS,
   readMeta, writeMeta, reconcileMeta,
   readRepoDetail, writeRepoDetail,
   readWorkItems, writeWorkItems,
@@ -23,7 +25,7 @@ import {
 // Configuration
 // ---------------------------------------------------------------------------
 const DETAIL_STALE_MS = 5 * 60_000 // 5 min
-const WORK_ITEMS_STALE_MS = 2 * 60_000 // 2 min
+const WORK_ITEMS_STALE_MS = 10 * 60_000 // 10 min
 const FULL_SYNC_MAX_AGE_MS = 6 * 60 * 60_000 // 6 h
 const INCREMENTAL_MAX_AGE_MS = 20 * 60_000 // 20 min
 const MAX_INCREMENTAL_DELTA_ITEMS = 120
@@ -127,8 +129,8 @@ async function fetchCanonicalIssuesPage(
   owner: string,
   repo: string,
   perPage: number,
-): Promise<GitHubIssueWithPull[]> {
-  const { data } = await githubFetchWithToken<GitHubIssueWithPull[]>(
+): Promise<{ issues: GitHubIssueWithPull[], hasNextPage: boolean }> {
+  const { data, headers } = await githubFetchWithToken<GitHubIssueWithPull[]>(
     token,
     `/repos/${owner}/${repo}/issues`,
     {
@@ -142,7 +144,10 @@ async function fetchCanonicalIssuesPage(
     },
   )
 
-  return data
+  const linkHeader = headers.get('link')
+  const hasNextPage = Boolean(linkHeader && /rel="next"/.test(linkHeader))
+
+  return { issues: data, hasNextPage }
 }
 
 async function fetchPullDetailsForIssues(
@@ -238,9 +243,9 @@ async function fetchTopWorkItemsFromGitHub(
   owner: string,
   repo: string,
   limit: number,
-): Promise<WorkItem[]> {
+): Promise<{ items: WorkItem[], hasNextPage: boolean }> {
   const startedAt = Date.now()
-  const issues = await fetchCanonicalIssuesPage(token, owner, repo, limit)
+  const { issues, hasNextPage } = await fetchCanonicalIssuesPage(token, owner, repo, limit)
   const pullDetails = new Map<number, GitHubPullRequest & { body?: string }>()
   const workItems = await buildWorkItemsFromRaw(owner, repo, issues, pullDetails)
   console.log('[repo-sync] fast work-items build completed', {
@@ -248,9 +253,10 @@ async function fetchTopWorkItemsFromGitHub(
     repo,
     issueSample: issues.length,
     workItems: workItems.length,
+    hasNextPage,
     elapsedMs: Date.now() - startedAt,
   })
-  return workItems
+  return { items: workItems, hasNextPage }
 }
 
 async function fetchIssueByNumber(
@@ -452,7 +458,9 @@ async function syncRepoDetail(
   console.log('[repo-sync] detail-sync started', { owner, repo })
 
   const meta = await readMeta(owner, repo)
+  const syncStartedAt = Date.now()
   meta.detailSyncStatus = 'running'
+  meta.detailSyncStartedAt = syncStartedAt
   await writeMeta(owner, repo, meta)
 
   try {
@@ -466,8 +474,19 @@ async function syncRepoDetail(
 
     meta.detailSyncedAt = Date.now()
     meta.detailSyncStatus = 'idle'
+    meta.detailSyncStartedAt = null
     meta.detailLastError = null
     await writeMeta(owner, repo, reconcileMeta(meta))
+    const elapsedMs = Date.now() - syncStartedAt
+    if (elapsedMs > SYNC_LOCK_TTL_MS * 0.8) {
+      console.warn('[repo-sync] sync duration approaching lock TTL', {
+        owner,
+        repo,
+        scope: 'detail',
+        elapsedMs,
+        lockTtlMs: SYNC_LOCK_TTL_MS,
+      })
+    }
     console.log('[repo-sync] detail-sync completed', {
       owner,
       repo,
@@ -477,6 +496,7 @@ async function syncRepoDetail(
   }
   catch (error) {
     meta.detailSyncStatus = 'failed'
+    meta.detailSyncStartedAt = null
     meta.detailLastError = error instanceof Error ? error.message : String(error)
     await writeMeta(owner, repo, reconcileMeta(meta))
     console.error(`[repo-sync] Detail sync failed for ${owner}/${repo}:`, error)
@@ -530,6 +550,7 @@ async function syncWorkItems(
     previousLastFullSyncAt: meta.lastFullSyncAt,
   })
   meta.workItemsSyncStatus = 'running'
+  meta.workItemsSyncStartedAt = syncStartedAt
   await writeMeta(owner, repo, meta)
 
   try {
@@ -599,8 +620,19 @@ async function syncWorkItems(
     await writeWorkItems(owner, repo, nextItems)
     meta.workItemsSyncedAt = Date.now()
     meta.workItemsSyncStatus = 'idle'
+    meta.workItemsSyncStartedAt = null
     meta.workItemsLastError = null
     await writeMeta(owner, repo, reconcileMeta(meta))
+    const elapsedMs = Date.now() - syncStartedAt
+    if (elapsedMs > SYNC_LOCK_TTL_MS * 0.8) {
+      console.warn('[repo-sync] sync duration approaching lock TTL', {
+        owner,
+        repo,
+        scope: 'work-items',
+        elapsedMs,
+        lockTtlMs: SYNC_LOCK_TTL_MS,
+      })
+    }
     console.log('[repo-sync] work-items sync completed', {
       owner,
       repo,
@@ -611,6 +643,7 @@ async function syncWorkItems(
   }
   catch (error) {
     meta.workItemsSyncStatus = 'failed'
+    meta.workItemsSyncStartedAt = null
     meta.workItemsLastError = error instanceof Error ? error.message : String(error)
     await writeMeta(owner, repo, reconcileMeta(meta))
     console.error(`[repo-sync] Work items sync failed for ${owner}/${repo}:`, error)
@@ -620,41 +653,45 @@ async function syncWorkItems(
   }
 }
 
-function runDetached(task: () => Promise<void>): void {
-  setTimeout(() => {
-    task().catch(() => {})
-  }, 0)
-}
-
-function triggerBackgroundDetailSync(token: string, owner: string, repo: string): void {
-  console.log('[repo-sync] background detail-sync queued', { owner, repo })
-  runDetached(() => syncRepoDetail(token, owner, repo))
-}
-
-function triggerBackgroundWorkItemsSync(token: string, owner: string, repo: string, mode: 'full' | 'incremental'): void {
-  console.log('[repo-sync] background work-items sync queued', { owner, repo, mode })
-  runDetached(() => syncWorkItems(token, owner, repo, mode))
-}
-
-async function queueWorkItemsSyncIfNeeded(
-  token: string,
+export async function runSharedRepoSyncForRepo(
   owner: string,
   repo: string,
-  mode: 'full' | 'incremental',
-): Promise<boolean> {
-  const meta = await readMeta(owner, repo)
-  if (meta.workItemsSyncStatus === 'running') {
-    console.log('[repo-sync] work-items sync queue skipped (already running)', { owner, repo, mode })
-    return false
+  reason: string = 'on-demand',
+): Promise<void> {
+  const token = getSharedToken()
+  if (!token) {
+    console.warn('[repo-sync] on-demand repo sync skipped (missing shared token)', { owner, repo, reason })
+    return
   }
 
-  meta.workItemsSyncStatus = 'running'
-  meta.workItemsLastError = null
-  await writeMeta(owner, repo, reconcileMeta(meta))
+  console.log('[repo-sync] on-demand repo sync started', { owner, repo, reason })
+  const startedAt = Date.now()
 
-  triggerBackgroundWorkItemsSync(token, owner, repo, mode)
-  console.log('[repo-sync] work-items sync queue accepted', { owner, repo, mode })
-  return true
+  await syncRepoDetail(token, owner, repo)
+
+  const meta = await readMeta(owner, repo)
+  if (meta.visibility === 'private') {
+    console.log('[repo-sync] on-demand repo sync skipped work-items (private repo)', {
+      owner,
+      repo,
+      reason,
+      elapsedMs: Date.now() - startedAt,
+    })
+    return
+  }
+
+  const hasWorkItemsCache = Boolean(await readWorkItems(owner, repo))
+  const decision = decideWorkItemsSyncMode(meta, hasWorkItemsCache)
+  await syncWorkItems(token, owner, repo, decision.mode)
+
+  console.log('[repo-sync] on-demand repo sync completed', {
+    owner,
+    repo,
+    reason,
+    mode: decision.mode,
+    modeReason: decision.reason,
+    elapsedMs: Date.now() - startedAt,
+  })
 }
 
 // ---------------------------------------------------------------------------
@@ -695,9 +732,9 @@ const userCachedWorkItems = defineCachedFunction(
 /**
  * Get repository details.
  *
- * 1. Check shared cache → return if fresh, background-refresh if stale.
+ * 1. Check shared cache → return if fresh, return stale immediately if outdated.
  * 2. Cold cache → fetch with user token, return immediately.
- *    - If public: populate shared cache + register for background sync.
+ *    - If public: populate shared cache.
  *    - If private: short-lived per-user cache only.
  */
 export async function getRepoDetailsForRequest(
@@ -717,8 +754,7 @@ export async function getRepoDetailsForRequest(
       if (!isStale(cached.fetchedAt, DETAIL_STALE_MS)) {
         return cached.data
       }
-      // Stale — return cached, trigger background refresh
-      triggerBackgroundDetailSync(sharedToken, owner, repo)
+      // Stale — return cached immediately; refresh is handled by maintenance cron.
       return cached.data
     }
 
@@ -727,8 +763,14 @@ export async function getRepoDetailsForRequest(
     const { data: raw } = await githubFetchWithToken<GitHubRepoDetail>(userToken, `/repos/${owner}/${repo}`)
     const detail = toRepoDetail(raw)
 
-    // Public repo → populate shared cache and register for background sync
+    // Public repo → populate shared cache
     if (detail.visibility !== 'private') {
+      console.log('[repo-sync] cold detail cache visibility', {
+        owner,
+        repo,
+        visibility: detail.visibility,
+        sharedCachePopulate: true,
+      })
       touchActivity(owner, repo).catch(() => {})
       await writeRepoDetail(owner, repo, detail)
 
@@ -738,9 +780,14 @@ export async function getRepoDetailsForRequest(
       meta.detailSyncStatus = 'idle'
       meta.detailLastError = null
       await writeMeta(owner, repo, reconcileMeta(meta))
-
-      // Start background sync with shared PAT for future requests
-      triggerBackgroundDetailSync(sharedToken, owner, repo)
+    }
+    else {
+      console.log('[repo-sync] cold detail cache visibility', {
+        owner,
+        repo,
+        visibility: detail.visibility,
+        sharedCachePopulate: false,
+      })
     }
 
     return detail
@@ -754,10 +801,9 @@ export async function getRepoDetailsForRequest(
 /**
  * Get work items for a repository.
  *
- * 1. Check shared cache → return if fresh, background-refresh if stale.
+ * 1. Check shared cache → return if fresh, return stale immediately if outdated.
  * 2. Cold cache → fetch with user token, return immediately.
- *    - If repo is known-public (from meta) or visibly public: populate shared cache.
- *    - Otherwise: short-lived per-user cache only.
+ *    - Shared cache warming is handled by the maintenance cycle.
  */
 export async function getRepoWorkItemsForRequest(
   event: H3Event,
@@ -768,9 +814,9 @@ export async function getRepoWorkItemsForRequest(
   const sharedToken = getSharedToken()
 
   if (sharedToken) {
+    let activityTouched = false
     // Check shared cache first
     const cached = await readWorkItems(owner, repo)
-    const meta = await readMeta(owner, repo)
 
     if (cached) {
       console.log('[repo-sync] work-items cache hit', {
@@ -780,34 +826,119 @@ export async function getRepoWorkItemsForRequest(
         fetchedAt: cached.fetchedAt,
       })
       touchActivity(owner, repo).catch(() => {})
+      activityTouched = true
+
+      const cacheAgeMs = Date.now() - cached.fetchedAt
 
       if (!isStale(cached.fetchedAt, WORK_ITEMS_STALE_MS)) {
         return filterByState(cached.data, state)
       }
 
-      console.log('[repo-sync] work-items cache stale', {
+      console.warn('[repo-sync] work-items cache stale, bypassing cached response', {
         owner,
         repo,
         state,
         fetchedAt: cached.fetchedAt,
+        cacheAgeMs,
+        staleMs: WORK_ITEMS_STALE_MS,
       })
-      // Stale — return cached, trigger background sync
-      const mode = decideWorkItemsSyncMode(meta, true)
-      await queueWorkItemsSyncIfNeeded(sharedToken, owner, repo, mode.mode)
-      return filterByState(cached.data, state)
     }
 
-    // Cold cache — fetch fast first page with user token, then sync in background
-    await queueWorkItemsSyncIfNeeded(sharedToken, owner, repo, 'full')
-
+    // Cold cache or too-old cache — fetch fast first page with user token.
     const { token: userToken } = await getSessionToken(event)
-    const fastItems = await fetchTopWorkItemsFromGitHub(userToken, owner, repo, FAST_WORK_ITEMS_PAGE_SIZE)
+    const fastResult = await fetchTopWorkItemsFromGitHub(userToken, owner, repo, FAST_WORK_ITEMS_PAGE_SIZE)
+    const fastItems = fastResult.items
+    const meta = await readMeta(owner, repo)
+    let activityHandledInMetaWrite = false
+    let resolvedVisibility = meta.visibility
+
+    if (resolvedVisibility === 'unknown') {
+      try {
+        const { data: rawRepo } = await githubFetchWithToken<GitHubRepoDetail>(userToken, `/repos/${owner}/${repo}`)
+        resolvedVisibility = rawRepo.visibility === 'private' ? 'private' : 'public'
+        meta.visibility = resolvedVisibility
+        await writeMeta(owner, repo, reconcileMeta(meta))
+      }
+      catch (error) {
+        console.warn('[repo-sync] cold work-items visibility resolution failed', {
+          owner,
+          repo,
+          hasNextPage: fastResult.hasNextPage,
+          error: error instanceof Error ? error.message : String(error),
+        })
+      }
+    }
+
+    const shouldPopulateSharedCache = !fastResult.hasNextPage && resolvedVisibility === 'public'
+    const shouldQueueImmediateSync = fastResult.hasNextPage
+      && resolvedVisibility !== 'private'
+      && meta.workItemsSyncStatus !== 'running'
+
+    if (shouldPopulateSharedCache) {
+      const now = Date.now()
+      await writeWorkItems(owner, repo, fastItems)
+      meta.workItemsSyncedAt = now
+      meta.lastFullSyncAt = now
+      meta.workItemsSyncStatus = 'idle'
+      meta.workItemsSyncStartedAt = null
+      meta.workItemsLastError = null
+      meta.lastRequestedAt = now
+      meta.requestCount += 1
+      activityHandledInMetaWrite = true
+      await writeMeta(owner, repo, reconcileMeta(meta))
+      console.log('[repo-sync] cold work-items promoted to shared cache', {
+        owner,
+        repo,
+        fetchedCount: fastItems.length,
+        hasNextPage: fastResult.hasNextPage,
+        visibility: resolvedVisibility,
+      })
+    }
+
+    if (shouldQueueImmediateSync) {
+      meta.workItemsSyncStatus = 'running'
+      meta.workItemsSyncStartedAt = Date.now()
+      await writeMeta(owner, repo, reconcileMeta(meta))
+
+      console.log('[repo-sync] queued immediate repo sync task', {
+        owner,
+        repo,
+        reason: 'partial-fast-response',
+        hasNextPage: fastResult.hasNextPage,
+      })
+
+      void runTask('shared-repo:sync-repo', {
+        payload: {
+          owner,
+          repo,
+          reason: 'partial-fast-response',
+        },
+      }).catch((error) => {
+        console.warn('[repo-sync] immediate repo sync task dispatch failed', {
+          owner,
+          repo,
+          error: error instanceof Error ? error.message : String(error),
+        })
+      })
+    }
+
+    console.log('[repo-sync] cold work-items visibility', {
+      owner,
+      repo,
+      visibility: resolvedVisibility,
+      sharedCachePopulate: shouldPopulateSharedCache,
+      immediateSyncQueued: shouldQueueImmediateSync,
+      hasNextPage: fastResult.hasNextPage,
+    })
+    if (!activityHandledInMetaWrite && !activityTouched) {
+      touchActivity(owner, repo).catch(() => {})
+    }
     console.log('[repo-sync] cold work-items fetch complete', {
       owner,
       repo,
       state,
       fetchedCount: fastItems.length,
-      syncStatus: (await readMeta(owner, repo)).workItemsSyncStatus,
+      hasNextPage: fastResult.hasNextPage,
     })
 
     return filterByState(fastItems, state)
@@ -828,10 +959,19 @@ export interface RepoWorkItemsSyncSnapshot {
 export async function getRepoWorkItemsSyncSnapshot(owner: string, repo: string): Promise<RepoWorkItemsSyncSnapshot> {
   const meta = await readMeta(owner, repo)
   const cached = await readWorkItems(owner, repo)
+  const hasStaleSharedCache = Boolean(cached && isStale(cached.fetchedAt, WORK_ITEMS_STALE_MS))
+  const isPrivateNoSharedCache = meta.visibility === 'private' && !cached
+  const isPartialFromStaleSharedCache = hasStaleSharedCache && meta.visibility !== 'private'
+  const isPartialWithoutSharedCache = !isPrivateNoSharedCache
+    && !cached
+    && !meta.workItemsSyncedAt
+    && meta.workItemsSyncStatus !== 'failed'
   return {
     status: meta.workItemsSyncStatus,
     lastSyncedAt: meta.workItemsSyncedAt,
-    isPartial: !cached && meta.workItemsSyncStatus === 'running',
+    isPartial: isPartialFromStaleSharedCache
+      || isPartialWithoutSharedCache
+      || (!isPrivateNoSharedCache && !cached && meta.workItemsSyncStatus === 'running'),
     lastError: meta.workItemsLastError,
   }
 }
@@ -861,16 +1001,46 @@ async function warmRepoByActivity(token: string, owner: string, repo: string, me
 
   const detailCadence = activity === 'hot' ? MAINTENANCE_HOT_DETAIL_MS : MAINTENANCE_WARM_DETAIL_MS
   const workItemsCadence = activity === 'hot' ? MAINTENANCE_HOT_WORK_ITEMS_MS : MAINTENANCE_WARM_WORK_ITEMS_MS
+  const detailNeedsRefresh = shouldRefreshByCadence(meta.detailSyncedAt, detailCadence)
+  const workItemsNeedsRefresh = shouldRefreshByCadence(meta.workItemsSyncedAt, workItemsCadence)
+  const syncsTriggered: Array<'detail' | 'work-items'> = []
+  const syncsSkipped: Array<'detail' | 'work-items'> = []
 
-  if (shouldRefreshByCadence(meta.detailSyncedAt, detailCadence)) {
+  if (detailNeedsRefresh) {
+    syncsTriggered.push('detail')
     await syncRepoDetail(token, owner, repo)
+  }
+  else {
+    syncsSkipped.push('detail')
   }
 
   const hasWorkItemsCache = Boolean(await readWorkItems(owner, repo))
-  if (!shouldRefreshByCadence(meta.workItemsSyncedAt, workItemsCadence)) return
+  const workItemsDecision = workItemsNeedsRefresh
+    ? decideWorkItemsSyncMode(meta, hasWorkItemsCache)
+    : null
 
-  const decision = decideWorkItemsSyncMode(meta, hasWorkItemsCache)
-  await syncWorkItems(token, owner, repo, decision.mode)
+  if (workItemsNeedsRefresh) {
+    syncsTriggered.push('work-items')
+    await syncWorkItems(token, owner, repo, workItemsDecision?.mode ?? 'full')
+  }
+  else {
+    syncsSkipped.push('work-items')
+  }
+
+  console.log('[repo-sync] maintenance cadence decision', {
+    owner,
+    repo,
+    activity,
+    detailCadenceMs: detailCadence,
+    workItemsCadenceMs: workItemsCadence,
+    detailNeedsRefresh,
+    workItemsNeedsRefresh,
+    hasWorkItemsCache,
+    workItemsMode: workItemsDecision?.mode ?? null,
+    workItemsModeReason: workItemsDecision?.reason ?? null,
+    syncsTriggered,
+    syncsSkipped,
+  })
 }
 
 export interface SharedRepoMaintenanceResult {
@@ -879,12 +1049,15 @@ export interface SharedRepoMaintenanceResult {
   skipped: string[]
 }
 
+const MAINTENANCE_TIME_BUDGET_MS = 4 * 60_000 // 4 min — leave 1 min headroom
+
 export async function runSharedRepoMaintenanceCycle(): Promise<SharedRepoMaintenanceResult> {
   const token = getSharedToken()
   if (!token) {
     return { inspected: 0, warmed: [], skipped: [] }
   }
 
+  const cycleStartedAt = Date.now()
   const knownRepos = await listKnownRepoMetaEntries()
   const sorted = knownRepos
     .sort((a, b) => (b.meta.lastRequestedAt ?? 0) - (a.meta.lastRequestedAt ?? 0))
@@ -894,8 +1067,39 @@ export async function runSharedRepoMaintenanceCycle(): Promise<SharedRepoMainten
   const skipped: string[] = []
 
   for (const repoEntry of sorted) {
+    if (Date.now() - cycleStartedAt > MAINTENANCE_TIME_BUDGET_MS) {
+      console.warn('[repo-sync] maintenance time budget exceeded', {
+        elapsedMs: Date.now() - cycleStartedAt,
+        budgetMs: MAINTENANCE_TIME_BUDGET_MS,
+        warmedCount: warmed.length,
+        remainingCount: sorted.length - warmed.length - skipped.length,
+      })
+      skipped.push(...sorted.slice(warmed.length + skipped.length).map(r => `${r.owner}/${r.repo}`))
+      break
+    }
+
     const fullName = `${repoEntry.owner}/${repoEntry.repo}`
     const activity = classifyRepoActivity(repoEntry.meta)
+    const now = Date.now()
+    const detailCadence = activity === 'hot'
+      ? MAINTENANCE_HOT_DETAIL_MS
+      : activity === 'warm'
+        ? MAINTENANCE_WARM_DETAIL_MS
+        : null
+    const workItemsCadence = activity === 'hot'
+      ? MAINTENANCE_HOT_WORK_ITEMS_MS
+      : activity === 'warm'
+        ? MAINTENANCE_WARM_WORK_ITEMS_MS
+        : null
+    console.log('[repo-sync] maintenance repo check', {
+      owner: repoEntry.owner,
+      repo: repoEntry.repo,
+      activity,
+      requestCount: repoEntry.meta.requestCount,
+      lastRequestedAgoMs: repoEntry.meta.lastRequestedAt ? now - repoEntry.meta.lastRequestedAt : null,
+      detailNeedsRefresh: detailCadence === null ? null : shouldRefreshByCadence(repoEntry.meta.detailSyncedAt, detailCadence),
+      workItemsNeedsRefresh: workItemsCadence === null ? null : shouldRefreshByCadence(repoEntry.meta.workItemsSyncedAt, workItemsCadence),
+    })
     if (activity === 'cold') {
       skipped.push(fullName)
       continue

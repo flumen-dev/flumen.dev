@@ -9,9 +9,11 @@ export interface RepoSyncMeta {
   lastRequestedAt: number
   lastSyncedAt: number | null
   detailSyncedAt: number | null
+  detailSyncStartedAt: number | null
   lastFullSyncAt: number | null
   detailSyncStatus: 'idle' | 'running' | 'failed'
   workItemsSyncStatus: 'idle' | 'running' | 'failed'
+  workItemsSyncStartedAt: number | null
   requestCount: number
   detailLastError: string | null
   workItemsLastError: string | null
@@ -38,10 +40,8 @@ export interface RepoMetaEntry {
 // ---------------------------------------------------------------------------
 // Configuration
 // ---------------------------------------------------------------------------
-const SYNC_LOCK_TTL_MS = 60_000 // 60 s
-
-// In-memory dedup — prevents the same process from spawning two syncs
-const activeSyncs = new Set<string>()
+export const SYNC_LOCK_TTL_MS = 5 * 60_000 // 5 min
+const SYNC_STATUS_STUCK_MS = 10 * 60_000 // 10 min
 
 // ---------------------------------------------------------------------------
 // Storage key helpers
@@ -75,15 +75,43 @@ function freshMeta(): RepoSyncMeta {
     lastRequestedAt: 0,
     lastSyncedAt: null,
     detailSyncedAt: null,
+    detailSyncStartedAt: null,
     lastFullSyncAt: null,
     detailSyncStatus: 'idle',
     workItemsSyncStatus: 'idle',
+    workItemsSyncStartedAt: null,
     requestCount: 0,
     detailLastError: null,
     workItemsLastError: null,
     detailEtag: null,
     workItemsSyncedAt: null,
   }
+}
+
+function isRunningStatusStuck(status: 'idle' | 'running' | 'failed', startedAt: number | null, syncedAt: number | null): boolean {
+  if (status !== 'running') return false
+  const referenceAt = startedAt ?? syncedAt
+  if (!referenceAt) return true
+  return Date.now() - referenceAt > SYNC_STATUS_STUCK_MS
+}
+
+function recoverStuckStatuses(meta: RepoSyncMeta): { meta: RepoSyncMeta, changed: boolean } {
+  let changed = false
+  const next = { ...meta }
+
+  if (isRunningStatusStuck(next.detailSyncStatus, next.detailSyncStartedAt, next.detailSyncedAt)) {
+    next.detailSyncStatus = 'idle'
+    next.detailSyncStartedAt = null
+    changed = true
+  }
+
+  if (isRunningStatusStuck(next.workItemsSyncStatus, next.workItemsSyncStartedAt, next.workItemsSyncedAt)) {
+    next.workItemsSyncStatus = 'idle'
+    next.workItemsSyncStartedAt = null
+    changed = true
+  }
+
+  return { meta: next, changed }
 }
 
 export function reconcileMeta(meta: RepoSyncMeta): RepoSyncMeta {
@@ -115,9 +143,40 @@ export async function readMeta(owner: string, repo: string): Promise<RepoSyncMet
     detailLastError: existing.detailLastError ?? existing.lastError ?? null,
     workItemsLastError: existing.workItemsLastError ?? existing.lastError ?? null,
     detailSyncedAt: existing.detailSyncedAt ?? null,
+    detailSyncStartedAt: existing.detailSyncStartedAt ?? null,
+    workItemsSyncedAt: existing.workItemsSyncedAt ?? null,
+    workItemsSyncStartedAt: existing.workItemsSyncStartedAt ?? null,
   }
 
-  return reconcileMeta(meta)
+  const reconciled = reconcileMeta(meta)
+  const detailReferenceAt = reconciled.detailSyncStartedAt ?? reconciled.detailSyncedAt
+  const workItemsReferenceAt = reconciled.workItemsSyncStartedAt ?? reconciled.workItemsSyncedAt
+  const detailWasStuck = isRunningStatusStuck(
+    reconciled.detailSyncStatus,
+    reconciled.detailSyncStartedAt,
+    reconciled.detailSyncedAt,
+  )
+  const workItemsWasStuck = isRunningStatusStuck(
+    reconciled.workItemsSyncStatus,
+    reconciled.workItemsSyncStartedAt,
+    reconciled.workItemsSyncedAt,
+  )
+  const recovered = recoverStuckStatuses(reconciled)
+  if (recovered.changed) {
+    console.warn('[repo-cache] recovered stuck sync status', {
+      owner,
+      repo,
+      detailWasStuck,
+      workItemsWasStuck,
+      detailStuckSince: detailReferenceAt,
+      workItemsStuckSince: workItemsReferenceAt,
+      detailStuckForMs: detailReferenceAt ? Date.now() - detailReferenceAt : null,
+      workItemsStuckForMs: workItemsReferenceAt ? Date.now() - workItemsReferenceAt : null,
+    })
+    await storage().setItem(metaKey(owner, repo), recovered.meta)
+  }
+
+  return recovered.meta
 }
 
 export async function writeMeta(owner: string, repo: string, meta: RepoSyncMeta): Promise<void> {
@@ -157,19 +216,27 @@ export function writeWorkItems(owner: string, repo: string, items: WorkItem[]) {
 // ---------------------------------------------------------------------------
 export async function acquireSyncLock(owner: string, repo: string, scope: string): Promise<boolean> {
   const key = syncLockKey(owner, repo, scope)
-  if (activeSyncs.has(key)) return false
 
   const existing = await storage().getItem<number>(key)
-  if (existing && existing + SYNC_LOCK_TTL_MS > Date.now()) return false
+  if (existing && existing + SYNC_LOCK_TTL_MS > Date.now()) {
+    console.warn('[repo-cache] sync lock blocked', {
+      owner,
+      repo,
+      scope,
+      storageLockActive: true,
+      existingLockAge: Date.now() - existing,
+    })
+    return false
+  }
 
-  activeSyncs.add(key)
+  // Storage lock is intentionally the only dedup source for serverless runtimes.
+  // There is still a small TOCTOU race between read and set that can duplicate work.
   await storage().setItem(key, Date.now(), { ttl: Math.ceil(SYNC_LOCK_TTL_MS / 1000) })
   return true
 }
 
 export async function releaseSyncLock(owner: string, repo: string, scope: string): Promise<void> {
   const key = syncLockKey(owner, repo, scope)
-  activeSyncs.delete(key)
   await storage().removeItem(key)
 }
 
@@ -233,7 +300,8 @@ export async function invalidateSharedWorkItemsCache(owner: string, repo: string
 
 /**
  * Invalidate the server-side issue detail cache after mutations.
- * Matches the key format used by defineCachedFunction in [number].get.ts
+ * Matches the key format used by defineCachedFunction in [number].get.ts.
+ * Verified against Nitro v2.11 key prefixing; this may require updates on Nitro upgrades.
  */
 export async function invalidateIssueDetailCache(login: string, repo: string, issueNumber: number) {
   const [owner, repoName] = repo.split('/')
@@ -244,7 +312,8 @@ export async function invalidateIssueDetailCache(login: string, repo: string, is
 
 /**
  * Invalidate the server-side work item detail cache after mutations.
- * Matches the key format used by defineCachedFunction in work-items/[id].get.ts
+ * Matches the key format used by defineCachedFunction in work-items/[id].get.ts.
+ * Verified against Nitro v2.11 key prefixing; this may require updates on Nitro upgrades.
  */
 export async function invalidateWorkItemDetailCache(login: string, owner: string, repo: string, id: string) {
   const cacheKey = `nitro:functions:repo-work-item-detail:${login}:${owner}/${repo}:${id}.json`
