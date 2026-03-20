@@ -27,6 +27,7 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     githubToken: process.env.NUXT_GITHUB_TOKEN || '',
+    cronSecret: process.env.NUXT_CRON_SECRET || process.env.CRON_SECRET || '',
     oauth: {
       github: {
         clientId: process.env.NUXT_OAUTH_GITHUB_CLIENT_ID,
@@ -40,9 +41,6 @@ export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
 
   nitro: {
-    experimental: {
-      tasks: true,
-    },
     externals: {
       inline: ['unhead'],
     },
@@ -53,9 +51,6 @@ export default defineNuxtConfig({
         url: process.env.STORAGE_URL,
         token: process.env.STORAGE_TOKEN,
       },
-    },
-    scheduledTasks: {
-      '*/5 * * * *': ['shared-repo:warm-cache'],
     },
     vercel: {
       functions: {

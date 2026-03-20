@@ -1,10 +1,10 @@
 import type { H3Event } from 'h3'
-import { runTask } from 'nitropack/runtime'
 import type { GitHubRepoDetail, GitHubPullRequest, RepoDetail } from '~~/shared/types/repository'
 import type { WorkItem } from '~~/shared/types/work-item'
 import type { RepoSyncMeta } from '~~/server/utils/repo-cache'
 import { getSessionToken, githubFetchAllWithToken, githubCachedFetchWithToken, githubFetchWithToken, GitHubError } from '~~/server/utils/github'
 import { getSharedToken } from '~~/server/utils/github-app'
+import { getCronSecret } from '~~/server/utils/cron-auth'
 import { toRepoDetail } from '~~/shared/utils/repository'
 import {
   SYNC_LOCK_TTL_MS,
@@ -39,6 +39,23 @@ const MAINTENANCE_WARM_WORK_ITEMS_MS = 20 * 60_000 // 20 min
 const MAINTENANCE_WARM_DETAIL_MS = 60 * 60_000 // 60 min
 const MAINTENANCE_MAX_REPOS_PER_RUN = 30
 const FAST_WORK_ITEMS_PAGE_SIZE = 30
+
+function triggerInternalRepoSync(event: H3Event, owner: string, repo: string, reason: string): Promise<Response> {
+  const cronSecret = getCronSecret()
+  if (!cronSecret) {
+    throw new Error('CRON_SECRET (or NUXT_CRON_SECRET) is required to trigger internal repo sync endpoint')
+  }
+
+  const url = new URL('/cron/cache/sync/repo', getRequestURL(event).origin)
+  return fetch(url, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${cronSecret}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ owner, repo, reason }),
+  })
+}
 
 // ---------------------------------------------------------------------------
 // GitHub fetch: repo detail (with ETag support for background sync)
@@ -900,26 +917,35 @@ export async function getRepoWorkItemsForRequest(
       meta.workItemsSyncStartedAt = Date.now()
       await writeMeta(owner, repo, reconcileMeta(meta))
 
-      console.log('[repo-sync] queued immediate repo sync task', {
+      console.log('[repo-sync] queued immediate repo sync trigger', {
         owner,
         repo,
         reason: 'partial-fast-response',
         hasNextPage: fastResult.hasNextPage,
       })
 
-      void runTask('shared-repo:sync-repo', {
-        payload: {
-          owner,
-          repo,
-          reason: 'partial-fast-response',
-        },
-      }).catch((error) => {
-        console.warn('[repo-sync] immediate repo sync task dispatch failed', {
-          owner,
-          repo,
-          error: error instanceof Error ? error.message : String(error),
+      void triggerInternalRepoSync(event, owner, repo, 'partial-fast-response')
+        .then((response) => {
+          if (!response.ok) {
+            console.warn('[repo-sync] immediate repo sync trigger returned non-ok status', {
+              owner,
+              repo,
+              status: response.status,
+            })
+          }
         })
-      })
+        .catch(async (error) => {
+          meta.workItemsSyncStatus = 'failed'
+          meta.workItemsSyncStartedAt = null
+          meta.workItemsLastError = error instanceof Error ? error.message : String(error)
+          await writeMeta(owner, repo, reconcileMeta(meta))
+
+          console.warn('[repo-sync] immediate repo sync trigger failed', {
+            owner,
+            repo,
+            error: meta.workItemsLastError,
+          })
+        })
     }
 
     console.log('[repo-sync] cold work-items visibility', {
