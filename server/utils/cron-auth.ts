@@ -15,7 +15,15 @@ export function assertCronSecret(event: H3Event): void {
   }
 
   const auth = getHeader(event, 'authorization')
-  if (auth !== `Bearer ${cronSecret}`) {
+  const headerSecret = getHeader(event, 'x-cron-secret')
+  const bearerMatches = auth === `Bearer ${cronSecret}`
+  const headerMatches = headerSecret === cronSecret
+
+  if (!bearerMatches && !headerMatches) {
+    console.warn('[repo-sync] cron auth mismatch', {
+      hasAuthorizationHeader: Boolean(auth),
+      hasCronSecretHeader: Boolean(headerSecret),
+    })
     throw createError({ statusCode: 401, message: 'Unauthorized' })
   }
 }

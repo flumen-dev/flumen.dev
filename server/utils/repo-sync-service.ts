@@ -51,6 +51,7 @@ function triggerInternalRepoSync(event: H3Event, owner: string, repo: string, re
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${cronSecret}`,
+      'x-cron-secret': cronSecret,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({ owner, repo, reason }),
