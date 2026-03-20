@@ -32,3 +32,6 @@ test-results/
 
 # Claude
 CLAUDE.md
+
+# Vercel
+.vercel
