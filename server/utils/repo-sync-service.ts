@@ -46,14 +46,29 @@ function triggerInternalRepoSync(event: H3Event, owner: string, repo: string, re
     throw new Error('CRON_SECRET (or NUXT_CRON_SECRET) is required to trigger internal repo sync endpoint')
   }
 
+  const headers: Record<string, string> = {
+    'Authorization': `Bearer ${cronSecret}`,
+    'x-cron-secret': cronSecret,
+    'Content-Type': 'application/json',
+  }
+
+  // Forward session/protection cookies so internal calls work on Vercel preview protection.
+  const cookie = getHeader(event, 'cookie')
+  if (cookie) {
+    headers['cookie'] = cookie
+  }
+
+  // Optional bypass secret for automated internal calls in protected environments.
+  const vercelBypassSecret = process.env.VERCEL_AUTOMATION_BYPASS_SECRET?.trim()
+  if (vercelBypassSecret) {
+    headers['x-vercel-protection-bypass'] = vercelBypassSecret
+    headers['x-vercel-set-bypass-cookie'] = 'true'
+  }
+
   const url = new URL('/cron/cache/sync/repo', getRequestURL(event).origin)
   return fetch(url, {
     method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${cronSecret}`,
-      'x-cron-secret': cronSecret,
-      'Content-Type': 'application/json',
-    },
+    headers,
     body: JSON.stringify({ owner, repo, reason }),
   })
 }
