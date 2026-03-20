@@ -52,12 +52,6 @@ function triggerInternalRepoSync(event: H3Event, owner: string, repo: string, re
     'Content-Type': 'application/json',
   }
 
-  // Forward session/protection cookies so internal calls work on Vercel preview protection.
-  const cookie = getHeader(event, 'cookie')
-  if (cookie) {
-    headers['cookie'] = cookie
-  }
-
   // Optional bypass secret for automated internal calls in protected environments.
   const vercelBypassSecret = process.env.VERCEL_AUTOMATION_BYPASS_SECRET?.trim()
   if (vercelBypassSecret) {
@@ -65,8 +59,7 @@ function triggerInternalRepoSync(event: H3Event, owner: string, repo: string, re
     headers['x-vercel-set-bypass-cookie'] = 'true'
   }
 
-  const url = new URL('/cron/cache/sync/repo', getRequestURL(event).origin)
-  return fetch(url, {
+  return $fetch('/cron/cache/sync/repo', {
     method: 'POST',
     headers,
     body: JSON.stringify({ owner, repo, reason }),
