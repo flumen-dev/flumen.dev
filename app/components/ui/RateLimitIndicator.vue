@@ -2,6 +2,12 @@
 const { t } = useI18n()
 const requestFetch = useRequestFetch()
 
+const props = withDefaults(defineProps<{
+  scope?: 'user' | 'shared'
+}>(), {
+  scope: 'user',
+})
+
 const limit = ref(0)
 const remaining = ref(0)
 const reset = ref(0)
@@ -10,6 +16,9 @@ const used = computed(() => limit.value - remaining.value)
 const usedRatio = computed(() => limit.value > 0 ? used.value / limit.value : 0)
 const percent = computed(() => Math.round(usedRatio.value * 100))
 const isWarning = computed(() => usedRatio.value > 0.8)
+const endpoint = computed(() => props.scope === 'shared' ? '/api/github/shared-rate-limit' : '/api/github/rate-limit')
+const labelText = computed(() => props.scope === 'shared' ? t('rateLimit.sharedLabel') : t('rateLimit.label'))
+const tooltipText = computed(() => props.scope === 'shared' ? t('rateLimit.sharedTooltip') : t('rateLimit.tooltip'))
 
 // Reactive ticker for reset countdown (updates every 30s)
 const now = ref(Math.floor(Date.now() / 1000))
@@ -39,7 +48,7 @@ const barColor = computed(() => {
 
 async function fetchRateLimit() {
   try {
-    const data = await requestFetch<{ limit: number, remaining: number, reset: number }>('/api/github/rate-limit')
+    const data = await requestFetch<{ limit: number, remaining: number, reset: number }>(endpoint.value)
     if (data) {
       limit.value = data.limit
       remaining.value = data.remaining
@@ -66,13 +75,13 @@ onBeforeUnmount(() => {
 <template>
   <UTooltip
     v-if="limit > 0"
-    :text="t('rateLimit.tooltip')"
+    :text="tooltipText"
     :content="{ side: 'right' }"
   >
     <div class="px-2 py-1.5">
       <div class="flex items-center justify-between text-[10px] text-muted mb-1">
         <span :class="isWarning ? 'text-warning font-medium' : ''">
-          {{ t('rateLimit.label') }}
+          {{ labelText }}
         </span>
         <span>{{ used }}/{{ limit }}</span>
       </div>

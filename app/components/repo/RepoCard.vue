@@ -22,9 +22,14 @@ const activityTooltip = computed(() => {
 
 const { isPinned, toggle: togglePin } = usePinnedRepos()
 const localePath = useLocalePath()
-const expandedSection = ref<'issues' | 'prs' | 'notifications' | null>(null)
 
-function toggleSection(section: 'issues' | 'prs' | 'notifications') {
+const expandedSection = ref<'work-items' | 'notifications' | null>(null)
+
+function navigateToWorkItems() {
+  navigateTo(localePath(`/repos/${props.repo.owner.login}/${props.repo.name}/work-items`))
+}
+
+function toggleSection(section: 'work-items' | 'notifications') {
   expandedSection.value = expandedSection.value === section ? null : section
 }
 </script>
@@ -32,7 +37,7 @@ function toggleSection(section: 'issues' | 'prs' | 'notifications') {
 <template>
   <div
     class="px-4 py-3 hover:bg-elevated transition-colors cursor-pointer"
-    @click="navigateTo(localePath(`/repos/${repo.owner.login}/${repo.name}`))"
+    @click="navigateToWorkItems"
   >
     <div class="flex items-start gap-3">
       <!-- Activity dot -->
@@ -86,34 +91,18 @@ function toggleSection(section: 'issues' | 'prs' | 'notifications') {
 
           <!-- Issues / PRs / Notifications — icon + count, no border -->
           <UTooltip
-            v-if="openIssues"
-            :text="$t('repos.openIssues', { count: openIssues })"
+            v-if="openIssues || openPrs"
+            :text="$t('repos.detail.workItems')"
           >
             <button
-              class="inline-flex items-center gap-0.5 text-xs font-medium text-rose-500 hover:text-rose-400 transition-colors cursor-pointer"
-              @click.stop="toggleSection('issues')"
+              class="inline-flex items-center gap-0.5 text-xs font-medium text-primary hover:text-primary/80 transition-colors cursor-pointer"
+              @click.stop="toggleSection('work-items')"
             >
               <UIcon
-                name="i-lucide-circle-dot"
+                name="i-lucide-layers"
                 class="size-4"
               />
-              {{ openIssues }}
-            </button>
-          </UTooltip>
-
-          <UTooltip
-            v-if="openPrs"
-            :text="$t('repos.openPrs', { count: openPrs })"
-          >
-            <button
-              class="inline-flex items-center gap-0.5 text-xs font-medium text-blue-500 hover:text-blue-400 transition-colors cursor-pointer"
-              @click.stop="toggleSection('prs')"
-            >
-              <UIcon
-                name="i-lucide-git-pull-request"
-                class="size-4"
-              />
-              {{ openPrs }}
+              {{ (openIssues ?? 0) + (openPrs ?? 0) }}
             </button>
           </UTooltip>
 
@@ -169,16 +158,11 @@ function toggleSection(section: 'issues' | 'prs' | 'notifications') {
     <!-- Expandable section (single container, content swaps) -->
     <UCollapsible :open="expandedSection !== null">
       <template #content>
-        <RepoIssueList
-          v-if="expandedSection === 'issues'"
+        <RepoWorkItemList
+          v-if="expandedSection === 'work-items'"
           :owner="repo.owner.login"
           :repo="repo.name"
-          class="mt-2"
-        />
-        <RepoPrList
-          v-if="expandedSection === 'prs'"
-          :owner="repo.owner.login"
-          :repo="repo.name"
+          link-mode="repo"
           class="mt-2"
         />
         <RepoNotificationList

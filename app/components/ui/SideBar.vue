@@ -74,7 +74,6 @@ const { pinnedRepos, unpin, reorder } = usePinnedRepos()
 
 const { settings, update: updateSettings } = useUserSettings()
 
-const issueStore = useIssueStore()
 const recentStore = useRecentStore()
 
 // --- Resizable pinned section ---
@@ -139,9 +138,9 @@ let sidebarSearchDebounce: ReturnType<typeof setTimeout> | null = null
 let sidebarSearchRequestId = 0
 
 function selectPinnedRepo(repo: string) {
-  issueStore.selectRepo(repo)
   updateSettings({ selectedRepo: repo })
-  navigateTo(localePath('/issues'))
+  const [repoOwner, repoName] = repo.split('/')
+  navigateTo(localePath(`/repos/${repoOwner}/${repoName}/work-items`))
 }
 
 function resetSidebarSearch() {
@@ -214,10 +213,7 @@ function recentItemToCommand(item: RecentItem): CommandPaletteItem {
       if (workItemPath) {
         navigateTo(localePath(workItemPath))
       }
-      else if (isIssue) {
-        navigateTo(localePath('/issues'))
-      }
-      else if (!isIssue) {
+      else {
         navigateTo(item.url, { external: true, open: { target: '_blank' } })
       }
     },
@@ -362,12 +358,6 @@ const mainItems = computed<NavigationMenuItem[]>(() => [
     disabled: !loggedIn.value,
   },
   {
-    label: t('nav.issues'),
-    icon: 'i-lucide-circle-dot',
-    to: localePath('/issues'),
-    disabled: !loggedIn.value,
-  },
-  {
     label: t('nav.settings'),
     icon: 'i-lucide-settings',
     to: localePath('/settings'),
@@ -438,7 +428,13 @@ const mainItems = computed<NavigationMenuItem[]>(() => [
 
       <!-- Rate limit indicator -->
       <ClientOnly>
-        <UiRateLimitIndicator v-if="loggedIn && !collapsed" />
+        <div
+          v-if="loggedIn && !collapsed"
+          class="space-y-1"
+        >
+          <UiRateLimitIndicator />
+          <UiRateLimitIndicator scope="shared" />
+        </div>
       </ClientOnly>
 
       <UNavigationMenu

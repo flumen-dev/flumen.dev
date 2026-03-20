@@ -5,18 +5,19 @@ import { buildWorkItemPath } from '~/utils/workItemPath'
 
 definePageMeta({
   middleware: 'auth',
-  titleKey: 'issues.create.title',
+  titleKey: 'workItems.create.title',
 })
 
 const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
 const localePath = useLocalePath()
-const store = useIssueStore()
 const apiFetch = useRequestFetch()
 const toast = useToast()
 
-const repo = computed(() => (route.query.repo as string) || store.selectedRepo || null)
+const owner = computed(() => route.params.owner as string)
+const repo = computed(() => route.params.repo as string)
+const repoFullName = computed(() => `${owner.value}/${repo.value}`)
 
 // Form state
 const title = ref('')
@@ -30,36 +31,34 @@ const repositoryId = ref('')
 const hasTemplates = ref(false)
 const selectedFormTemplate = ref<IssueFormTemplate | null>(null)
 const formRenderer = ref<{ handleSubmit: () => void, vorm: { formData: Record<string, unknown> } }>()
-const plainBodyDraftKey = computed(() => repo.value ? `issue-create-body:${repo.value}` : null)
+const plainBodyDraftKey = computed(() => `issue-create-body:${repoFullName.value}`)
 const { hasDraft: hasPlainBodyDraft, discardDraft: discardPlainBodyDraft, markSavedBaseline: markPlainBodyDraftSaved } = useMarkdownDraft({
   key: plainBodyDraftKey,
   value: body,
   enabled: computed(() => step.value === 'form'),
   onRestored: () => {
     toast.add({
-      title: t('issues.draft.restored'),
+      title: t('workItems.draft.restored'),
       color: 'info',
     })
   },
 })
 
 watchEffect(async () => {
-  if (!repo.value) {
-    step.value = 'form'
-    return
-  }
-
+  const currentRepo = repoFullName.value
   try {
     const data = await apiFetch<{ repositoryId: string, templates: IssueTemplate[] }>(
       '/api/issues/templates',
-      { params: { repo: repo.value } },
+      { params: { repo: repoFullName.value } },
     )
+    if (repoFullName.value !== currentRepo) return
     repositoryId.value = data.repositoryId
     templates.value = data.templates
     hasTemplates.value = data.templates.length > 0
     step.value = data.templates.length ? 'templates' : 'form'
   }
   catch {
+    if (repoFullName.value !== currentRepo) return
     step.value = 'form'
   }
 })
@@ -92,7 +91,7 @@ function backToTemplates() {
 }
 
 async function submitIssue(issueBody: string) {
-  if (!title.value.trim() || submitting.value || !repo.value) return
+  if (!title.value.trim() || submitting.value) return
   submitting.value = true
   const normalizedBody = normalizeMarkdownMentions(issueBody)
 
@@ -103,15 +102,15 @@ async function submitIssue(issueBody: string) {
         repositoryId: repositoryId.value,
         title: title.value,
         body: normalizedBody,
-        repo: repo.value,
+        repo: repoFullName.value,
       },
     })
-    toast.add({ title: t('issues.create.success'), color: 'success' })
-    await router.push(localePath(buildWorkItemPath(repo.value, result.number)!))
+    toast.add({ title: t('workItems.create.success'), color: 'success' })
+    await router.push(localePath(buildWorkItemPath(repoFullName.value, result.number)!))
     return true
   }
   catch {
-    toast.add({ title: t('issues.create.error'), color: 'error' })
+    toast.add({ title: t('workItems.create.error'), color: 'error' })
     return false
   }
   finally {
@@ -134,34 +133,42 @@ function submitForm(formData: Record<string, unknown>) {
 
 <template>
   <div class="p-4 max-w-3xl mx-auto">
-    <!-- Page header with repo context -->
-    <div
-      v-if="repo"
-      class="mb-6"
-    >
+    <!-- Breadcrumb -->
+    <div class="flex items-center gap-2 mb-6">
+      <NuxtLinkLocale
+        :to="`/repos/${owner}/${repo}`"
+        class="text-sm font-semibold text-highlighted hover:text-primary transition-colors"
+      >
+        {{ repoFullName }}
+      </NuxtLinkLocale>
+      <span class="text-sm text-muted">/</span>
+      <NuxtLinkLocale
+        :to="`/repos/${owner}/${repo}/work-items`"
+        class="text-sm text-muted hover:text-primary transition-colors"
+      >
+        {{ t('repos.detail.workItems') }}
+      </NuxtLinkLocale>
+      <span class="text-sm text-muted">/</span>
+      <span class="text-sm text-muted">{{ t('workItems.create.title') }}</span>
+    </div>
+
+    <!-- Page header -->
+    <div class="mb-6">
       <h1 class="text-xl font-semibold">
-        {{ t('issues.create.title') }}
+        {{ t('workItems.create.title') }}
       </h1>
       <p class="text-sm text-muted mt-1">
         <UIcon
           name="i-lucide-git-fork"
           class="size-3.5 align-text-bottom mr-0.5"
         />
-        {{ repo }}
+        {{ repoFullName }}
       </p>
     </div>
 
-    <!-- No repo selected -->
-    <UAlert
-      v-if="!repo"
-      :title="t('issues.create.noRepo')"
-      color="warning"
-      icon="i-lucide-alert-triangle"
-    />
-
     <!-- Loading templates -->
     <div
-      v-else-if="step === 'loading'"
+      v-if="step === 'loading'"
       class="flex items-center justify-center py-16 text-muted gap-2"
     >
       <UIcon
@@ -185,7 +192,7 @@ function submitForm(formData: Record<string, unknown>) {
     >
       <UButton
         v-if="hasTemplates"
-        :label="t('issues.create.backToTemplates')"
+        :label="t('workItems.create.backToTemplates')"
         icon="i-lucide-arrow-left"
         variant="ghost"
         size="sm"
@@ -198,12 +205,12 @@ function submitForm(formData: Record<string, unknown>) {
           for="issue-title"
           class="text-sm font-semibold text-highlighted shrink-0"
         >
-          {{ t('issues.create.titleLabel') }}
+          {{ t('workItems.create.titleLabel') }}
         </label>
         <UInput
           id="issue-title"
           v-model="title"
-          :placeholder="t('issues.create.titlePlaceholder')"
+          :placeholder="t('workItems.create.titlePlaceholder')"
           class="flex-1"
           autofocus
         />
@@ -212,7 +219,7 @@ function submitForm(formData: Record<string, unknown>) {
       <!-- Form fields rendered by Vorm -->
       <IssueFormRenderer
         ref="formRenderer"
-        :repo-context="repo || undefined"
+        :repo-context="repoFullName"
         :fields="selectedFormTemplate.body"
         @submit="submitForm"
       />
@@ -223,17 +230,17 @@ function submitForm(formData: Record<string, unknown>) {
           :label="t('profile.cancel')"
           color="neutral"
           variant="ghost"
-          :to="localePath('/issues')"
+          :to="localePath(`/repos/${owner}/${repo}/work-items`)"
         />
         <UButton
           v-if="hasPlainBodyDraft"
-          :label="t('issues.draft.discard')"
+          :label="t('workItems.draft.discard')"
           color="neutral"
           variant="ghost"
           @click="discardPlainBodyDraft()"
         />
         <UButton
-          :label="submitting ? t('issues.create.submitting') : t('issues.create.submit')"
+          :label="submitting ? t('workItems.create.submitting') : t('workItems.create.submit')"
           icon="i-lucide-plus"
           :loading="submitting"
           :disabled="!title.trim()"
@@ -249,7 +256,7 @@ function submitForm(formData: Record<string, unknown>) {
     >
       <UButton
         v-if="hasTemplates"
-        :label="t('issues.create.backToTemplates')"
+        :label="t('workItems.create.backToTemplates')"
         icon="i-lucide-arrow-left"
         variant="ghost"
         size="sm"
@@ -262,12 +269,12 @@ function submitForm(formData: Record<string, unknown>) {
           for="issue-title-plain"
           class="text-sm font-medium shrink-0"
         >
-          {{ t('issues.create.titleLabel') }}
+          {{ t('workItems.create.titleLabel') }}
         </label>
         <UInput
           id="issue-title-plain"
           v-model="title"
-          :placeholder="t('issues.create.titlePlaceholder')"
+          :placeholder="t('workItems.create.titlePlaceholder')"
           class="flex-1"
           autofocus
           @keydown.meta.enter="submitPlain"
@@ -278,13 +285,13 @@ function submitForm(formData: Record<string, unknown>) {
       <!-- Body -->
       <div class="space-y-1">
         <label class="text-sm font-medium">
-          {{ t('issues.create.bodyLabel') }}
+          {{ t('workItems.create.bodyLabel') }}
         </label>
         <div class="rounded-md border border-default bg-default overflow-hidden">
           <EditorMarkdownEditor
             v-model="body"
-            :repo-context="repo || undefined"
-            :placeholder="t('issues.create.bodyPlaceholder')"
+            :repo-context="repoFullName"
+            :placeholder="t('workItems.create.bodyPlaceholder')"
             :show-header="true"
             :framed="false"
             @submit="submitPlain"
@@ -298,10 +305,17 @@ function submitForm(formData: Record<string, unknown>) {
           :label="t('profile.cancel')"
           color="neutral"
           variant="ghost"
-          :to="localePath('/issues')"
+          :to="localePath(`/repos/${owner}/${repo}/work-items`)"
         />
         <UButton
-          :label="submitting ? t('issues.create.submitting') : t('issues.create.submit')"
+          v-if="hasPlainBodyDraft"
+          :label="t('workItems.draft.discard')"
+          color="neutral"
+          variant="ghost"
+          @click="discardPlainBodyDraft()"
+        />
+        <UButton
+          :label="submitting ? t('workItems.create.submitting') : t('workItems.create.submit')"
           icon="i-lucide-plus"
           :loading="submitting"
           :disabled="!title.trim()"

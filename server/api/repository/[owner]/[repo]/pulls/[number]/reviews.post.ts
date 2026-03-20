@@ -1,4 +1,5 @@
-import { getRepoParams, getSessionToken, githubFetchWithToken, GitHubError, invalidateWorkItemDetailCache } from '~~/server/utils/github'
+import { getRepoParams, getSessionToken, githubFetchWithToken, GitHubError } from '~~/server/utils/github'
+import { invalidateWorkItemDetailCache } from '~~/server/utils/repo-cache'
 
 type ReviewEvent = 'APPROVE' | 'REQUEST_CHANGES' | 'COMMENT'
 

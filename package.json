@@ -78,7 +78,8 @@
     "typescript": "5.9.3",
     "vitest": "4.0.18",
     "vitest-environment-nuxt": "1.0.1",
-    "vue-i18n-extract": "2.0.7"
+    "vue-i18n-extract": "2.0.7",
+    "vue-tsc": "3.2.6"
   },
   "engines": {
     "node": ">=24"

@@ -1,4 +1,4 @@
-import { invalidateIssueDetailCache, invalidateWorkItemDetailCache } from '~~/server/utils/github'
+import { invalidateIssueDetailCache, invalidateWorkItemDetailCache } from '~~/server/utils/repo-cache'
 
 interface LabelRequest {
   repo: string

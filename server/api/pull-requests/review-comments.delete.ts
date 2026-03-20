@@ -1,4 +1,5 @@
-import { getSessionToken, invalidateWorkItemDetailCache } from '~~/server/utils/github'
+import { getSessionToken } from '~~/server/utils/github'
+import { invalidateWorkItemDetailCache } from '~~/server/utils/repo-cache'
 
 export default defineEventHandler(async (event) => {
   const { token, login } = await getSessionToken(event)

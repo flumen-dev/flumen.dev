@@ -26,6 +26,8 @@ export default defineNuxtConfig({
   },
 
   runtimeConfig: {
+    githubToken: process.env.NUXT_GITHUB_TOKEN || '',
+    cronSecret: process.env.CRON_SECRET || process.env.NUXT_CRON_SECRET || '',
     oauth: {
       github: {
         clientId: process.env.NUXT_OAUTH_GITHUB_CLIENT_ID,
@@ -48,6 +50,11 @@ export default defineNuxtConfig({
         base: process.env.STORAGE_DRIVER ? undefined : '.data/storage',
         url: process.env.STORAGE_URL,
         token: process.env.STORAGE_TOKEN,
+      },
+    },
+    vercel: {
+      functions: {
+        maxDuration: 300,
       },
     },
   },

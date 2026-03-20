@@ -427,7 +427,7 @@ function sanitizeUrl(raw: string): string | null {
               <NuxtLink
                 v-for="repo in store.pinnedRepos"
                 :key="repo.id"
-                :to="localePath({ path: '/issues', query: { repo: repo.fullName } })"
+                :to="localePath(`/repos/${repo.fullName}/work-items`)"
                 class="flex flex-col p-2.5 rounded-lg border border-default hover:bg-elevated transition-colors group"
               >
                 <div class="flex items-center gap-1.5 min-w-0">

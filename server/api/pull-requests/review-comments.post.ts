@@ -1,4 +1,5 @@
-import { getSessionToken, githubFetchWithToken, invalidateWorkItemDetailCache } from '~~/server/utils/github'
+import { getSessionToken, githubFetchWithToken } from '~~/server/utils/github'
+import { invalidateWorkItemDetailCache } from '~~/server/utils/repo-cache'
 
 interface GitHubReviewCommentResponse {
   id: number

@@ -32,9 +32,6 @@ const {
 await loadAll()
 
 const githubUrl = computed(() => repoDetail.value?.htmlUrl ?? `https://github.com/${owner.value}/${repo.value}`)
-
-const localePath = useLocalePath()
-const repoBase = computed(() => `/repos/${owner.value}/${repo.value}`)
 </script>
 
 <template>
@@ -138,63 +135,11 @@ const repoBase = computed(() => `/repos/${owner.value}/${repo.value}`)
               />
             </ClientOnly>
 
-            <!-- Navigation -->
-            <UCard>
-              <template #header>
-                <div class="flex items-center gap-2">
-                  <UIcon
-                    name="i-lucide-list"
-                    class="size-4 text-primary"
-                  />
-                  <span class="text-sm font-medium">
-                    {{ $t('repos.detail.lists') }}
-                  </span>
-                </div>
-              </template>
-
-              <p class="text-xs text-dimmed mb-3">
-                {{ $t('repos.detail.workItemsHint') }}
-              </p>
-              <div class="grid grid-cols-1 gap-2">
-                <UButton
-                  block
-                  variant="outline"
-                  icon="i-lucide-layers"
-                  :to="localePath(`${repoBase}/work-items`)"
-                >
-                  {{ $t('repos.detail.workItems') }}
-                </UButton>
-                <UButton
-                  block
-                  variant="soft"
-                  color="error"
-                  icon="i-lucide-circle-dot"
-                  :to="localePath(`${repoBase}/issues`)"
-                >
-                  {{ $t('nav.issues') }}
-                </UButton>
-              </div>
-            </UCard>
-
-            <!-- Recent Work Items -->
-            <UCard>
-              <template #header>
-                <div class="flex items-center gap-2">
-                  <UIcon
-                    name="i-lucide-layers"
-                    class="size-4 text-primary"
-                  />
-                  <span class="text-sm font-medium">
-                    {{ $t('repos.detail.workItems') }}
-                  </span>
-                </div>
-              </template>
-              <RepoWorkItemList
-                :owner="owner"
-                :repo="repo"
-                link-mode="repo"
-              />
-            </UCard>
+            <RepoWorkItemList
+              :owner="owner"
+              :repo="repo"
+              link-mode="repo"
+            />
           </aside>
         </div>
       </template>

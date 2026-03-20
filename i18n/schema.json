@@ -37,6 +37,9 @@
         "cancel": {
           "type": "string"
         },
+        "viewAll": {
+          "type": "string"
+        },
         "bot": {
           "type": "string"
         },
@@ -59,12 +62,6 @@
       "type": "object",
       "properties": {
         "dashboard": {
-          "type": "string"
-        },
-        "issues": {
-          "type": "string"
-        },
-        "pullRequests": {
           "type": "string"
         },
         "notifications": {
@@ -400,12 +397,6 @@
           },
           "additionalProperties": false
         },
-        "openIssues": {
-          "type": "string"
-        },
-        "openPrs": {
-          "type": "string"
-        },
         "unreadNotifications": {
           "type": "string"
         },
@@ -535,13 +526,7 @@
             "forkedFrom": {
               "type": "string"
             },
-            "lists": {
-              "type": "string"
-            },
             "workItems": {
-              "type": "string"
-            },
-            "workItemsHint": {
               "type": "string"
             },
             "specialFiles": {
@@ -982,37 +967,10 @@
         "closed": {
           "type": "string"
         },
-        "selectRepo": {
-          "type": "string"
-        },
-        "searchRepos": {
-          "type": "string"
-        },
-        "searchReposHint": {
-          "type": "string"
-        },
-        "yourRepos": {
-          "type": "string"
-        },
-        "openCount": {
-          "type": "string"
-        },
-        "noResults": {
-          "type": "string"
-        },
         "closedAs": {
           "type": "string"
         },
         "closedAsNotPlanned": {
-          "type": "string"
-        },
-        "needsResponse": {
-          "type": "string"
-        },
-        "search": {
-          "type": "string"
-        },
-        "count": {
           "type": "string"
         },
         "page": {
@@ -1023,45 +981,6 @@
         },
         "nextPage": {
           "type": "string"
-        },
-        "filter": {
-          "type": "object",
-          "properties": {
-            "assignedToMe": {
-              "type": "string"
-            },
-            "unassigned": {
-              "type": "string"
-            },
-            "hasMilestone": {
-              "type": "string"
-            }
-          },
-          "additionalProperties": false
-        },
-        "sort": {
-          "type": "object",
-          "properties": {
-            "critical": {
-              "type": "string"
-            },
-            "newest": {
-              "type": "string"
-            },
-            "oldest": {
-              "type": "string"
-            },
-            "mostCommented": {
-              "type": "string"
-            },
-            "leastCommented": {
-              "type": "string"
-            },
-            "recentlyUpdated": {
-              "type": "string"
-            }
-          },
-          "additionalProperties": false
         },
         "detail": {
           "type": "object",
@@ -1252,6 +1171,90 @@
         "create": {
           "type": "object",
           "properties": {
+            "chooseTemplate": {
+              "type": "string"
+            },
+            "blankIssue": {
+              "type": "string"
+            },
+            "blankIssueDescription": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "workItems": {
+      "type": "object",
+      "properties": {
+        "open": {
+          "type": "string"
+        },
+        "closed": {
+          "type": "string"
+        },
+        "count": {
+          "type": "string"
+        },
+        "sync": {
+          "type": "object",
+          "properties": {
+            "runningTitle": {
+              "type": "string"
+            },
+            "partialTitle": {
+              "type": "string"
+            },
+            "upToDateTitle": {
+              "type": "string"
+            },
+            "failedTitle": {
+              "type": "string"
+            },
+            "lastSync": {
+              "type": "string"
+            },
+            "never": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "filter": {
+          "type": "object",
+          "properties": {
+            "all": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "sort": {
+          "type": "object",
+          "properties": {
+            "newest": {
+              "type": "string"
+            },
+            "oldest": {
+              "type": "string"
+            },
+            "mostCommented": {
+              "type": "string"
+            },
+            "leastCommented": {
+              "type": "string"
+            },
+            "recentlyUpdated": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "create": {
+          "type": "object",
+          "properties": {
             "title": {
               "type": "string"
             },
@@ -1282,72 +1285,24 @@
             "error": {
               "type": "string"
             },
-            "noRepo": {
-              "type": "string"
-            },
-            "chooseTemplate": {
-              "type": "string"
-            },
-            "blankIssue": {
-              "type": "string"
-            },
-            "blankIssueDescription": {
-              "type": "string"
-            },
             "backToTemplates": {
               "type": "string"
             }
           },
           "additionalProperties": false
         },
-        "error": {
+        "draft": {
           "type": "object",
           "properties": {
-            "fetchError": {
-              "type": "object",
-              "properties": {
-                "title": {
-                  "type": "string"
-                },
-                "description": {
-                  "type": "string"
-                }
-              },
-              "additionalProperties": false
+            "restored": {
+              "type": "string"
             },
-            "sessionExpired": {
-              "type": "object",
-              "properties": {
-                "title": {
-                  "type": "string"
-                },
-                "description": {
-                  "type": "string"
-                }
-              },
-              "additionalProperties": false
-            },
-            "rateLimited": {
-              "type": "object",
-              "properties": {
-                "title": {
-                  "type": "string"
-                },
-                "description": {
-                  "type": "string"
-                }
-              },
-              "additionalProperties": false
+            "discard": {
+              "type": "string"
             }
           },
           "additionalProperties": false
-        }
-      },
-      "additionalProperties": false
-    },
-    "workItems": {
-      "type": "object",
-      "properties": {
+        },
         "quick": {
           "type": "object",
           "properties": {
@@ -1382,9 +1337,6 @@
               "type": "string"
             },
             "assignee": {
-              "type": "string"
-            },
-            "label": {
               "type": "string"
             },
             "clear": {
@@ -1422,15 +1374,6 @@
             }
           },
           "additionalProperties": false
-        },
-        "open": {
-          "type": "string"
-        },
-        "closed": {
-          "type": "string"
-        },
-        "noResults": {
-          "type": "string"
         },
         "tabs": {
           "type": "object",
@@ -2785,6 +2728,9 @@
         "label": {
           "type": "string"
         },
+        "sharedLabel": {
+          "type": "string"
+        },
         "resetsIn": {
           "type": "string"
         },
@@ -2792,6 +2738,9 @@
           "type": "string"
         },
         "tooltip": {
+          "type": "string"
+        },
+        "sharedTooltip": {
           "type": "string"
         }
       },
