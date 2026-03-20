@@ -1,10 +1,12 @@
 import type { H3Event } from 'h3'
 
 export function getCronSecret(): string | null {
+  const envCronSecret = process.env.CRON_SECRET?.trim()
+  if (envCronSecret) return envCronSecret
+
   const runtime = useRuntimeConfig()
   const secret = (runtime.cronSecret as string | undefined)?.trim()
     ?? process.env.NUXT_CRON_SECRET?.trim()
-    ?? process.env.CRON_SECRET?.trim()
   return secret || null
 }
 

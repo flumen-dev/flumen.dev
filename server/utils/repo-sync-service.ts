@@ -926,12 +926,14 @@ export async function getRepoWorkItemsForRequest(
       })
 
       void triggerInternalRepoSync(event, owner, repo, 'partial-fast-response')
-        .then((response) => {
+        .then(async (response) => {
           if (!response.ok) {
+            const responseBody = await response.text().catch(() => '')
             console.warn('[repo-sync] immediate repo sync trigger returned non-ok status', {
               owner,
               repo,
               status: response.status,
+              bodySnippet: responseBody.slice(0, 200) || null,
             })
           }
         })

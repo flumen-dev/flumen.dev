@@ -27,7 +27,7 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     githubToken: process.env.NUXT_GITHUB_TOKEN || '',
-    cronSecret: process.env.NUXT_CRON_SECRET || process.env.CRON_SECRET || '',
+    cronSecret: process.env.CRON_SECRET || process.env.NUXT_CRON_SECRET || '',
     oauth: {
       github: {
         clientId: process.env.NUXT_OAUTH_GITHUB_CLIENT_ID,
