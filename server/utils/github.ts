@@ -57,6 +57,8 @@ function isSharedToken(token: string): boolean {
 }
 
 const GITHUB_API = 'https://api.github.com'
+const GITHUB_FETCH_MAX_ATTEMPTS = 4
+const GITHUB_FETCH_BASE_RETRY_DELAY_MS = 400
 
 export interface GitHubRequestOptions {
   method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
@@ -382,11 +384,88 @@ function buildHeaders(token: string): Record<string, string> {
 }
 
 async function fetchGitHub(url: URL | string, headers: Record<string, string>, endpoint: string): Promise<Response> {
-  const response = await fetch(url, { method: 'GET', headers })
-  if (!response.ok) {
-    throw new GitHubError(response.status, endpoint, `GitHub API ${response.status}: ${response.statusText}`)
+  for (let attempt = 1; attempt <= GITHUB_FETCH_MAX_ATTEMPTS; attempt += 1) {
+    try {
+      const response = await fetch(url, { method: 'GET', headers })
+      if (response.ok) return response
+
+      if (shouldRetryStatus(response.status) && attempt < GITHUB_FETCH_MAX_ATTEMPTS) {
+        const delayMs = getRetryDelayMs(attempt, response.headers)
+        console.warn('[github] transient non-ok response, retrying', {
+          endpoint,
+          status: response.status,
+          attempt,
+          maxAttempts: GITHUB_FETCH_MAX_ATTEMPTS,
+          retryDelayMs: delayMs,
+        })
+        await sleep(delayMs)
+        continue
+      }
+
+      throw new GitHubError(response.status, endpoint, `GitHub API ${response.status}: ${response.statusText}`)
+    }
+    catch (error) {
+      if (shouldRetryFetchError(error) && attempt < GITHUB_FETCH_MAX_ATTEMPTS) {
+        const delayMs = getRetryDelayMs(attempt)
+        console.warn('[github] transient fetch error, retrying', {
+          endpoint,
+          attempt,
+          maxAttempts: GITHUB_FETCH_MAX_ATTEMPTS,
+          retryDelayMs: delayMs,
+          error: error instanceof Error ? error.message : String(error),
+        })
+        await sleep(delayMs)
+        continue
+      }
+      throw error
+    }
   }
-  return response
+
+  throw new GitHubError(500, endpoint, 'GitHub request failed after retries')
+}
+
+function shouldRetryStatus(status: number): boolean {
+  return status === 429 || status === 500 || status === 502 || status === 503 || status === 504
+}
+
+function shouldRetryFetchError(error: unknown): boolean {
+  if (!(error instanceof Error)) return false
+
+  const code = (error as { cause?: { code?: string } })?.cause?.code
+  if (typeof code === 'string') {
+    if (
+      code === 'UND_ERR_SOCKET'
+      || code === 'UND_ERR_CONNECT_TIMEOUT'
+      || code === 'UND_ERR_HEADERS_TIMEOUT'
+      || code === 'UND_ERR_BODY_TIMEOUT'
+      || code === 'ECONNRESET'
+      || code === 'ETIMEDOUT'
+      || code === 'EAI_AGAIN'
+    ) {
+      return true
+    }
+  }
+
+  // Fallback for wrapped undici errors where only message is preserved.
+  return /fetch failed|socket|timeout/i.test(error.message)
+}
+
+function getRetryDelayMs(attempt: number, headers?: Headers): number {
+  const retryAfter = headers?.get('retry-after')
+  if (retryAfter) {
+    const seconds = Number(retryAfter)
+    if (Number.isFinite(seconds) && seconds > 0) {
+      return Math.min(seconds * 1000, 10_000)
+    }
+  }
+
+  const exponential = GITHUB_FETCH_BASE_RETRY_DELAY_MS * (2 ** Math.max(0, attempt - 1))
+  const jitter = Math.floor(Math.random() * 150)
+  return Math.min(exponential + jitter, 5_000)
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms))
 }
 
 function parseNextPageUrl(header: string | null): string | null {
