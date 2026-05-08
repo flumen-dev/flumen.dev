@@ -5,8 +5,6 @@ const config: KnipConfig = {
     '.': {
       entry: [
         'i18n/i18n.config.ts!',
-        'app/app.config.ts!',
-        'app/app.vue!',
         'app/pages/**/*.vue!',
         'app/components/**/*.vue!',
         'app/layouts/**/*.vue!',
@@ -18,7 +16,7 @@ const config: KnipConfig = {
         'shared/**/*.ts!',
       ],
       project: ['**/*.{ts,vue,cjs,mjs}', '!test/fixtures/**'],
-      ignoreDependencies: ['flat', 'unstorage', 'h3', 'nuxt', '@upstash/redis', '@iconify-json/simple-icons', '@iconify-json/lucide'],
+      ignoreDependencies: ['flat', 'unstorage', 'h3', 'unhead', '@upstash/redis', '@iconify-json/simple-icons', '@iconify-json/lucide', 'vue-tsc', '@vue/language-core'],
     },
   },
 }

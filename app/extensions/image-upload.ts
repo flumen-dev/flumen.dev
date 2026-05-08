@@ -1,4 +1,5 @@
 import { Extension } from '@tiptap/core'
+import '@tiptap/extension-image'
 import { Plugin, PluginKey } from '@tiptap/pm/state'
 import { uploadImage } from '~/utils/uploadImage'
 
