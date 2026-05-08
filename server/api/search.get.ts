@@ -183,7 +183,7 @@ const fetchIssuePrSearch = defineCachedFunction(
     return out
   },
   {
-    name: 'cmdk-search-issue-pr-v2',
+    name: 'cmdk-search-issue-pr',
     getKey: (_token: string, login: string, _userId: number, fullQuery: string) => `${login}:${fullQuery.toLowerCase()}`,
     maxAge: 30,
   },
@@ -225,8 +225,6 @@ export default defineEventHandler(async (event): Promise<CmdkSearchResponse> => 
     ? buildMineQueries(q, login, orgs)
     : [q]
 
-  console.log('[cmdk-search] queries →', issuePrQueries)
-
   const tasks: Promise<CmdkSearchResult[]>[] = issuePrQueries.map(fullQuery =>
     fetchIssuePrSearch(token, login, userId, fullQuery),
   )
@@ -249,8 +247,6 @@ export default defineEventHandler(async (event): Promise<CmdkSearchResponse> => 
       console.error('[cmdk-search] task failed:', r.reason)
     }
   }
-
-  console.log('[cmdk-search] results count →', merged.size)
 
   return { scope, query: q, results: [...merged.values()] }
 })
