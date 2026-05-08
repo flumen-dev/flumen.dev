@@ -16,6 +16,22 @@
     "error": "Fehler",
     "removeItem": "{item} entfernen"
   },
+  "cmdk": {
+    "placeholder": "Suchen oder durchstöbern…",
+    "loading": "Lädt…",
+    "noResults": "Keine Treffer.",
+    "sectionRecent": "Zuletzt",
+    "sectionRepositories": "Repositories",
+    "sectionActions": "Aktionen",
+    "actionNewIssue": "Neues Issue",
+    "actionSettings": "Einstellungen",
+    "subtitlePrivate": "Privat",
+    "subtitleFork": "Fork",
+    "subtitlePrivateFork": "Privat · Fork",
+    "footerNavigate": "navigieren",
+    "footerSelect": "öffnen",
+    "footerToggle": "öffnen/schließen"
+  },
   "nav": {
     "dashboard": "Dashboard",
     "issues": "Issues",

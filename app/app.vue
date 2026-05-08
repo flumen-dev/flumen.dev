@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import CommandPalette from '~/components/cmdk/CommandPalette.vue'
+
 const { locale } = useI18n()
 const ogLocale = computed(() => locale.value === 'de' ? 'de_DE' : 'en_US')
 
@@ -24,5 +26,6 @@ useSeoMeta({
       <NuxtPage />
     </NuxtLayout>
     <UserProfileDialog />
+    <CommandPalette />
   </UApp>
 </template>
