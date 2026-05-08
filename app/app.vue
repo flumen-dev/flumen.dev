@@ -1,7 +1,4 @@
 <script setup lang="ts">
-import { Analytics } from '@vercel/analytics/nuxt'
-import { SpeedInsights } from '@vercel/speed-insights/nuxt'
-
 const { locale } = useI18n()
 const ogLocale = computed(() => locale.value === 'de' ? 'de_DE' : 'en_US')
 
@@ -23,8 +20,6 @@ useSeoMeta({
 
 <template>
   <UApp>
-    <Analytics />
-    <SpeedInsights />
     <NuxtLayout>
       <NuxtPage />
     </NuxtLayout>
