@@ -35,6 +35,20 @@ const githubUrl = computed(() => repoDetail.value?.htmlUrl ?? `https://github.co
 
 const localePath = useLocalePath()
 const repoBase = computed(() => `/repos/${owner.value}/${repo.value}`)
+
+// --- Track recent ---
+const cmdkStore = useCmdkStore()
+watch(repoDetail, (val) => {
+  if (!val) return
+  const fullName = `${owner.value}/${repo.value}`
+  cmdkStore.trackRecent({
+    type: 'repo',
+    id: `repo:${fullName}`,
+    title: fullName,
+    url: localePath(repoBase.value),
+    avatarUrl: val.owner?.avatarUrl,
+  })
+}, { immediate: true })
 </script>
 
 <template>

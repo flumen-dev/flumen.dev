@@ -45,14 +45,25 @@ const number = computed(() => {
 // --- Track recent ---
 
 const recentStore = useRecentStore()
+const cmdkStore = useCmdkStore()
+const localePath = useLocalePath()
+
 watch(workItem, (val) => {
   if (!val) return
+  const kind: 'issue' | 'pr' = val.primaryType === 'issue' ? 'issue' : 'pr'
   recentStore.track({
-    type: val.primaryType === 'issue' ? 'issue' : 'pr',
+    type: kind,
     repo: repo.value,
     number: val.number,
     title: val.title,
     url: val.htmlUrl,
+  })
+  cmdkStore.trackRecent({
+    type: kind,
+    id: `${kind}:${repo.value}#${val.number}`,
+    title: val.title,
+    subtitle: `${repo.value} #${val.number}`,
+    url: localePath(`/repos/${repo.value}/work-items/${val.number}`),
   })
 }, { immediate: true })
 

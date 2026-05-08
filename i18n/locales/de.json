@@ -16,6 +16,28 @@
     "error": "Fehler",
     "removeItem": "{item} entfernen"
   },
+  "cmdk": {
+    "placeholder": "Suchen oder durchstöbern…",
+    "loading": "Lädt…",
+    "noResults": "Keine Treffer.",
+    "sectionRecent": "Zuletzt",
+    "sectionRepositories": "Repositories",
+    "sectionIssues": "Issues",
+    "sectionPullRequests": "Pull Requests",
+    "sectionActions": "Aktionen",
+    "actionNewIssue": "Neues Issue",
+    "actionSettings": "Einstellungen",
+    "subtitlePrivate": "Privat",
+    "subtitleFork": "Fork",
+    "subtitlePrivateFork": "Privat · Fork",
+    "scopeMine": "Meine Repos",
+    "scopeGlobal": "Ganz GitHub",
+    "scopeHintGlobal": "Sucht in ganz GitHub — kann langsamer sein.",
+    "scopeAriaToggle": "Such-Bereich umschalten",
+    "footerNavigate": "navigieren",
+    "footerSelect": "öffnen",
+    "footerScope": "Bereich"
+  },
   "nav": {
     "dashboard": "Dashboard",
     "issues": "Issues",
@@ -98,9 +120,6 @@
   },
   "repos": {
     "search": "Repositories durchsuchen...",
-    "searchStartTyping": "Tippe, um Repositories zu suchen",
-    "searchMinChars": "Mindestens 2 Zeichen eingeben",
-    "searchNoMatches": "Keine Repositories gefunden",
     "count": "Keine Repositories | {count} Repository | {count} Repositories",
     "noResults": "Keine Repositories gefunden.",
     "error": {
@@ -866,8 +885,6 @@
       "favorite": "Zu Favoriten hinzufügen",
       "unfavorite": "Aus Favoriten entfernen",
       "renamed": "umbenannt → {title}",
-      "searchFavorites": "Favoriten",
-      "searchRecent": "Zuletzt besucht",
       "openNewTab": "In neuem Tab öffnen",
       "openGithub": "Auf GitHub öffnen",
       "remove": "Entfernen"
