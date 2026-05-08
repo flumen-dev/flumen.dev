@@ -17,7 +17,10 @@ const cmdk = useCmdkStore()
 
 <template>
   <button
+    :id="`cmdk-result-${result.id}`"
     type="button"
+    role="option"
+    :aria-selected="selected"
     :data-cmdk-selected="selected"
     class="w-full flex items-center gap-3 px-4 py-2 text-left transition-colors"
     :class="selected ? 'bg-elevated' : 'hover:bg-elevated/50'"

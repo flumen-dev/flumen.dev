@@ -3,13 +3,21 @@ import CommandItem from './CommandItem.vue'
 import CommandScopeToggle from './CommandScopeToggle.vue'
 
 const cmdk = useCmdkStore()
+const { loggedIn } = useUserSession()
 const inputRef = useTemplateRef<HTMLInputElement>('inputRef')
 const listRef = useTemplateRef<HTMLDivElement>('listRef')
 
+const LISTBOX_ID = 'cmdk-listbox'
+const activeDescendantId = computed(() => {
+  const item = cmdk.flatResults[cmdk.selectedIndex]
+  return item ? `cmdk-result-${item.id}` : undefined
+})
+
 defineShortcuts({
-  meta_k: { handler: () => cmdk.togglePalette(), usingInput: true },
+  meta_k: { handler: () => { if (loggedIn.value) cmdk.togglePalette() }, usingInput: true },
   meta_shift_k: {
     handler: () => {
+      if (!loggedIn.value) return
       if (cmdk.open) cmdk.setScope('global')
       else cmdk.openPalette('global')
     },
@@ -72,9 +80,13 @@ watch(() => cmdk.selectedIndex, async () => {
               ref="inputRef"
               :value="cmdk.query"
               type="text"
+              role="combobox"
               :placeholder="$t('cmdk.placeholder')"
               autocomplete="off"
               spellcheck="false"
+              :aria-expanded="cmdk.open"
+              :aria-controls="LISTBOX_ID"
+              :aria-activedescendant="activeDescendantId"
               class="flex-1 bg-transparent outline-none text-base text-default placeholder-muted"
               @input="cmdk.setQuery(($event.target as HTMLInputElement).value)"
             >
@@ -91,7 +103,9 @@ watch(() => cmdk.selectedIndex, async () => {
 
           <!-- List -->
           <div
+            :id="LISTBOX_ID"
             ref="listRef"
+            role="listbox"
             class="flex-1 overflow-y-auto py-2"
           >
             <div

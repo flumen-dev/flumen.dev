@@ -19,7 +19,7 @@ function isHttpsUrl(value: string): boolean {
 }
 
 export default defineEventHandler(async (event): Promise<CmdkRecentItem[]> => {
-  const session = await getUserSession(event)
+  const session = await requireUserSession(event)
   const body = await readBody<Partial<CmdkRecentItem>>(event)
 
   if (!body?.type || !VALID_TYPES.includes(body.type)) {
@@ -42,14 +42,14 @@ export default defineEventHandler(async (event): Promise<CmdkRecentItem[]> => {
     type: body.type,
     id: body.id,
     title: body.title.slice(0, TITLE_MAX),
-    subtitle: body.subtitle?.slice(0, SUBTITLE_MAX),
+    subtitle: typeof body.subtitle === 'string' ? body.subtitle.slice(0, SUBTITLE_MAX) : undefined,
     url: body.url,
     avatarUrl: body.avatarUrl,
     viewedAt: Date.now(),
   }
 
   const storage = useStorage('data')
-  const key = `users:${session.user!.id}:recents`
+  const key = `users:${session.user.id}:recents`
   const current = (await storage.getItem<CmdkRecentItem[]>(key)) ?? []
 
   const next = [item, ...current.filter(r => !(r.type === item.type && r.id === item.id))].slice(0, CMDK_RECENTS_CAP)
