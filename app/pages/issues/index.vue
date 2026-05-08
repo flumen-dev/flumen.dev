@@ -1,4 +1,6 @@
 <script lang="ts" setup>
+import type { Issue } from '~~/shared/types/issue'
+
 definePageMeta({
   middleware: 'auth',
   titleKey: 'nav.issues',
@@ -8,17 +10,39 @@ const { t } = useI18n()
 const localePath = useLocalePath()
 const store = useIssueStore()
 
-const openCount = computed(() =>
-  store.stateFilter === 'open'
-    ? store.totalCount
-    : null,
+// Categorization is implemented in a follow-up issue. For now all loaded issues
+// land in `other-open` so the page renders something useful end-to-end while
+// the bucket structure is in place.
+const issuesBySection = computed<Record<IssueSectionKey, Issue[]>>(() => {
+  const buckets = ISSUE_SECTIONS.reduce<Record<IssueSectionKey, Issue[]>>((acc, s) => {
+    acc[s.key] = []
+    return acc
+  }, {} as Record<IssueSectionKey, Issue[]>)
+  buckets['other-open'] = [...store.sortedIssues]
+  return buckets
+})
+
+const collapsed = ref<Record<IssueSectionKey, boolean>>(
+  ISSUE_SECTIONS.reduce<Record<IssueSectionKey, boolean>>((acc, s) => {
+    acc[s.key] = s.defaultCollapsed
+    return acc
+  }, {} as Record<IssueSectionKey, boolean>),
 )
 
-const closedCount = computed(() =>
-  store.stateFilter === 'closed'
-    ? store.totalCount
-    : null,
-)
+function toggleSection(key: IssueSectionKey) {
+  collapsed.value[key] = !collapsed.value[key]
+}
+
+// Explicit t() calls so vue-i18n-extract picks up the keys statically.
+function sectionLabel(key: IssueSectionKey): string {
+  switch (key) {
+    case 'needs-response': return t('issues.section.needsResponse')
+    case 'fresh-unassigned': return t('issues.section.freshUnassigned')
+    case 'in-progress': return t('issues.section.inProgress')
+    case 'stale': return t('issues.section.stale')
+    case 'other-open': return t('issues.section.otherOpen')
+  }
+}
 
 async function setFilter(state: 'open' | 'closed') {
   if (store.stateFilter === state) return
@@ -39,7 +63,6 @@ async function setFilter(state: 'open' | 'closed') {
       />
     </div>
 
-    <!-- Content: only show after repo selected -->
     <template v-if="store.selectedRepo">
       <!-- Error -->
       <div
@@ -62,26 +85,9 @@ async function setFilter(state: 'open' | 'closed') {
 
       <!-- Loading (initial) -->
       <template v-else-if="store.loading && !store.loaded">
-        <div class="flex items-center gap-4">
-          <USkeleton class="h-5 w-20 rounded" />
-          <USkeleton class="h-5 w-20 rounded" />
-          <USkeleton class="ml-auto h-8 w-24 rounded-md" />
-        </div>
-        <div class="flex items-center gap-3">
-          <USkeleton class="h-9 flex-1 rounded-md" />
-          <USkeleton class="h-4 w-20 rounded" />
-        </div>
-        <div class="flex items-center gap-2">
-          <USkeleton
-            v-for="n in 4"
-            :key="n"
-            class="h-7 w-20 rounded-md"
-          />
-          <USkeleton class="ml-auto h-7 w-28 rounded-md" />
-        </div>
         <div class="rounded-lg border border-default divide-y divide-default overflow-hidden">
           <IssueRowSkeleton
-            v-for="n in 8"
+            v-for="n in 6"
             :key="n"
           />
         </div>
@@ -89,38 +95,24 @@ async function setFilter(state: 'open' | 'closed') {
 
       <!-- Loaded -->
       <template v-else-if="store.loaded">
-        <!-- State tabs -->
+        <!-- State tabs + Create -->
         <div class="flex items-center gap-4">
-          <button
-            class="inline-flex items-center gap-1.5 text-sm font-medium transition-colors"
-            :class="store.stateFilter === 'open' ? 'text-highlighted' : 'text-muted hover:text-highlighted'"
-            @click="setFilter('open')"
-          >
-            <UIcon
-              name="i-lucide-circle-dot"
-              class="size-4"
-            />
-            {{ t('issues.open') }}
-            <span
-              v-if="openCount !== null"
-              class="text-xs text-muted"
-            >({{ openCount }})</span>
-          </button>
-          <button
-            class="inline-flex items-center gap-1.5 text-sm font-medium transition-colors"
-            :class="store.stateFilter === 'closed' ? 'text-highlighted' : 'text-muted hover:text-highlighted'"
-            @click="setFilter('closed')"
-          >
-            <UIcon
-              name="i-lucide-check-circle"
-              class="size-4"
-            />
-            {{ t('issues.closed') }}
-            <span
-              v-if="closedCount !== null"
-              class="text-xs text-muted"
-            >({{ closedCount }})</span>
-          </button>
+          <IssueStateTab
+            :label="t('issues.open')"
+            icon-key="i-lucide-circle-dot"
+            :active="store.stateFilter === 'open'"
+            :loading="store.loading"
+            :count="store.openCount"
+            @select="setFilter('open')"
+          />
+          <IssueStateTab
+            :label="t('issues.closed')"
+            icon-key="i-lucide-check-circle"
+            :active="store.stateFilter === 'closed'"
+            :loading="store.loading"
+            :count="store.closedCount"
+            @select="setFilter('closed')"
+          />
           <div class="ml-auto">
             <UButton
               :label="t('issues.create.button')"
@@ -131,56 +123,46 @@ async function setFilter(state: 'open' | 'closed') {
           </div>
         </div>
 
-        <!-- Toolbar -->
-        <IssueToolbar />
-
-        <!-- Loading (filter/state change) or searching -->
+        <!-- Sections -->
         <div
-          v-if="store.loading || store.searching"
-          class="rounded-lg border border-default divide-y divide-default overflow-hidden"
+          class="space-y-3 transition-opacity duration-150"
+          :class="store.loading ? 'opacity-50 pointer-events-none' : ''"
         >
-          <IssueRowSkeleton
-            v-for="n in 6"
-            :key="n"
-          />
-        </div>
-
-        <!-- Issue list -->
-        <div
-          v-else-if="store.sortedIssues.length"
-          class="space-y-4"
-        >
-          <div
-            class="rounded-lg border border-default divide-y divide-default overflow-hidden transition-opacity duration-200"
-            :class="store.paging ? 'opacity-50 pointer-events-none' : ''"
+          <IssueSection
+            v-for="section in ISSUE_SECTIONS"
+            :key="section.key"
+            :label="sectionLabel(section.key)"
+            :icon-key="section.iconKey"
+            :icon-class="section.iconClass"
+            :count="issuesBySection[section.key].length"
+            :collapsed="collapsed[section.key]"
+            @toggle="toggleSection(section.key)"
           >
             <IssueRow
-              v-for="issue in store.sortedIssues"
+              v-for="issue in issuesBySection[section.key]"
               :key="issue.id"
               :issue="issue"
             />
-          </div>
-
-          <!-- Pagination (only when not searching) -->
-          <UiPaginator
-            v-if="!store.search"
-            :current-page="store.currentPage"
-            :total-pages="store.totalPages"
-            :has-more="store.hasMore"
-            :has-previous="store.hasPrevious"
-            :paging="store.paging"
-            @next="store.loadNextPage()"
-            @previous="store.loadPreviousPage()"
-          />
+            <p
+              v-if="!issuesBySection[section.key].length"
+              class="px-4 py-6 text-center text-sm text-muted"
+            >
+              {{ t('issues.section.empty') }}
+            </p>
+          </IssueSection>
         </div>
 
-        <!-- Empty -->
-        <p
-          v-else-if="!store.searching"
-          class="py-8 text-center text-sm text-muted"
-        >
-          {{ t('issues.noResults') }}
-        </p>
+        <!-- Pagination -->
+        <UiPaginator
+          v-if="store.sortedIssues.length"
+          :current-page="store.currentPage"
+          :total-pages="store.totalPages"
+          :has-more="store.hasMore"
+          :has-previous="store.hasPrevious"
+          :paging="store.paging"
+          @next="store.loadNextPage()"
+          @previous="store.loadPreviousPage()"
+        />
       </template>
     </template>
   </div>

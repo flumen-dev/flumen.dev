@@ -25,6 +25,10 @@ export const useIssueStore = defineStore('issues', () => {
   const sortKey = ref<IssueSortKey>('critical')
   const activeFilters = ref<string[]>([])
 
+  // Cached counts per state so both open/closed totals stay visible across switches.
+  const openCount = ref<number | null>(null)
+  const closedCount = ref<number | null>(null)
+
   // --- Server search ---
   const searchResults = ref<Issue[]>([])
   const searching = ref(false)
@@ -73,16 +77,34 @@ export const useIssueStore = defineStore('issues', () => {
   })
 
   // --- Actions ---
+  async function fetchOtherCount() {
+    if (!selectedRepo.value) return
+    const otherState = stateFilter.value === 'open' ? 'closed' : 'open'
+    const cachedRef = otherState === 'open' ? openCount : closedCount
+    if (cachedRef.value != null) return
+    try {
+      const data = await apiFetch<PaginatedResponse<Issue>>('/api/issues', {
+        params: { state: otherState, repo: selectedRepo.value, first: 1 },
+      })
+      cachedRef.value = data.totalCount
+    }
+    catch {
+      // Count is best-effort; UI hides it when null.
+    }
+  }
+
   async function fetchIssues() {
     if (!selectedRepo.value) return
     errorKey.value = null
-    await section.refresh()
+    await Promise.all([section.refresh(), fetchOtherCount()])
     if (section.error.value) {
       errorKey.value = 'fetchError'
+      return
     }
-    else {
-      loaded.value = true
-    }
+    // Update the active state's count from the just-fetched response.
+    if (stateFilter.value === 'open') openCount.value = section.totalCount.value
+    else closedCount.value = section.totalCount.value
+    loaded.value = true
   }
 
   async function searchIssues(q: string) {
@@ -130,6 +152,8 @@ export const useIssueStore = defineStore('issues', () => {
     loaded.value = false
     search.value = ''
     searchResults.value = []
+    openCount.value = null
+    closedCount.value = null
     await fetchIssues()
   }
 
@@ -146,6 +170,8 @@ export const useIssueStore = defineStore('issues', () => {
     loaded.value = false
     search.value = ''
     searchResults.value = []
+    openCount.value = null
+    closedCount.value = null
     await fetchIssues()
   }
 
@@ -159,6 +185,8 @@ export const useIssueStore = defineStore('issues', () => {
     search,
     sortKey,
     activeFilters,
+    openCount,
+    closedCount,
     totalCount: section.totalCount,
     hasMore: section.hasMore,
     currentPage: section.currentPage,

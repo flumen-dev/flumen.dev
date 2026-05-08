@@ -353,6 +353,14 @@
     "closedAs": "Geschlossen",
     "closedAsNotPlanned": "Nicht geplant",
     "needsResponse": "Wartet auf deine Antwort",
+    "section": {
+      "needsResponse": "Wartet auf dich",
+      "freshUnassigned": "Frisch & unzugewiesen",
+      "inProgress": "In Arbeit",
+      "stale": "Liegen geblieben",
+      "otherOpen": "Sonstige offene",
+      "empty": "Hier ist nichts."
+    },
     "search": "Issues durchsuchen...",
     "count": "Keine Issues | {count} Issue | {count} Issues",
     "page": "Seite {current} von {total}",

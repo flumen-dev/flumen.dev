@@ -353,6 +353,14 @@
     "closedAs": "Closed",
     "closedAsNotPlanned": "Not planned",
     "needsResponse": "Waiting for your response",
+    "section": {
+      "needsResponse": "Needs your response",
+      "freshUnassigned": "Fresh & unassigned",
+      "inProgress": "In progress",
+      "stale": "Stale",
+      "otherOpen": "Other open",
+      "empty": "Nothing here."
+    },
     "search": "Search issues...",
     "count": "No issues | {count} issue | {count} issues",
     "page": "Page {current} of {total}",
