@@ -55,6 +55,72 @@
       },
       "additionalProperties": false
     },
+    "cmdk": {
+      "type": "object",
+      "properties": {
+        "placeholder": {
+          "type": "string"
+        },
+        "loading": {
+          "type": "string"
+        },
+        "noResults": {
+          "type": "string"
+        },
+        "sectionRecent": {
+          "type": "string"
+        },
+        "sectionRepositories": {
+          "type": "string"
+        },
+        "sectionIssues": {
+          "type": "string"
+        },
+        "sectionPullRequests": {
+          "type": "string"
+        },
+        "sectionActions": {
+          "type": "string"
+        },
+        "actionNewIssue": {
+          "type": "string"
+        },
+        "actionSettings": {
+          "type": "string"
+        },
+        "subtitlePrivate": {
+          "type": "string"
+        },
+        "subtitleFork": {
+          "type": "string"
+        },
+        "subtitlePrivateFork": {
+          "type": "string"
+        },
+        "scopeMine": {
+          "type": "string"
+        },
+        "scopeGlobal": {
+          "type": "string"
+        },
+        "scopeHintGlobal": {
+          "type": "string"
+        },
+        "scopeAriaToggle": {
+          "type": "string"
+        },
+        "footerNavigate": {
+          "type": "string"
+        },
+        "footerSelect": {
+          "type": "string"
+        },
+        "footerScope": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
     "nav": {
       "type": "object",
       "properties": {
@@ -299,15 +365,6 @@
       "type": "object",
       "properties": {
         "search": {
-          "type": "string"
-        },
-        "searchStartTyping": {
-          "type": "string"
-        },
-        "searchMinChars": {
-          "type": "string"
-        },
-        "searchNoMatches": {
           "type": "string"
         },
         "count": {
@@ -2603,12 +2660,6 @@
               "type": "string"
             },
             "renamed": {
-              "type": "string"
-            },
-            "searchFavorites": {
-              "type": "string"
-            },
-            "searchRecent": {
               "type": "string"
             },
             "openNewTab": {
