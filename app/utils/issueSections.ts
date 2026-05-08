@@ -21,3 +21,43 @@ export const ISSUE_SECTIONS: IssueSectionDef[] = [
 ]
 
 export const ISSUE_SECTION_KEYS: IssueSectionKey[] = ISSUE_SECTIONS.map(s => s.key)
+
+const FRESH_DAYS = 7
+const STALE_DAYS = 30
+const MS_PER_DAY = 1000 * 60 * 60 * 24
+
+/**
+ * Buckets an issue into one of the smart sections. Rules are checked in
+ * priority order, first match wins. Closed issues fall through to `other-open`
+ * since the section labels are open-issue oriented.
+ */
+export function categorizeIssue(issue: Issue, currentLogin: string | null): IssueSectionKey {
+  if (issue.state === 'CLOSED') return 'other-open'
+
+  const now = Date.now()
+  const ageDays = (now - new Date(issue.updatedAt).getTime()) / MS_PER_DAY
+  const createdDays = (now - new Date(issue.createdAt).getTime()) / MS_PER_DAY
+
+  // Maintainer-relevant only when the viewer is signed in.
+  if (currentLogin && issue.commentCount > 0 && !issue.maintainerCommented) {
+    return 'needs-response'
+  }
+  if (createdDays < FRESH_DAYS && issue.assignees.length === 0 && issue.linkedPrCount === 0) {
+    return 'fresh-unassigned'
+  }
+  if (issue.assignees.length > 0 && issue.linkedPrCount > 0) {
+    return 'in-progress'
+  }
+  if (ageDays > STALE_DAYS) {
+    return 'stale'
+  }
+  return 'other-open'
+}
+
+/** Empty bucket map keyed by every section. */
+export function createEmptyIssueBuckets(): Record<IssueSectionKey, Issue[]> {
+  return ISSUE_SECTION_KEYS.reduce<Record<IssueSectionKey, Issue[]>>((acc, k) => {
+    acc[k] = []
+    return acc
+  }, {} as Record<IssueSectionKey, Issue[]>)
+}
