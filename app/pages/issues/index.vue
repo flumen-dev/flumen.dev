@@ -1,6 +1,4 @@
 <script lang="ts" setup>
-import type { Issue } from '~~/shared/types/issue'
-
 definePageMeta({
   middleware: 'auth',
   titleKey: 'nav.issues',
@@ -9,18 +7,6 @@ definePageMeta({
 const { t } = useI18n()
 const localePath = useLocalePath()
 const store = useIssueStore()
-
-// Categorization is implemented in a follow-up issue. For now all loaded issues
-// land in `other-open` so the page renders something useful end-to-end while
-// the bucket structure is in place.
-const issuesBySection = computed<Record<IssueSectionKey, Issue[]>>(() => {
-  const buckets = ISSUE_SECTIONS.reduce<Record<IssueSectionKey, Issue[]>>((acc, s) => {
-    acc[s.key] = []
-    return acc
-  }, {} as Record<IssueSectionKey, Issue[]>)
-  buckets['other-open'] = [...store.sortedIssues]
-  return buckets
-})
 
 const collapsed = ref<Record<IssueSectionKey, boolean>>(
   ISSUE_SECTIONS.reduce<Record<IssueSectionKey, boolean>>((acc, s) => {
@@ -134,17 +120,17 @@ async function setFilter(state: 'open' | 'closed') {
             :label="sectionLabel(section.key)"
             :icon-key="section.iconKey"
             :icon-class="section.iconClass"
-            :count="issuesBySection[section.key].length"
+            :count="store.issuesBySection[section.key].length"
             :collapsed="collapsed[section.key]"
             @toggle="toggleSection(section.key)"
           >
             <IssueRow
-              v-for="issue in issuesBySection[section.key]"
+              v-for="issue in store.issuesBySection[section.key]"
               :key="issue.id"
               :issue="issue"
             />
             <p
-              v-if="!issuesBySection[section.key].length"
+              v-if="!store.issuesBySection[section.key].length"
               class="px-4 py-6 text-center text-sm text-muted"
             >
               {{ t('issues.section.empty') }}

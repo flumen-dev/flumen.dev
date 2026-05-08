@@ -16,6 +16,7 @@ function criticalScore(issue: Issue): number {
 
 export const useIssueStore = defineStore('issues', () => {
   const apiFetch = useRequestFetch()
+  const { user } = useUserSession()
 
   const selectedRepo = ref<string | null>(null)
   const loaded = ref(false)
@@ -74,6 +75,15 @@ export const useIssueStore = defineStore('issues', () => {
     if (s === 'leastCommented') return [...source].sort((a, b) => a.commentCount - b.commentCount)
     if (s === 'recentlyUpdated') return [...source].sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
     return source
+  })
+
+  const issuesBySection = computed(() => {
+    const buckets = createEmptyIssueBuckets()
+    const login = user.value?.login ?? null
+    for (const issue of sortedIssues.value) {
+      buckets[categorizeIssue(issue, login)].push(issue)
+    }
+    return buckets
   })
 
   // --- Actions ---
@@ -197,6 +207,7 @@ export const useIssueStore = defineStore('issues', () => {
     searching,
     availableLabels,
     sortedIssues,
+    issuesBySection,
     fetchIssues,
     loadNextPage: section.nextPage,
     loadPreviousPage: section.prevPage,
