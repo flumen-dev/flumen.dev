@@ -16,6 +16,7 @@ export default defineNuxtConfig({
     'nuxt-echarts',
     'nuxt-freeform',
     'vorm-nuxt',
+    '@vueuse/nuxt',
   ],
   devtools: { enabled: true },
 

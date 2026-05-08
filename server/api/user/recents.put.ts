@@ -1,4 +1,4 @@
-const VALID_TYPES: RecentItemType[] = ['repo', 'issue', 'pr', 'user']
+const VALID_TYPES: CmdkRecentItemType[] = ['repo', 'issue', 'pr', 'user']
 const ID_MAX = 200
 const TITLE_MAX = 200
 const SUBTITLE_MAX = 200
@@ -18,9 +18,9 @@ function isHttpsUrl(value: string): boolean {
   }
 }
 
-export default defineEventHandler(async (event): Promise<RecentItem[]> => {
+export default defineEventHandler(async (event): Promise<CmdkRecentItem[]> => {
   const session = await getUserSession(event)
-  const body = await readBody<Partial<RecentItem>>(event)
+  const body = await readBody<Partial<CmdkRecentItem>>(event)
 
   if (!body?.type || !VALID_TYPES.includes(body.type)) {
     throw createError({ statusCode: 400, message: 'Invalid type' })
@@ -38,7 +38,7 @@ export default defineEventHandler(async (event): Promise<RecentItem[]> => {
     throw createError({ statusCode: 400, message: 'Invalid avatarUrl' })
   }
 
-  const item: RecentItem = {
+  const item: CmdkRecentItem = {
     type: body.type,
     id: body.id,
     title: body.title.slice(0, TITLE_MAX),
@@ -50,9 +50,9 @@ export default defineEventHandler(async (event): Promise<RecentItem[]> => {
 
   const storage = useStorage('data')
   const key = `users:${session.user!.id}:recents`
-  const current = (await storage.getItem<RecentItem[]>(key)) ?? []
+  const current = (await storage.getItem<CmdkRecentItem[]>(key)) ?? []
 
-  const next = [item, ...current.filter(r => !(r.type === item.type && r.id === item.id))].slice(0, RECENTS_CAP)
+  const next = [item, ...current.filter(r => !(r.type === item.type && r.id === item.id))].slice(0, CMDK_RECENTS_CAP)
   await storage.setItem(key, next)
 
   return next

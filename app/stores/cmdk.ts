@@ -1,4 +1,4 @@
-export type CmdkResultType = 'recent' | 'repo' | 'action'
+export type CmdkResultType = 'recent' | 'repo' | 'action' | 'issue' | 'pr'
 
 export interface CmdkResult {
   type: CmdkResultType
@@ -43,13 +43,19 @@ export const useCmdkStore = defineStore('cmdk', () => {
   // --- UI state ---
   const open = ref(false)
   const query = ref('')
+  const scope = ref<CmdkSearchScope>('mine')
   const selectedIndex = ref(0)
 
   // --- Data state ---
   const repos = ref<CmdkRepo[]>([])
-  const recents = ref<RecentItem[]>([])
+  const recents = ref<CmdkRecentItem[]>([])
   const loaded = ref(false)
   const loading = ref(false)
+
+  // --- Live search state ---
+  const liveResults = ref<CmdkSearchResult[]>([])
+  const liveLoading = ref(false)
+  let lastSearchId = 0
 
   // --- Loaders ---
   async function loadIfNeeded() {
@@ -58,7 +64,7 @@ export const useCmdkStore = defineStore('cmdk', () => {
     try {
       const [r, rec] = await Promise.all([
         apiFetch<CmdkRepo[]>('/api/user/repos'),
-        apiFetch<RecentItem[]>('/api/user/recents'),
+        apiFetch<CmdkRecentItem[]>('/api/user/recents'),
       ])
       repos.value = r
       recents.value = rec
@@ -69,14 +75,45 @@ export const useCmdkStore = defineStore('cmdk', () => {
     }
   }
 
-  async function trackRecent(item: Omit<RecentItem, 'viewedAt'>) {
-    const optimistic: RecentItem = { ...item, viewedAt: Date.now() }
+  async function runLiveSearch() {
+    const q = query.value.trim()
+    if (q.length < 2) {
+      liveResults.value = []
+      liveLoading.value = false
+      return
+    }
+    const id = ++lastSearchId
+    liveLoading.value = true
+    try {
+      const res = await apiFetch<CmdkSearchResponse>('/api/search', {
+        params: { q, scope: scope.value },
+      })
+      if (id !== lastSearchId) return
+      liveResults.value = res.results
+    }
+    catch {
+      if (id !== lastSearchId) return
+      liveResults.value = []
+    }
+    finally {
+      if (id === lastSearchId) liveLoading.value = false
+    }
+  }
+
+  watchDebounced(
+    [query, scope],
+    () => { if (open.value) runLiveSearch() },
+    { debounce: 250 },
+  )
+
+  async function trackRecent(item: Omit<CmdkRecentItem, 'viewedAt'>) {
+    const optimistic: CmdkRecentItem = { ...item, viewedAt: Date.now() }
     recents.value = [
       optimistic,
       ...recents.value.filter(r => !(r.type === item.type && r.id === item.id)),
-    ].slice(0, RECENTS_CAP)
+    ].slice(0, CMDK_RECENTS_CAP)
     try {
-      const next = await $fetch<RecentItem[]>('/api/user/recents', {
+      const next = await $fetch<CmdkRecentItem[]>('/api/user/recents', {
         method: 'PUT',
         body: optimistic,
       })
@@ -88,6 +125,19 @@ export const useCmdkStore = defineStore('cmdk', () => {
   }
 
   // --- Derived results ---
+  const myRepoSet = computed(() => new Set(repos.value.map(r => r.fullName)))
+
+  // Boost results from the user's own repos to the top while preserving the
+  // server's relevance order within each group (Array.sort is stable).
+  const sortedLiveResults = computed<CmdkSearchResult[]>(() => {
+    const mine = myRepoSet.value
+    return [...liveResults.value].sort((a, b) => {
+      const aMine = 'repo' in a && mine.has(a.repo) ? 1 : 0
+      const bMine = 'repo' in b && mine.has(b.repo) ? 1 : 0
+      return bMine - aMine
+    })
+  })
+
   const recentResults = computed<CmdkResult[]>(() =>
     recents.value
       .filter(r => fuzzyMatch(query.value, r.title) || fuzzyMatch(query.value, r.subtitle ?? ''))
@@ -129,13 +179,67 @@ export const useCmdkStore = defineStore('cmdk', () => {
     })),
   )
 
+  const issueResults = computed<CmdkResult[]>(() =>
+    sortedLiveResults.value
+      .filter((r): r is Extract<CmdkSearchResult, { kind: 'issue' }> => r.kind === 'issue')
+      .map(r => ({
+        type: 'issue',
+        id: `issue:${r.id}`,
+        title: r.title,
+        subtitle: `${r.repo} #${r.number}`,
+        avatarUrl: r.ownerAvatarUrl,
+        iconKey: r.state === 'closed' ? 'i-lucide-circle-check' : 'i-lucide-circle-dot',
+        url: localePath(r.url),
+      })),
+  )
+
+  const prResults = computed<CmdkResult[]>(() =>
+    sortedLiveResults.value
+      .filter((r): r is Extract<CmdkSearchResult, { kind: 'pr' }> => r.kind === 'pr')
+      .map(r => ({
+        type: 'pr',
+        id: `pr:${r.id}`,
+        title: r.title,
+        subtitle: `${r.repo} #${r.number}`,
+        avatarUrl: r.ownerAvatarUrl,
+        iconKey: iconForPrState(r.state),
+        url: localePath(r.url),
+      })),
+  )
+
+  const liveRepoResults = computed<CmdkResult[]>(() => {
+    if (scope.value !== 'global') return []
+    return sortedLiveResults.value
+      .filter((r): r is Extract<CmdkSearchResult, { kind: 'repo' }> => r.kind === 'repo')
+      .filter(r => !myRepoSet.value.has(r.fullName))
+      .map(r => ({
+        type: 'repo',
+        id: `globalrepo:${r.id}`,
+        title: r.fullName,
+        subtitle: r.description,
+        avatarUrl: r.ownerAvatarUrl,
+        iconKey: 'i-lucide-folder-git-2',
+        url: localePath(r.url),
+      }))
+  })
+
+  const combinedRepoResults = computed<CmdkResult[]>(() =>
+    [...repoResults.value, ...liveRepoResults.value],
+  )
+
   const sections = computed<CmdkSection[]>(() => {
     const out: CmdkSection[] = []
     if (recentResults.value.length) {
       out.push({ key: 'recent', label: t('cmdk.sectionRecent'), results: recentResults.value })
     }
-    if (repoResults.value.length) {
-      out.push({ key: 'repo', label: t('cmdk.sectionRepositories'), results: repoResults.value })
+    if (issueResults.value.length) {
+      out.push({ key: 'issue', label: t('cmdk.sectionIssues'), results: issueResults.value })
+    }
+    if (prResults.value.length) {
+      out.push({ key: 'pr', label: t('cmdk.sectionPullRequests'), results: prResults.value })
+    }
+    if (combinedRepoResults.value.length) {
+      out.push({ key: 'repo', label: t('cmdk.sectionRepositories'), results: combinedRepoResults.value })
     }
     if (actionResults.value.length) {
       out.push({ key: 'action', label: t('cmdk.sectionActions'), results: actionResults.value })
@@ -155,15 +259,19 @@ export const useCmdkStore = defineStore('cmdk', () => {
   })
 
   // --- Actions ---
-  function openPalette() {
+  function openPalette(initialScope: CmdkSearchScope = 'mine') {
     open.value = true
     query.value = ''
+    scope.value = initialScope
     selectedIndex.value = 0
+    liveResults.value = []
     loadIfNeeded()
   }
 
   function closePalette() {
     open.value = false
+    lastSearchId++
+    liveLoading.value = false
   }
 
   function togglePalette() {
@@ -174,6 +282,16 @@ export const useCmdkStore = defineStore('cmdk', () => {
   function setQuery(value: string) {
     query.value = value
     selectedIndex.value = 0
+  }
+
+  function setScope(value: CmdkSearchScope) {
+    if (scope.value === value) return
+    scope.value = value
+    selectedIndex.value = 0
+  }
+
+  function toggleScope() {
+    setScope(scope.value === 'mine' ? 'global' : 'mine')
   }
 
   function selectNext() {
@@ -212,8 +330,10 @@ export const useCmdkStore = defineStore('cmdk', () => {
     // state
     open,
     query,
+    scope,
     selectedIndex,
     loading,
+    liveLoading,
     // derived
     sections,
     flatResults,
@@ -222,6 +342,8 @@ export const useCmdkStore = defineStore('cmdk', () => {
     closePalette,
     togglePalette,
     setQuery,
+    setScope,
+    toggleScope,
     selectNext,
     selectPrev,
     highlightById,
@@ -232,7 +354,17 @@ export const useCmdkStore = defineStore('cmdk', () => {
   }
 })
 
-function iconForRecent(type: RecentItem['type']): string {
+function iconForPrState(state: CmdkSearchPrState): string {
+  switch (state) {
+    case 'merged': return 'i-lucide-git-merge'
+    case 'closed': return 'i-lucide-git-pull-request-closed'
+    case 'draft': return 'i-lucide-git-pull-request-draft'
+    case 'open':
+    default: return 'i-lucide-git-pull-request'
+  }
+}
+
+function iconForRecent(type: CmdkRecentItem['type']): string {
   switch (type) {
     case 'repo': return 'i-lucide-folder-git-2'
     case 'issue': return 'i-lucide-circle-dot'

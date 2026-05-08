@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import CommandItem from './CommandItem.vue'
+import CommandScopeToggle from './CommandScopeToggle.vue'
 
 const cmdk = useCmdkStore()
 const inputRef = useTemplateRef<HTMLInputElement>('inputRef')
@@ -7,10 +8,18 @@ const listRef = useTemplateRef<HTMLDivElement>('listRef')
 
 defineShortcuts({
   meta_k: { handler: () => cmdk.togglePalette(), usingInput: true },
+  meta_shift_k: {
+    handler: () => {
+      if (cmdk.open) cmdk.setScope('global')
+      else cmdk.openPalette('global')
+    },
+    usingInput: true,
+  },
   escape: { handler: () => { if (cmdk.open) cmdk.closePalette() }, usingInput: true },
   arrowdown: { handler: () => { if (cmdk.open) cmdk.selectNext() }, usingInput: true },
   arrowup: { handler: () => { if (cmdk.open) cmdk.selectPrev() }, usingInput: true },
   enter: { handler: () => { if (cmdk.open) cmdk.executeSelected() }, usingInput: true },
+  tab: { handler: () => { if (cmdk.open) cmdk.toggleScope() }, usingInput: true },
 })
 
 watch(() => cmdk.open, async (isOpen) => {
@@ -50,8 +59,14 @@ watch(() => cmdk.selectedIndex, async () => {
           <!-- Input row -->
           <div class="flex items-center gap-3 px-4 py-3 border-b border-default">
             <UIcon
+              v-if="!cmdk.liveLoading"
               name="i-lucide-search"
               class="size-5 text-muted shrink-0"
+            />
+            <UIcon
+              v-else
+              name="i-lucide-loader-circle"
+              class="size-5 text-muted shrink-0 animate-spin"
             />
             <input
               ref="inputRef"
@@ -63,7 +78,15 @@ watch(() => cmdk.selectedIndex, async () => {
               class="flex-1 bg-transparent outline-none text-base text-default placeholder-muted"
               @input="cmdk.setQuery(($event.target as HTMLInputElement).value)"
             >
-            <kbd class="text-xs text-muted bg-elevated px-1.5 py-0.5 rounded border border-default">esc</kbd>
+            <CommandScopeToggle />
+          </div>
+
+          <!-- Scope hint when global -->
+          <div
+            v-if="cmdk.scope === 'global'"
+            class="px-4 py-1.5 text-[11px] text-muted bg-elevated/50 border-b border-default"
+          >
+            {{ $t('cmdk.scopeHintGlobal') }}
           </div>
 
           <!-- List -->
@@ -115,10 +138,14 @@ watch(() => cmdk.selectedIndex, async () => {
                 <kbd class="bg-default px-1.5 py-0.5 rounded border border-default">↵</kbd>
                 {{ $t('cmdk.footerSelect') }}
               </span>
+              <span class="flex items-center gap-1">
+                <kbd class="bg-default px-1.5 py-0.5 rounded border border-default">⇥</kbd>
+                {{ $t('cmdk.footerScope') }}
+              </span>
             </div>
             <span class="flex items-center gap-1">
-              <kbd class="bg-default px-1.5 py-0.5 rounded border border-default">⌘K</kbd>
-              {{ $t('cmdk.footerToggle') }}
+              <kbd class="bg-default px-1.5 py-0.5 rounded border border-default">esc</kbd>
+              {{ $t('common.close').toLowerCase() }}
             </span>
           </div>
         </div>

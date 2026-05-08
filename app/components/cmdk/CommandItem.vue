@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { CmdkResult } from '~/stores/cmdk'
+import HighlightedText from './HighlightedText.vue'
 
 defineProps<{
   result: CmdkResult
@@ -10,6 +11,8 @@ defineEmits<{
   select: []
   highlight: []
 }>()
+
+const cmdk = useCmdkStore()
 </script>
 
 <template>
@@ -38,13 +41,19 @@ defineEmits<{
     </div>
     <div class="flex-1 min-w-0">
       <div class="text-sm text-default truncate">
-        {{ result.title }}
+        <HighlightedText
+          :text="result.title"
+          :query="cmdk.query"
+        />
       </div>
       <div
         v-if="result.subtitle"
         class="text-xs text-muted truncate"
       >
-        {{ result.subtitle }}
+        <HighlightedText
+          :text="result.subtitle"
+          :query="cmdk.query"
+        />
       </div>
     </div>
     <span

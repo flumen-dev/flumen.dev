@@ -1,6 +1,6 @@
-export default defineEventHandler(async (event): Promise<RecentItem[]> => {
+export default defineEventHandler(async (event): Promise<CmdkRecentItem[]> => {
   const session = await getUserSession(event)
   const storage = useStorage('data')
-  const recents = await storage.getItem<RecentItem[]>(`users:${session.user!.id}:recents`)
+  const recents = await storage.getItem<CmdkRecentItem[]>(`users:${session.user!.id}:recents`)
   return recents ?? []
 })
