@@ -13,6 +13,21 @@ const store = useProfileStore()
 
 await store.fetchAll()
 
+// --- Track recent ---
+const cmdkStore = useCmdkStore()
+const route = useRoute()
+watch(() => store.profile, (profile) => {
+  if (!profile?.login) return
+  cmdkStore.trackRecent({
+    type: 'user',
+    id: `user:${profile.login}`,
+    title: profile.name || profile.login,
+    subtitle: profile.name ? `@${profile.login}` : undefined,
+    url: localePath(`/user/${route.params.id}`),
+    avatarUrl: profile.avatarUrl,
+  })
+}, { immediate: true })
+
 // --- Edit mode ---
 const editing = ref(false)
 
