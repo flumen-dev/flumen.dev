@@ -1066,6 +1066,30 @@
         "needsResponse": {
           "type": "string"
         },
+        "section": {
+          "type": "object",
+          "properties": {
+            "needsResponse": {
+              "type": "string"
+            },
+            "freshUnassigned": {
+              "type": "string"
+            },
+            "inProgress": {
+              "type": "string"
+            },
+            "stale": {
+              "type": "string"
+            },
+            "otherOpen": {
+              "type": "string"
+            },
+            "empty": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
         "search": {
           "type": "string"
         },
