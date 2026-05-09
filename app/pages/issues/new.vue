@@ -209,6 +209,13 @@ function submitForm(formData: Record<string, unknown>) {
         />
       </div>
 
+      <!-- Possibly related issues -->
+      <IssueSimilarHint
+        v-if="repo"
+        :title="title"
+        :repo="repo"
+      />
+
       <!-- Form fields rendered by Vorm -->
       <IssueFormRenderer
         ref="formRenderer"
@@ -274,6 +281,13 @@ function submitForm(formData: Record<string, unknown>) {
           @keydown.ctrl.enter="submitPlain"
         />
       </div>
+
+      <!-- Possibly related issues -->
+      <IssueSimilarHint
+        v-if="repo"
+        :title="title"
+        :repo="repo"
+      />
 
       <!-- Body -->
       <div class="space-y-1">

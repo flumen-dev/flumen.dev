@@ -101,11 +101,17 @@ export function scoreIssue(issue: Issue, query: string, currentLogin: string | n
   return score
 }
 
+export interface ScoredIssue {
+  issue: Issue
+  score: number
+}
+
 /**
- * Rank a pool of issues against a query. Returns issues with score > 0,
- * sorted by score descending. Stable on equal scores (preserves input order).
+ * Rank a pool of issues with their scores. Returns entries with score > 0,
+ * sorted descending. Stable on equal scores (preserves input order).
+ * Use this when the score itself is needed (e.g. similarity threshold gating).
  */
-export function rankIssues(issues: Issue[], query: string, currentLogin: string | null): Issue[] {
+export function rankIssuesScored(issues: Issue[], query: string, currentLogin: string | null): ScoredIssue[] {
   if (!query.trim()) return []
   const now = Date.now()
   const scored = issues
@@ -117,5 +123,10 @@ export function rankIssues(issues: Issue[], query: string, currentLogin: string 
     return a.index - b.index
   })
 
-  return scored.map(entry => entry.issue)
+  return scored.map(({ issue, score }) => ({ issue, score }))
+}
+
+/** Convenience: rankIssuesScored without the score wrapper. */
+export function rankIssues(issues: Issue[], query: string, currentLogin: string | null): Issue[] {
+  return rankIssuesScored(issues, query, currentLogin).map(entry => entry.issue)
 }
