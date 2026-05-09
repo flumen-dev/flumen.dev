@@ -49,7 +49,8 @@ export default defineEventHandler(async (event): Promise<Issue[]> => {
   }
 
   const stateQ = state === 'closed' ? 'is:closed' : 'is:open'
-  let query = `is:issue ${stateQ} repo:${repo} ${q} in:title,body sort:updated-desc`
+  const escapedQ = escapeGitHubQuery(q)
+  let query = `is:issue ${stateQ} repo:${repo} ${escapedQ} in:title,body sort:updated-desc`
   if (isAssignedToMe) query += ` assignee:${login}`
   if (isUnassigned) query += ` no:assignee`
   if (milestone === '*') {

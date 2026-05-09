@@ -32,6 +32,7 @@ onKeyStroke('/', (e) => {
           v-model="store.search"
           type="text"
           :placeholder="t('issues.search')"
+          :aria-label="t('issues.search')"
           class="w-full pl-8 pr-3 py-1.5 text-sm rounded-md bg-elevated/50 border border-default focus:outline-none focus:border-primary placeholder-muted transition-colors"
         >
         <kbd
@@ -56,6 +57,7 @@ onKeyStroke('/', (e) => {
         v-for="chip in filterChips"
         :key="chip.key"
         type="button"
+        :aria-pressed="store.activeFilters.includes(chip.key)"
         class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium transition-colors cursor-pointer"
         :class="store.activeFilters.includes(chip.key)
           ? 'bg-primary text-inverted'
@@ -78,6 +80,7 @@ onKeyStroke('/', (e) => {
           v-for="label in store.availableLabels"
           :key="label"
           type="button"
+          :aria-pressed="store.activeFilters.includes(`label:${label}`)"
           class="inline-flex items-center px-2 py-0.5 rounded-md text-xs transition-colors cursor-pointer"
           :class="store.activeFilters.includes(`label:${label}`)
             ? 'bg-primary text-inverted'
