@@ -55,6 +55,99 @@
       },
       "additionalProperties": false
     },
+    "pulls": {
+      "type": "object",
+      "properties": {
+        "selectRepo": {
+          "type": "string"
+        },
+        "open": {
+          "type": "string"
+        },
+        "merged": {
+          "type": "string"
+        },
+        "closed": {
+          "type": "string"
+        },
+        "empty": {
+          "type": "string"
+        },
+        "highlight": {
+          "type": "object",
+          "properties": {
+            "readyToMerge": {
+              "type": "string"
+            },
+            "readyToMergeEmpty": {
+              "type": "string"
+            },
+            "reviewsRequested": {
+              "type": "string"
+            },
+            "reviewsRequestedEmpty": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "error": {
+          "type": "object",
+          "properties": {
+            "sessionExpired": {
+              "type": "object",
+              "properties": {
+                "title": {
+                  "type": "string"
+                },
+                "description": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false
+            },
+            "rateLimited": {
+              "type": "object",
+              "properties": {
+                "title": {
+                  "type": "string"
+                },
+                "description": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false
+            },
+            "notFound": {
+              "type": "object",
+              "properties": {
+                "title": {
+                  "type": "string"
+                },
+                "description": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false
+            },
+            "generic": {
+              "type": "object",
+              "properties": {
+                "title": {
+                  "type": "string"
+                },
+                "description": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
     "bookmark": {
       "type": "object",
       "properties": {
@@ -179,6 +272,9 @@
           "type": "string"
         },
         "focus": {
+          "type": "string"
+        },
+        "pulls": {
           "type": "string"
         },
         "bookmarks": {

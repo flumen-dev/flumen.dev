@@ -171,6 +171,12 @@ const mainItems = computed<NavigationMenuItem[]>(() => [
     disabled: !loggedIn.value,
   },
   {
+    label: t('nav.pulls'),
+    icon: 'i-lucide-git-pull-request',
+    to: localePath('/pulls'),
+    disabled: !loggedIn.value,
+  },
+  {
     label: t('nav.bookmarks'),
     icon: 'i-lucide-bookmark',
     to: localePath('/bookmarks'),
