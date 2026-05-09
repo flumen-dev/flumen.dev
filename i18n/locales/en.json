@@ -22,6 +22,20 @@
     "merged": "Merged",
     "closed": "Closed",
     "empty": "No pull requests in this state.",
+    "linkedIssues": "{count} linked issue | {count} linked issues",
+    "ci": {
+      "success": "CI passing",
+      "failure": "CI failing",
+      "pending": "CI running",
+      "expected": "CI expected"
+    },
+    "review": {
+      "approvedBy": "Approved by {logins}",
+      "changesRequestedBy": "Changes requested by {logins}"
+    },
+    "merge": {
+      "conflicting": "Merge conflict — needs rebase"
+    },
     "highlight": {
       "readyToMerge": "Ready to merge",
       "readyToMergeEmpty": "Nothing of yours is fully green right now.",

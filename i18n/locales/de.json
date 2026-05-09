@@ -22,6 +22,20 @@
     "merged": "Gemergt",
     "closed": "Geschlossen",
     "empty": "Keine Pull Requests in diesem Status.",
+    "linkedIssues": "{count} verknüpftes Issue | {count} verknüpfte Issues",
+    "ci": {
+      "success": "CI grün",
+      "failure": "CI rot",
+      "pending": "CI läuft",
+      "expected": "CI erwartet"
+    },
+    "review": {
+      "approvedBy": "Approved von {logins}",
+      "changesRequestedBy": "Changes angefordert von {logins}"
+    },
+    "merge": {
+      "conflicting": "Merge-Konflikt — Rebase nötig"
+    },
     "highlight": {
       "readyToMerge": "Bereit zum Mergen",
       "readyToMergeEmpty": "Aktuell ist nichts von dir komplett grün.",

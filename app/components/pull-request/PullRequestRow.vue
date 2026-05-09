@@ -5,6 +5,7 @@ const props = defineProps<{
   pr: PullRequest
 }>()
 
+const { t } = useI18n()
 const localePath = useLocalePath()
 const { open: openProfile } = useUserProfileDialog()
 const createdAgo = useTimeAgo(computed(() => props.pr.createdAt))
@@ -24,6 +25,40 @@ const stateColor = computed(() => {
   if (props.pr.state === 'CLOSED') return 'text-rose-500'
   if (props.pr.isDraft) return 'text-neutral-400'
   return 'text-emerald-500'
+})
+
+const ci = computed(() => {
+  switch (props.pr.ciStatus) {
+    case 'SUCCESS': return { icon: 'i-lucide-check-circle-2', color: 'text-emerald-500', tooltip: t('pulls.ci.success') }
+    case 'FAILURE':
+    case 'ERROR': return { icon: 'i-lucide-x-circle', color: 'text-rose-500', tooltip: t('pulls.ci.failure') }
+    case 'PENDING': return { icon: 'i-lucide-clock', color: 'text-amber-500', tooltip: t('pulls.ci.pending') }
+    case 'EXPECTED': return { icon: 'i-lucide-clock', color: 'text-neutral-400', tooltip: t('pulls.ci.expected') }
+    default: return null
+  }
+})
+
+const approvedCount = computed(() =>
+  props.pr.latestReviews.filter(r => r.state === 'APPROVED').length,
+)
+const changesRequestedCount = computed(() =>
+  props.pr.latestReviews.filter(r => r.state === 'CHANGES_REQUESTED').length,
+)
+
+const approvedTooltip = computed(() => {
+  const logins = props.pr.latestReviews
+    .filter(r => r.state === 'APPROVED')
+    .map(r => r.author.login)
+    .join(', ')
+  return t('pulls.review.approvedBy', { logins })
+})
+
+const changesTooltip = computed(() => {
+  const logins = props.pr.latestReviews
+    .filter(r => r.state === 'CHANGES_REQUESTED')
+    .map(r => r.author.login)
+    .join(', ')
+  return t('pulls.review.changesRequestedBy', { logins })
 })
 
 const router = useRouter()
@@ -84,6 +119,83 @@ function navigate() {
         <span>#{{ pr.number }}</span>
         <span>{{ createdAgo }}</span>
         <span class="text-default">{{ updatedAgo }}</span>
+
+        <UTooltip
+          v-if="ci"
+          :text="ci.tooltip"
+        >
+          <UIcon
+            :name="ci.icon"
+            class="size-3.5"
+            :class="ci.color"
+          />
+        </UTooltip>
+
+        <UTooltip
+          v-if="approvedCount"
+          :text="approvedTooltip"
+        >
+          <span class="inline-flex items-center gap-0.5 text-emerald-500">
+            <UIcon
+              name="i-lucide-check"
+              class="size-3.5"
+            />
+            {{ approvedCount }}
+          </span>
+        </UTooltip>
+
+        <UTooltip
+          v-if="changesRequestedCount"
+          :text="changesTooltip"
+        >
+          <span class="inline-flex items-center gap-0.5 text-rose-500">
+            <UIcon
+              name="i-lucide-x"
+              class="size-3.5"
+            />
+            {{ changesRequestedCount }}
+          </span>
+        </UTooltip>
+
+        <UTooltip
+          v-if="pr.mergeable === 'CONFLICTING'"
+          :text="t('pulls.merge.conflicting')"
+        >
+          <UIcon
+            name="i-lucide-alert-triangle"
+            class="size-3.5 text-rose-500"
+          />
+        </UTooltip>
+
+        <span class="font-mono text-[10px] tabular-nums">
+          <span class="text-emerald-500">+{{ pr.additions }}</span>
+          <span class="text-rose-500 ml-1">−{{ pr.deletions }}</span>
+        </span>
+
+        <UTooltip
+          v-if="pr.linkedIssueCount"
+          :text="t('pulls.linkedIssues', { count: pr.linkedIssueCount })"
+        >
+          <span class="inline-flex items-center gap-0.5">
+            <UIcon
+              name="i-lucide-link-2"
+              class="size-3.5"
+            />
+            {{ pr.linkedIssueCount }}
+          </span>
+        </UTooltip>
+
+        <span
+          v-if="pr.commentCount"
+          class="inline-flex items-center gap-0.5"
+        >
+          <UIcon
+            name="i-lucide-message-square"
+            class="size-3.5"
+          />
+          {{ pr.commentCount }}
+        </span>
+
         <span class="font-mono text-[10px] text-muted/70 truncate max-w-35">
           {{ pr.headRefName }} → {{ pr.baseRefName }}
         </span>

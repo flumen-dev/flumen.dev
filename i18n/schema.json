@@ -73,6 +73,48 @@
         "empty": {
           "type": "string"
         },
+        "linkedIssues": {
+          "type": "string"
+        },
+        "ci": {
+          "type": "object",
+          "properties": {
+            "success": {
+              "type": "string"
+            },
+            "failure": {
+              "type": "string"
+            },
+            "pending": {
+              "type": "string"
+            },
+            "expected": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "review": {
+          "type": "object",
+          "properties": {
+            "approvedBy": {
+              "type": "string"
+            },
+            "changesRequestedBy": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "merge": {
+          "type": "object",
+          "properties": {
+            "conflicting": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
         "highlight": {
           "type": "object",
           "properties": {

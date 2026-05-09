@@ -32,6 +32,12 @@ const PR_FIELDS = `
   }
   comments { totalCount }
   closingIssuesReferences(first: 0) { totalCount }
+  latestReviews(first: 10) {
+    nodes {
+      state
+      author { login avatarUrl }
+    }
+  }
   commits(last: 1) {
     nodes {
       commit { statusCheckRollup { state } }
