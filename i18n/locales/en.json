@@ -16,6 +16,18 @@
     "error": "Error",
     "removeItem": "Remove {item}"
   },
+  "bookmark": {
+    "title": "Bookmarks",
+    "add": "Bookmark",
+    "remove": "Remove bookmark",
+    "empty": "No bookmarks yet. Tap the bookmark icon on any issue, PR or repo to keep it here.",
+    "sectionEmpty": "Nothing here yet.",
+    "section": {
+      "issues": "Issues",
+      "pulls": "Pull Requests",
+      "repos": "Repositories"
+    }
+  },
   "cmdk": {
     "placeholder": "Search or browse…",
     "loading": "Loading…",
@@ -46,6 +58,7 @@
     "settings": "Settings",
     "search": "Search...",
     "focus": "Focus",
+    "bookmarks": "Bookmarks",
     "profile": "Profile",
     "logout": "Log out"
   },

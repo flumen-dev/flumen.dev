@@ -164,8 +164,16 @@ function navigate() {
       </div>
     </div>
 
-    <!-- Right side: Assign + Assignees -->
+    <!-- Right side: Bookmark + Assign + Assignees -->
     <div class="flex items-center gap-1 shrink-0">
+      <UiBookmarkButton
+        type="issue"
+        :repo="repo"
+        :number="issue.number"
+        :title="issue.title"
+        :url="localePath(buildWorkItemPath(repo, issue.number)!)"
+        :avatar-url="issue.author.avatarUrl"
+      />
       <span class="opacity-100 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:pointer-events-none [@media(hover:hover)]:group-hover:opacity-100 [@media(hover:hover)]:group-hover:pointer-events-auto [@media(hover:hover)]:group-focus-within:opacity-100 [@media(hover:hover)]:group-focus-within:pointer-events-auto transition-opacity duration-150">
         <UiAssignButton
           :repo="repo"

@@ -55,6 +55,42 @@
       },
       "additionalProperties": false
     },
+    "bookmark": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "add": {
+          "type": "string"
+        },
+        "remove": {
+          "type": "string"
+        },
+        "empty": {
+          "type": "string"
+        },
+        "sectionEmpty": {
+          "type": "string"
+        },
+        "section": {
+          "type": "object",
+          "properties": {
+            "issues": {
+              "type": "string"
+            },
+            "pulls": {
+              "type": "string"
+            },
+            "repos": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
     "cmdk": {
       "type": "object",
       "properties": {
@@ -143,6 +179,9 @@
           "type": "string"
         },
         "focus": {
+          "type": "string"
+        },
+        "bookmarks": {
           "type": "string"
         },
         "profile": {
