@@ -2,6 +2,8 @@ import type { Issue } from '~~/shared/types/issue'
 
 export type IssueSortKey = 'critical' | 'newest' | 'oldest' | 'mostCommented' | 'leastCommented' | 'recentlyUpdated'
 
+const HIGHLIGHT_PAGE_SIZE = HIGHLIGHT_CARD_VISIBLE_ITEMS
+
 function criticalScore(issue: Issue): number {
   let score = 0
   if (!issue.maintainerCommented) score += 15
@@ -121,6 +123,12 @@ export const useIssueStore = defineStore('issues', () => {
     buildParams,
   )
 
+  // Highlight cards — three independent server queries, paginated independently.
+  const highlightParams = () => ({ repo: selectedRepo.value ?? '' })
+  const assignedToMe = usePaginatedSection<Issue>(apiFetch, '/api/issues/assigned-to-me', HIGHLIGHT_PAGE_SIZE, highlightParams)
+  const mentioned = usePaginatedSection<Issue>(apiFetch, '/api/issues/mentioned', HIGHLIGHT_PAGE_SIZE, highlightParams)
+  const authoredByMe = usePaginatedSection<Issue>(apiFetch, '/api/issues/authored-by-me', HIGHLIGHT_PAGE_SIZE, highlightParams)
+
   // --- Derived ---
 
   // Layer 1 of magical-search (#277): instant ranking over already-loaded issues
@@ -172,23 +180,19 @@ export const useIssueStore = defineStore('issues', () => {
     return source
   })
 
-  const issuesBySection = computed(() => {
-    const buckets = createEmptyIssueBuckets()
-    const login = user.value?.login ?? null
-    for (const issue of section.data.value) {
-      buckets[categorizeIssue(issue, login)].push(issue)
-    }
-    // Sub-order within each bucket: newest-first by *substantial* activity.
-    // `lastSubstantialActivityAt` skips label and milestone-only edits so
-    // bot-driven re-tagging doesn't bubble dead threads to the top.
-    const activityAt = (issue: Issue) => new Date(issue.lastSubstantialActivityAt ?? issue.updatedAt).getTime()
-    for (const key of Object.keys(buckets) as Array<keyof typeof buckets>) {
-      buckets[key].sort((a, b) => activityAt(b) - activityAt(a))
-    }
-    return buckets
-  })
-
   // --- Actions ---
+  async function fetchHighlights() {
+    if (!selectedRepo.value) return
+    // Highlights only make sense for the open state.
+    if (stateFilter.value !== 'open') {
+      assignedToMe.resetPagination()
+      mentioned.resetPagination()
+      authoredByMe.resetPagination()
+      return
+    }
+    await Promise.all([assignedToMe.refresh(), mentioned.refresh(), authoredByMe.refresh()])
+  }
+
   async function fetchOtherCount() {
     if (!selectedRepo.value) return
     const otherState = stateFilter.value === 'open' ? 'closed' : 'open'
@@ -205,10 +209,18 @@ export const useIssueStore = defineStore('issues', () => {
     }
   }
 
-  async function fetchIssues() {
+  /**
+   * `refreshHighlights` defaults to `false` — user filter / search toggles do
+   * not change the highlight queries (they're fixed by GitHub-Search qualifier),
+   * so refetching them on every chip click is wasted bandwidth. Repo switches,
+   * state-filter switches and explicit refresh call with `true`.
+   */
+  async function fetchIssues({ refreshHighlights = false }: { refreshHighlights?: boolean } = {}) {
     if (!selectedRepo.value) return
     errorKey.value = null
-    await Promise.all([section.refresh(), fetchOtherCount()])
+    const tasks: Array<Promise<unknown>> = [section.refresh(), fetchOtherCount()]
+    if (refreshHighlights) tasks.push(fetchHighlights())
+    await Promise.all(tasks)
     if (section.error.value) {
       errorKey.value = 'fetchError'
       return
@@ -217,6 +229,12 @@ export const useIssueStore = defineStore('issues', () => {
     if (stateFilter.value === 'open') openCount.value = section.totalCount.value
     else closedCount.value = section.totalCount.value
     loaded.value = true
+  }
+
+  async function setStateFilter(state: 'open' | 'closed') {
+    if (stateFilter.value === state) return
+    stateFilter.value = state
+    await fetchIssues({ refreshHighlights: true })
   }
 
   async function searchIssues(q: string) {
@@ -296,7 +314,10 @@ export const useIssueStore = defineStore('issues', () => {
     closedCount.value = null
     repoAuthors.value = []
     repoAssignees.value = []
-    await Promise.all([fetchIssues(), fetchPeoplePool()])
+    assignedToMe.resetPagination()
+    mentioned.resetPagination()
+    authoredByMe.resetPagination()
+    await Promise.all([fetchIssues({ refreshHighlights: true }), fetchPeoplePool()])
   }
 
   function updateIssue(repo: string, number: number, patch: Partial<Issue>) {
@@ -314,7 +335,10 @@ export const useIssueStore = defineStore('issues', () => {
     searchResults.value = []
     openCount.value = null
     closedCount.value = null
-    await fetchIssues()
+    assignedToMe.resetPagination()
+    mentioned.resetPagination()
+    authoredByMe.resetPagination()
+    await fetchIssues({ refreshHighlights: true })
   }
 
   return {
@@ -345,8 +369,12 @@ export const useIssueStore = defineStore('issues', () => {
     searching,
     availableLabels,
     sortedIssues,
-    issuesBySection,
+    assignedToMe,
+    mentioned,
+    authoredByMe,
     fetchIssues,
+    fetchHighlights,
+    setStateFilter,
     loadNextPage: section.nextPage,
     loadPreviousPage: section.prevPage,
     selectRepo,

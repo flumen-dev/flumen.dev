@@ -8,32 +8,8 @@ const { t } = useI18n()
 const localePath = useLocalePath()
 const store = useIssueStore()
 
-const collapsed = ref<Record<IssueSectionKey, boolean>>(
-  ISSUE_SECTIONS.reduce<Record<IssueSectionKey, boolean>>((acc, s) => {
-    acc[s.key] = s.defaultCollapsed
-    return acc
-  }, {} as Record<IssueSectionKey, boolean>),
-)
-
-function toggleSection(key: IssueSectionKey) {
-  collapsed.value[key] = !collapsed.value[key]
-}
-
-// Explicit t() calls so vue-i18n-extract picks up the keys statically.
-function sectionLabel(key: IssueSectionKey): string {
-  switch (key) {
-    case 'needs-response': return t('issues.section.needsResponse')
-    case 'fresh-unassigned': return t('issues.section.freshUnassigned')
-    case 'in-progress': return t('issues.section.inProgress')
-    case 'stale': return t('issues.section.stale')
-    case 'other-open': return t('issues.section.otherOpen')
-  }
-}
-
 async function setFilter(state: 'open' | 'closed') {
-  if (store.stateFilter === state) return
-  store.stateFilter = state
-  await store.fetchIssues()
+  await store.setStateFilter(state)
 }
 </script>
 
@@ -81,6 +57,61 @@ async function setFilter(state: 'open' | 'closed') {
 
       <!-- Loaded -->
       <template v-else-if="store.loaded">
+        <!-- Highlights: Assigned-to-me | Mentioned | Authored-by-me -->
+        <div
+          v-if="store.stateFilter === 'open'"
+          class="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
+        >
+          <IssueHighlightCard
+            :title="t('issues.highlight.assignedToMe')"
+            icon-key="i-lucide-user-check"
+            icon-class="text-emerald-500"
+            :items="store.assignedToMe.data"
+            :loading="store.assignedToMe.loading"
+            :empty-text="t('issues.highlight.assignedToMeEmpty')"
+            :total-count="store.assignedToMe.totalCount"
+            :current-page="store.assignedToMe.currentPage"
+            :total-pages="store.assignedToMe.totalPages"
+            :has-more="store.assignedToMe.hasMore"
+            :has-previous="store.assignedToMe.hasPrevious"
+            :paging="store.assignedToMe.paging"
+            @next="store.assignedToMe.nextPage()"
+            @previous="store.assignedToMe.prevPage()"
+          />
+          <IssueHighlightCard
+            :title="t('issues.highlight.mentioned')"
+            icon-key="i-lucide-at-sign"
+            icon-class="text-rose-500"
+            :items="store.mentioned.data"
+            :loading="store.mentioned.loading"
+            :empty-text="t('issues.highlight.mentionedEmpty')"
+            :total-count="store.mentioned.totalCount"
+            :current-page="store.mentioned.currentPage"
+            :total-pages="store.mentioned.totalPages"
+            :has-more="store.mentioned.hasMore"
+            :has-previous="store.mentioned.hasPrevious"
+            :paging="store.mentioned.paging"
+            @next="store.mentioned.nextPage()"
+            @previous="store.mentioned.prevPage()"
+          />
+          <IssueHighlightCard
+            :title="t('issues.highlight.authoredByMe')"
+            icon-key="i-lucide-pencil"
+            icon-class="text-blue-500"
+            :items="store.authoredByMe.data"
+            :loading="store.authoredByMe.loading"
+            :empty-text="t('issues.highlight.authoredByMeEmpty')"
+            :total-count="store.authoredByMe.totalCount"
+            :current-page="store.authoredByMe.currentPage"
+            :total-pages="store.authoredByMe.totalPages"
+            :has-more="store.authoredByMe.hasMore"
+            :has-previous="store.authoredByMe.hasPrevious"
+            :paging="store.authoredByMe.paging"
+            @next="store.authoredByMe.nextPage()"
+            @previous="store.authoredByMe.prevPage()"
+          />
+        </div>
+
         <!-- State tabs + Create -->
         <div class="flex flex-wrap items-center gap-x-4 gap-y-2">
           <IssueStateTab
@@ -112,16 +143,19 @@ async function setFilter(state: 'open' | 'closed') {
         <!-- Filter bar (search + chips + clear) -->
         <IssueFilterBar />
 
-        <!-- Filtered flat list (when search/filters active) -->
+        <!-- Main list (filtered or full) -->
         <div
-          v-if="store.hasActiveFilters"
           class="space-y-3 transition-opacity duration-150"
           :class="store.loading || store.searching ? 'opacity-50 pointer-events-none' : ''"
         >
-          <div class="px-1 text-xs font-medium text-muted uppercase tracking-wider">
+          <div
+            v-if="store.hasActiveFilters"
+            class="px-1 text-xs font-medium text-muted uppercase tracking-wider"
+          >
             {{ t('issues.filtered.heading') }}
             <span class="text-muted/70">({{ store.sortedIssues.length }})</span>
           </div>
+
           <div
             v-if="store.sortedIssues.length"
             class="rounded-lg border border-default divide-y divide-default overflow-hidden"
@@ -136,41 +170,11 @@ async function setFilter(state: 'open' | 'closed') {
             v-else
             class="px-4 py-8 text-center text-sm text-muted"
           >
-            {{ t('issues.filtered.empty') }}
+            {{ store.hasActiveFilters ? t('issues.filtered.empty') : t('issues.empty') }}
           </p>
         </div>
 
-        <!-- Smart sections (default) -->
-        <div
-          v-else
-          class="space-y-3 transition-opacity duration-150"
-          :class="store.loading ? 'opacity-50 pointer-events-none' : ''"
-        >
-          <IssueSection
-            v-for="section in ISSUE_SECTIONS"
-            :key="section.key"
-            :label="sectionLabel(section.key)"
-            :icon-key="section.iconKey"
-            :icon-class="section.iconClass"
-            :count="store.issuesBySection[section.key].length"
-            :collapsed="collapsed[section.key]"
-            @toggle="toggleSection(section.key)"
-          >
-            <IssueRow
-              v-for="issue in store.issuesBySection[section.key]"
-              :key="issue.id"
-              :issue="issue"
-            />
-            <p
-              v-if="!store.issuesBySection[section.key].length"
-              class="px-4 py-6 text-center text-sm text-muted"
-            >
-              {{ t('issues.section.empty') }}
-            </p>
-          </IssueSection>
-        </div>
-
-        <!-- Pagination (only in default section view; search uses its own flat list without paging) -->
+        <!-- Pagination — only on the unfiltered main list (search uses its own flat list). -->
         <UiPaginator
           v-if="!store.hasActiveFilters && store.sortedIssues.length"
           :current-page="store.currentPage"

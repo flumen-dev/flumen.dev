@@ -29,22 +29,8 @@
       "reviewsRequestedEmpty": "No one is waiting on your review here."
     },
     "error": {
-      "sessionExpired": {
-        "title": "Session expired",
-        "description": "Please sign in again to continue."
-      },
-      "rateLimited": {
-        "title": "GitHub rate limit reached",
-        "description": "Try again in a minute."
-      },
-      "notFound": {
-        "title": "Repository not found",
-        "description": "Check the repo name or your access permissions."
-      },
-      "generic": {
-        "title": "Something went wrong",
-        "description": "We could not load pull requests. Please try again."
-      }
+      "title": "Something went wrong",
+      "description": "We could not load pull requests. Please try again."
     }
   },
   "bookmark": {
@@ -397,13 +383,14 @@
     "closedAs": "Closed",
     "closedAsNotPlanned": "Not planned",
     "needsResponse": "Waiting for your response",
-    "section": {
-      "needsResponse": "Needs your response",
-      "freshUnassigned": "Fresh & unassigned",
-      "inProgress": "In progress",
-      "stale": "Stale",
-      "otherOpen": "Other open",
-      "empty": "Nothing here."
+    "empty": "No issues in this state.",
+    "highlight": {
+      "assignedToMe": "Assigned to me",
+      "assignedToMeEmpty": "Nothing's on your plate here.",
+      "mentioned": "Mentioned",
+      "mentionedEmpty": "No one has tagged you here.",
+      "authoredByMe": "Authored by me",
+      "authoredByMeEmpty": "You haven't opened any issues here."
     },
     "search": "Search issues...",
     "count": "No issues | {count} issue | {count} issues",

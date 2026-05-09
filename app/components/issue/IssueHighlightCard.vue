@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import type { PullRequest } from '~~/shared/types/pull-request'
+import type { Issue } from '~~/shared/types/issue'
 import { buildWorkItemPath } from '~/utils/workItemPath'
 
 defineProps<{
   title: string
   iconKey: string
   iconClass: string
-  items: PullRequest[]
+  items: Issue[]
   loading: boolean
   emptyText: string
   totalCount: number | null
@@ -59,21 +59,21 @@ const maxListHeight = computed(() => `${ROW_HEIGHT_REM * HIGHLIGHT_CARD_VISIBLE_
       :style="{ maxHeight: maxListHeight }"
     >
       <li
-        v-for="pr in items"
-        :key="pr.id"
+        v-for="issue in items"
+        :key="issue.id"
         class="group hover:bg-elevated transition-colors"
       >
         <NuxtLink
-          :to="localePath(buildWorkItemPath(pr.repository.nameWithOwner, pr.number)!)"
+          :to="localePath(buildWorkItemPath(issue.repository.nameWithOwner, issue.number)!)"
           class="flex items-center gap-2 px-3 sm:px-4 py-2 min-w-0"
         >
-          <span class="text-xs text-muted tabular-nums shrink-0">#{{ pr.number }}</span>
+          <span class="text-xs text-muted tabular-nums shrink-0">#{{ issue.number }}</span>
           <span class="flex-1 min-w-0 text-sm text-default truncate group-hover:underline">
-            {{ pr.title }}
+            {{ issue.title }}
           </span>
           <UAvatar
-            :src="pr.author.avatarUrl"
-            :alt="pr.author.login"
+            :src="issue.author.avatarUrl"
+            :alt="issue.author.login"
             size="2xs"
             class="shrink-0"
           />

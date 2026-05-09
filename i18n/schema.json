@@ -94,53 +94,11 @@
         "error": {
           "type": "object",
           "properties": {
-            "sessionExpired": {
-              "type": "object",
-              "properties": {
-                "title": {
-                  "type": "string"
-                },
-                "description": {
-                  "type": "string"
-                }
-              },
-              "additionalProperties": false
+            "title": {
+              "type": "string"
             },
-            "rateLimited": {
-              "type": "object",
-              "properties": {
-                "title": {
-                  "type": "string"
-                },
-                "description": {
-                  "type": "string"
-                }
-              },
-              "additionalProperties": false
-            },
-            "notFound": {
-              "type": "object",
-              "properties": {
-                "title": {
-                  "type": "string"
-                },
-                "description": {
-                  "type": "string"
-                }
-              },
-              "additionalProperties": false
-            },
-            "generic": {
-              "type": "object",
-              "properties": {
-                "title": {
-                  "type": "string"
-                },
-                "description": {
-                  "type": "string"
-                }
-              },
-              "additionalProperties": false
+            "description": {
+              "type": "string"
             }
           },
           "additionalProperties": false
@@ -1198,25 +1156,28 @@
         "needsResponse": {
           "type": "string"
         },
-        "section": {
+        "empty": {
+          "type": "string"
+        },
+        "highlight": {
           "type": "object",
           "properties": {
-            "needsResponse": {
+            "assignedToMe": {
               "type": "string"
             },
-            "freshUnassigned": {
+            "assignedToMeEmpty": {
               "type": "string"
             },
-            "inProgress": {
+            "mentioned": {
               "type": "string"
             },
-            "stale": {
+            "mentionedEmpty": {
               "type": "string"
             },
-            "otherOpen": {
+            "authoredByMe": {
               "type": "string"
             },
-            "empty": {
+            "authoredByMeEmpty": {
               "type": "string"
             }
           },

@@ -33,10 +33,10 @@ async function setStateFilter(state: 'open' | 'closed' | 'merged') {
         class="space-y-3"
       >
         <UAlert
-          :title="t(`pulls.error.${store.errorKey}.title`)"
-          :description="t(`pulls.error.${store.errorKey}.description`)"
-          :color="store.errorKey === 'rateLimited' ? 'warning' : 'error'"
-          :icon="store.errorKey === 'sessionExpired' ? 'i-lucide-log-out' : store.errorKey === 'rateLimited' ? 'i-lucide-clock' : 'i-lucide-alert-triangle'"
+          :title="t('pulls.error.title')"
+          :description="t('pulls.error.description')"
+          color="error"
+          icon="i-lucide-alert-triangle"
         />
         <UButton
           :label="t('common.retry')"
@@ -56,7 +56,7 @@ async function setStateFilter(state: 'open' | 'closed' | 'merged') {
             :title="t('pulls.highlight.readyToMerge')"
             icon-key="i-lucide-check-circle-2"
             icon-class="text-emerald-500"
-            :items="store.readyToMerge.items"
+            :items="store.readyToMerge.data"
             :loading="store.readyToMerge.loading"
             :empty-text="t('pulls.highlight.readyToMergeEmpty')"
             :total-count="store.readyToMerge.totalCount"
@@ -65,14 +65,14 @@ async function setStateFilter(state: 'open' | 'closed' | 'merged') {
             :has-more="store.readyToMerge.hasMore"
             :has-previous="store.readyToMerge.hasPrevious"
             :paging="store.readyToMerge.paging"
-            @next="store.loadHighlightNext('ready')"
-            @previous="store.loadHighlightPrevious('ready')"
+            @next="store.readyToMerge.nextPage()"
+            @previous="store.readyToMerge.prevPage()"
           />
           <PullRequestHighlightCard
             :title="t('pulls.highlight.reviewsRequested')"
             icon-key="i-lucide-eye"
             icon-class="text-rose-500"
-            :items="store.reviewsRequested.items"
+            :items="store.reviewsRequested.data"
             :loading="store.reviewsRequested.loading"
             :empty-text="t('pulls.highlight.reviewsRequestedEmpty')"
             :total-count="store.reviewsRequested.totalCount"
@@ -81,8 +81,8 @@ async function setStateFilter(state: 'open' | 'closed' | 'merged') {
             :has-more="store.reviewsRequested.hasMore"
             :has-previous="store.reviewsRequested.hasPrevious"
             :paging="store.reviewsRequested.paging"
-            @next="store.loadHighlightNext('reviews')"
-            @previous="store.loadHighlightPrevious('reviews')"
+            @next="store.reviewsRequested.nextPage()"
+            @previous="store.reviewsRequested.prevPage()"
           />
         </div>
 
@@ -115,7 +115,7 @@ async function setStateFilter(state: 'open' | 'closed' | 'merged') {
         </div>
 
         <!-- Initial loading -->
-        <template v-if="store.loading && !store.loaded">
+        <template v-if="store.mainList.loading && !store.loaded">
           <div class="rounded-lg border border-default divide-y divide-default overflow-hidden">
             <PullRequestRowSkeleton
               v-for="n in 6"
@@ -128,15 +128,15 @@ async function setStateFilter(state: 'open' | 'closed' | 'merged') {
         <template v-else-if="store.loaded">
           <div
             class="rounded-lg border border-default divide-y divide-default overflow-hidden transition-opacity duration-150"
-            :class="store.loading ? 'opacity-50 pointer-events-none' : ''"
+            :class="store.mainList.loading ? 'opacity-50 pointer-events-none' : ''"
           >
             <PullRequestRow
-              v-for="pr in store.prs"
+              v-for="pr in store.mainList.data"
               :key="pr.id"
               :pr="pr"
             />
             <p
-              v-if="!store.prs.length"
+              v-if="!store.mainList.data.length"
               class="px-4 py-8 text-center text-sm text-muted"
             >
               {{ t('pulls.empty') }}
@@ -144,14 +144,14 @@ async function setStateFilter(state: 'open' | 'closed' | 'merged') {
           </div>
 
           <UiPaginator
-            v-if="store.prs.length"
-            :current-page="store.currentPage"
-            :total-pages="store.totalPages"
-            :has-more="store.hasMore"
-            :has-previous="store.hasPrevious"
-            :paging="store.paging"
-            @next="store.loadNextPage()"
-            @previous="store.loadPreviousPage()"
+            v-if="store.mainList.data.length"
+            :current-page="store.mainList.currentPage"
+            :total-pages="store.mainList.totalPages"
+            :has-more="store.mainList.hasMore"
+            :has-previous="store.mainList.hasPrevious"
+            :paging="store.mainList.paging"
+            @next="store.mainList.nextPage()"
+            @previous="store.mainList.prevPage()"
           />
         </template>
       </template>
