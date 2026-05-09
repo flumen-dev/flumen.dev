@@ -21,6 +21,7 @@ const mockIssue: Issue = {
   linkedPrCount: 1,
   maintainerCommented: false,
   lastComment: null,
+  lastSubstantialActivityAt: null,
   repository: { nameWithOwner: 'org/repo', name: 'repo', owner: 'org' },
 }
 

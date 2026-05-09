@@ -23,6 +23,7 @@ const baseIssue: Issue = {
   linkedPrCount: 0,
   maintainerCommented: false,
   lastComment: null,
+  lastSubstantialActivityAt: null,
   repository: { nameWithOwner: 'org/repo', name: 'repo', owner: 'org' },
 }
 
