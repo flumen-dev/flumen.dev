@@ -60,7 +60,7 @@ onKeyStroke('/', (e) => {
         >
         <kbd
           v-if="!store.search"
-          class="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted bg-default px-1.5 py-0.5 rounded border border-default pointer-events-none"
+          class="hidden sm:block absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted bg-default px-1.5 py-0.5 rounded border border-default pointer-events-none"
         >/</kbd>
       </div>
       <UButton

@@ -38,7 +38,7 @@ async function setFilter(state: 'open' | 'closed') {
 </script>
 
 <template>
-  <div class="p-4 space-y-4">
+  <div class="p-2 sm:p-4 space-y-3 sm:space-y-4">
     <!-- Repo selector -->
     <div class="flex items-center gap-2">
       <IssueRepoSelect />
@@ -82,7 +82,7 @@ async function setFilter(state: 'open' | 'closed') {
       <!-- Loaded -->
       <template v-else-if="store.loaded">
         <!-- State tabs + Create -->
-        <div class="flex items-center gap-4">
+        <div class="flex flex-wrap items-center gap-x-4 gap-y-2">
           <IssueStateTab
             :label="t('issues.open')"
             icon-key="i-lucide-circle-dot"

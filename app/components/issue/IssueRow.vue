@@ -46,7 +46,7 @@ function navigate() {
   <div
     role="link"
     tabindex="0"
-    class="group flex items-start gap-3 px-4 py-3 hover:bg-elevated transition-colors cursor-pointer focus-visible:outline-none focus-visible:bg-elevated"
+    class="group flex items-start gap-2 sm:gap-3 px-2 py-2.5 sm:px-4 sm:py-3 hover:bg-elevated transition-colors cursor-pointer focus-visible:outline-none focus-visible:bg-elevated"
     @click="navigate"
     @keydown.enter.self="navigate"
     @keydown.space.self.prevent="navigate"
@@ -62,7 +62,7 @@ function navigate() {
     <div class="min-w-0 flex-1">
       <!-- Row 1: Title + labels -->
       <div class="flex items-center gap-2 flex-wrap">
-        <span class="font-medium text-highlighted hover:underline">
+        <span class="font-medium text-highlighted hover:underline text-sm sm:text-base">
           <UiHighlightedText
             :text="issue.title"
             :query="issueStore.search"
@@ -72,27 +72,28 @@ function navigate() {
           :repo="issue.repository.nameWithOwner"
           :number="issue.number"
           :labels="localLabels"
-          add-button-class="opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto group-focus-within:opacity-100 group-focus-within:pointer-events-auto transition-opacity duration-150"
+          add-button-class="opacity-100 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:pointer-events-none [@media(hover:hover)]:group-hover:opacity-100 [@media(hover:hover)]:group-hover:pointer-events-auto [@media(hover:hover)]:group-focus-within:opacity-100 [@media(hover:hover)]:group-focus-within:pointer-events-auto transition-opacity duration-150"
           @added="onLabelAdded"
           @removed="onLabelRemoved"
         />
       </div>
 
-      <!-- Row 2: Last-comment quote (when available) -->
+      <!-- Row 2: Last-comment quote (when available). On narrow screens
+           the attribution stacks under the quote so the snippet keeps room. -->
       <div
         v-if="issue.lastComment"
-        class="flex items-baseline gap-2 mt-1 text-xs min-w-0"
+        class="flex flex-col sm:flex-row sm:items-baseline sm:gap-2 mt-1 text-xs min-w-0"
       >
         <span
-          class="flex-1 min-w-0 italic text-muted/80 border-l-2 border-primary/30 pl-2 truncate"
+          class="flex-1 min-w-0 italic text-muted/80 border-l-2 border-primary/30 pl-2 line-clamp-2 sm:line-clamp-none sm:truncate"
         >&ldquo;{{ issue.lastComment.snippet }}&rdquo;</span>
-        <span class="shrink-0 text-muted/60 whitespace-nowrap">
+        <span class="shrink-0 text-muted/60 whitespace-nowrap pl-2 sm:pl-0">
           {{ issue.lastComment.author.login }} · {{ lastCommentAgo }}
         </span>
       </div>
 
-      <!-- Row 3: Meta -->
-      <div class="flex items-center gap-3 mt-1 text-xs text-muted">
+      <!-- Row 3: Meta — wraps on narrow screens so nothing gets clipped -->
+      <div class="flex flex-wrap items-center gap-x-2 gap-y-1 sm:gap-x-3 sm:gap-y-1 mt-1 text-xs text-muted">
         <UTooltip
           v-if="issue.lastComment && user?.login && issue.lastComment.author.login !== user.login"
           :text="t('issues.needsResponse')"
@@ -165,7 +166,7 @@ function navigate() {
 
     <!-- Right side: Assign + Assignees -->
     <div class="flex items-center gap-1 shrink-0">
-      <span class="opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto group-focus-within:opacity-100 group-focus-within:pointer-events-auto transition-opacity duration-150">
+      <span class="opacity-100 sm:opacity-0 sm:pointer-events-none sm:group-hover:opacity-100 sm:group-hover:pointer-events-auto sm:group-focus-within:opacity-100 sm:group-focus-within:pointer-events-auto transition-opacity duration-150">
         <UiAssignButton
           :repo="repo"
           :number="issue.number"
