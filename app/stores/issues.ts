@@ -121,7 +121,7 @@ export const useIssueStore = defineStore('issues', () => {
   })
 
   const availableLabels = computed(() => {
-    const source = search.value ? mergedSearchResults.value : section.data.value
+    const source = search.value.trim() ? mergedSearchResults.value : section.data.value
     if (!source.length) return []
     const set = new Set(source.flatMap(i => i.labels.map(l => l.name)))
     return [...set].sort()
