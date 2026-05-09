@@ -38,8 +38,15 @@ export function categorizeIssue(issue: Issue, currentLogin: string | null): Issu
   const ageDays = (now - new Date(issue.updatedAt).getTime()) / MS_PER_DAY
   const createdDays = (now - new Date(issue.createdAt).getTime()) / MS_PER_DAY
 
-  // Maintainer-relevant only when the viewer is signed in.
-  if (currentLogin && issue.commentCount > 0 && !issue.maintainerCommented) {
+  // Maintainer-relevant only when the viewer is signed in. Uses the latest
+  // comment's author (not just "ever commented") so an issue still surfaces here
+  // when the maintainer engaged earlier and the discussion has moved on without them.
+  if (
+    currentLogin
+    && issue.commentCount > 0
+    && issue.lastComment
+    && issue.lastComment.author.login !== currentLogin
+  ) {
     return 'needs-response'
   }
   if (createdDays < FRESH_DAYS && issue.assignees.length === 0 && issue.linkedPrCount === 0) {

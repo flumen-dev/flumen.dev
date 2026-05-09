@@ -22,31 +22,38 @@ const baseIssue: Issue = {
   commentCount: 0,
   linkedPrCount: 0,
   maintainerCommented: false,
+  lastComment: null,
   repository: { nameWithOwner: 'org/repo', name: 'repo', owner: 'org' },
 }
+
+const lastCommentBy = (login: string) => ({
+  author: { login, avatarUrl: '' },
+  snippet: 'recent text',
+  createdAt: days(0),
+})
 
 describe('categorizeIssue', () => {
   it('puts closed issues into other-open as the catch-all', () => {
     expect(categorizeIssue({ ...baseIssue, state: 'CLOSED' }, 'me')).toBe('other-open')
   })
 
-  it('returns needs-response when comments exist and maintainer has not commented', () => {
-    const i = { ...baseIssue, commentCount: 3, maintainerCommented: false }
+  it('returns needs-response when the latest comment is from someone else', () => {
+    const i = { ...baseIssue, commentCount: 3, lastComment: lastCommentBy('alice') }
     expect(categorizeIssue(i, 'me')).toBe('needs-response')
   })
 
-  it('does not flag needs-response when maintainer already commented', () => {
-    const i = { ...baseIssue, commentCount: 3, maintainerCommented: true }
+  it('does not flag needs-response when the latest comment is from the viewer', () => {
+    const i = { ...baseIssue, commentCount: 3, lastComment: lastCommentBy('me') }
     expect(categorizeIssue(i, 'me')).not.toBe('needs-response')
   })
 
   it('does not flag needs-response when there are no comments', () => {
-    const i = { ...baseIssue, commentCount: 0, maintainerCommented: false }
+    const i = { ...baseIssue, commentCount: 0, lastComment: null }
     expect(categorizeIssue(i, 'me')).not.toBe('needs-response')
   })
 
   it('skips needs-response when user is not signed in', () => {
-    const i = { ...baseIssue, commentCount: 3, maintainerCommented: false }
+    const i = { ...baseIssue, commentCount: 3, lastComment: lastCommentBy('alice') }
     expect(categorizeIssue(i, null)).not.toBe('needs-response')
   })
 
@@ -81,7 +88,7 @@ describe('categorizeIssue', () => {
   })
 
   it('priority: needs-response wins over fresh-unassigned', () => {
-    const i = { ...baseIssue, createdAt: days(2), commentCount: 1, maintainerCommented: false, assignees: [], linkedPrCount: 0 }
+    const i = { ...baseIssue, createdAt: days(2), commentCount: 1, lastComment: lastCommentBy('alice'), assignees: [], linkedPrCount: 0 }
     expect(categorizeIssue(i, 'me')).toBe('needs-response')
   })
 

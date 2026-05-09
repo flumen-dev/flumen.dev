@@ -11,6 +11,7 @@ const localePath = useLocalePath()
 const { open: openProfile } = useUserProfileDialog()
 const createdAgo = useTimeAgo(computed(() => props.issue.createdAt))
 const updatedAgo = useTimeAgo(computed(() => props.issue.updatedAt))
+const lastCommentAgo = useTimeAgo(computed(() => props.issue.lastComment?.createdAt ?? Date.now()))
 
 const stateIcon = computed(() => getIssueStateIcon(props.issue.state, props.issue.stateReason))
 const stateColor = computed(() => getIssueStateColor(props.issue.state, props.issue.stateReason))
@@ -77,10 +78,23 @@ function navigate() {
         />
       </div>
 
-      <!-- Row 2: Meta -->
+      <!-- Row 2: Last-comment quote (when available) -->
+      <div
+        v-if="issue.lastComment"
+        class="flex items-baseline gap-2 mt-1 text-xs min-w-0"
+      >
+        <span
+          class="flex-1 min-w-0 italic text-muted/80 border-l-2 border-primary/30 pl-2 truncate"
+        >&ldquo;{{ issue.lastComment.snippet }}&rdquo;</span>
+        <span class="shrink-0 text-muted/60 whitespace-nowrap">
+          {{ issue.lastComment.author.login }} · {{ lastCommentAgo }}
+        </span>
+      </div>
+
+      <!-- Row 3: Meta -->
       <div class="flex items-center gap-3 mt-1 text-xs text-muted">
         <UTooltip
-          v-if="!issue.maintainerCommented && issue.commentCount > 0"
+          v-if="issue.lastComment && user?.login && issue.lastComment.author.login !== user.login"
           :text="t('issues.needsResponse')"
         >
           <span class="inline-flex items-center gap-0.5 text-amber-500">

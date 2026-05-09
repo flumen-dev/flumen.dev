@@ -20,6 +20,7 @@ const mockIssue: Issue = {
   commentCount: 3,
   linkedPrCount: 1,
   maintainerCommented: false,
+  lastComment: null,
   repository: { nameWithOwner: 'org/repo', name: 'repo', owner: 'org' },
 }
 
