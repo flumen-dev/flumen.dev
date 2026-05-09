@@ -1,6 +1,6 @@
 import type { GraphQLIssueNode, Issue } from '../types/issue'
 
-const SNIPPET_MAX = 120
+const SNIPPET_MAX = 80
 
 /** Strip the heaviest markdown noise so a comment body reads as plain text in a row. */
 function cleanSnippet(body: string | null | undefined, maxLen: number): string {
