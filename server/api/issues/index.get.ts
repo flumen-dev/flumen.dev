@@ -31,7 +31,7 @@ interface MinimalSearchResult {
 
 export default defineEventHandler(async (event): Promise<PaginatedResponse<Issue>> => {
   const { token, login } = await getSessionToken(event)
-  const { state = 'open', repo, first = '20', after, assignedToMe, unassigned, label, milestone } = getQuery<{
+  const { state = 'open', repo, first = '20', after, assignedToMe, unassigned, label, milestone, author, assignee } = getQuery<{
     state?: string
     repo?: string
     first?: string
@@ -40,6 +40,8 @@ export default defineEventHandler(async (event): Promise<PaginatedResponse<Issue
     unassigned?: string
     label?: string
     milestone?: string
+    author?: string
+    assignee?: string
   }>(event)
 
   if (!repo || !/^[\w.-]+\/[\w.-]+$/.test(repo)) {
@@ -74,6 +76,10 @@ export default defineEventHandler(async (event): Promise<PaginatedResponse<Issue
       if (l.trim()) query += ` label:"${escapeGitHubQuery(l.trim())}"`
     }
   }
+  // GitHub login regex: alphanumeric + hyphens (no leading/trailing/double hyphen).
+  const LOGIN_RE = /^(?!.*--)[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,37}[a-zA-Z0-9])?$/
+  if (author && LOGIN_RE.test(String(author))) query += ` author:${author}`
+  if (assignee && LOGIN_RE.test(String(assignee))) query += ` assignee:${assignee}`
 
   // 1. Lightweight search — only id, number, updatedAt
   const data = await githubGraphQL<MinimalSearchResult>(token, MINIMAL_SEARCH_QUERY, {
