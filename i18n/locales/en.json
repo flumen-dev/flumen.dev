@@ -35,8 +35,7 @@
     "scopeHintGlobal": "Searching all of GitHub — may be slower.",
     "scopeAriaToggle": "Toggle search scope",
     "footerNavigate": "navigate",
-    "footerSelect": "select",
-    "footerScope": "scope"
+    "footerSelect": "select"
   },
   "nav": {
     "dashboard": "Dashboard",

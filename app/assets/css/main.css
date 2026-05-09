@@ -6,6 +6,16 @@
   --font-mono: "Geist Mono", ui-monospace, monospace;
 }
 
+/* Consistent keyboard focus indicator using the user's primary accent.
+   Browser defaults (Firefox-based Zen, Safari) show inconsistent native rings
+   on elements without explicit focus-visible styling. */
+@layer base {
+  :focus-visible {
+    outline: 2px solid var(--ui-color-primary);
+    outline-offset: 2px;
+  }
+}
+
 @keyframes bell-ring {
   0%, 100% { transform: rotate(0deg); }
   10% { transform: rotate(14deg); }

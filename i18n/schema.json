@@ -114,9 +114,6 @@
         },
         "footerSelect": {
           "type": "string"
-        },
-        "footerScope": {
-          "type": "string"
         }
       },
       "additionalProperties": false

@@ -6,6 +6,8 @@ const props = defineProps<{
   number: number
   labels: Array<{ name: string, color: string }>
   readonly?: boolean
+  /** Tailwind classes applied to the add-button wrapper (e.g. for hover-reveal). */
+  addButtonClass?: string
 }>()
 
 const emit = defineEmits<{
@@ -122,7 +124,11 @@ async function addLabel(label: { name: string, color: string }) {
       </button>
     </span>
 
-    <template v-if="!readonly">
+    <span
+      v-if="!readonly"
+      class="inline-flex"
+      :class="addButtonClass"
+    >
       <UPopover
         v-if="adding"
         :open="adding"
@@ -186,6 +192,6 @@ async function addLabel(label: { name: string, color: string }) {
           class="size-3"
         />
       </button>
-    </template>
+    </span>
   </div>
 </template>
