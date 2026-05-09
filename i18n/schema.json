@@ -1113,6 +1113,21 @@
             },
             "hasMilestone": {
               "type": "string"
+            },
+            "clear": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "filtered": {
+          "type": "object",
+          "properties": {
+            "heading": {
+              "type": "string"
+            },
+            "empty": {
+              "type": "string"
             }
           },
           "additionalProperties": false
