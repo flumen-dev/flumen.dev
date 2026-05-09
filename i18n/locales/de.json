@@ -397,13 +397,14 @@
     "closedAs": "Geschlossen",
     "closedAsNotPlanned": "Nicht geplant",
     "needsResponse": "Wartet auf deine Antwort",
-    "section": {
-      "needsResponse": "Wartet auf dich",
-      "freshUnassigned": "Frisch & unzugewiesen",
-      "inProgress": "In Arbeit",
-      "stale": "Liegen geblieben",
-      "otherOpen": "Sonstige offene",
-      "empty": "Hier ist nichts."
+    "empty": "Keine Issues in diesem Status.",
+    "highlight": {
+      "assignedToMe": "Mir zugewiesen",
+      "assignedToMeEmpty": "Hier liegt nichts auf deinem Tisch.",
+      "mentioned": "Erwähnt",
+      "mentionedEmpty": "Niemand hat dich hier markiert.",
+      "authoredByMe": "Von mir",
+      "authoredByMeEmpty": "Du hast hier noch nichts gemeldet."
     },
     "search": "Issues durchsuchen...",
     "count": "Keine Issues | {count} Issue | {count} Issues",

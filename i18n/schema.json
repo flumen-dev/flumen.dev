@@ -1198,25 +1198,28 @@
         "needsResponse": {
           "type": "string"
         },
-        "section": {
+        "empty": {
+          "type": "string"
+        },
+        "highlight": {
           "type": "object",
           "properties": {
-            "needsResponse": {
+            "assignedToMe": {
               "type": "string"
             },
-            "freshUnassigned": {
+            "assignedToMeEmpty": {
               "type": "string"
             },
-            "inProgress": {
+            "mentioned": {
               "type": "string"
             },
-            "stale": {
+            "mentionedEmpty": {
               "type": "string"
             },
-            "otherOpen": {
+            "authoredByMe": {
               "type": "string"
             },
-            "empty": {
+            "authoredByMeEmpty": {
               "type": "string"
             }
           },

@@ -397,13 +397,14 @@
     "closedAs": "Closed",
     "closedAsNotPlanned": "Not planned",
     "needsResponse": "Waiting for your response",
-    "section": {
-      "needsResponse": "Needs your response",
-      "freshUnassigned": "Fresh & unassigned",
-      "inProgress": "In progress",
-      "stale": "Stale",
-      "otherOpen": "Other open",
-      "empty": "Nothing here."
+    "empty": "No issues in this state.",
+    "highlight": {
+      "assignedToMe": "Assigned to me",
+      "assignedToMeEmpty": "Nothing's on your plate here.",
+      "mentioned": "Mentioned",
+      "mentionedEmpty": "No one has tagged you here.",
+      "authoredByMe": "Authored by me",
+      "authoredByMeEmpty": "You haven't opened any issues here."
     },
     "search": "Search issues...",
     "count": "No issues | {count} issue | {count} issues",

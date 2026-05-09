@@ -1,33 +1,5 @@
-import type { Issue, MinimalIssueNode } from '~~/shared/types/issue'
+import type { Issue } from '~~/shared/types/issue'
 import type { PaginatedResponse } from '~~/shared/types/pagination'
-
-const MINIMAL_SEARCH_QUERY = `
-query($query: String!, $first: Int!, $after: String) {
-  search(query: $query, type: ISSUE, first: $first, after: $after) {
-    issueCount
-    pageInfo {
-      hasNextPage
-      endCursor
-    }
-    nodes {
-      ... on Issue {
-        id
-        number
-        updatedAt
-        repository { nameWithOwner name owner { login } }
-      }
-    }
-  }
-}
-`
-
-interface MinimalSearchResult {
-  search: {
-    issueCount: number
-    pageInfo: { hasNextPage: boolean, endCursor: string | null }
-    nodes: (MinimalIssueNode | null)[]
-  }
-}
 
 export default defineEventHandler(async (event): Promise<PaginatedResponse<Issue>> => {
   const { token, login } = await getSessionToken(event)
@@ -81,23 +53,12 @@ export default defineEventHandler(async (event): Promise<PaginatedResponse<Issue
   if (author && LOGIN_RE.test(String(author))) query += ` author:${author}`
   if (assignee && LOGIN_RE.test(String(assignee))) query += ` assignee:${assignee}`
 
-  // 1. Lightweight search — only id, number, updatedAt
-  const data = await githubGraphQL<MinimalSearchResult>(token, MINIMAL_SEARCH_QUERY, {
-    query,
-    first: pageSize,
-    after: after || null,
-  })
-
-  const minimalNodes = data.search.nodes.filter(
-    (n): n is MinimalIssueNode => n !== null && 'id' in n,
-  )
-
-  // 2. Cache-resolve: check storage, fetch misses in batch
-  const issues = await getOrFetchIssues(token, login, minimalNodes)
+  const page = await searchIssues(token, query, { first: pageSize, after })
+  const items = await getOrFetchIssues(token, login, page.minimalNodes)
 
   return {
-    items: issues,
-    totalCount: data.search.issueCount,
-    pageInfo: data.search.pageInfo,
+    items,
+    totalCount: page.totalCount,
+    pageInfo: page.pageInfo,
   }
 })

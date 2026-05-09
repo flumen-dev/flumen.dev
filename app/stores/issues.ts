@@ -2,6 +2,8 @@ import type { Issue } from '~~/shared/types/issue'
 
 export type IssueSortKey = 'critical' | 'newest' | 'oldest' | 'mostCommented' | 'leastCommented' | 'recentlyUpdated'
 
+const HIGHLIGHT_PAGE_SIZE = HIGHLIGHT_CARD_VISIBLE_ITEMS
+
 function criticalScore(issue: Issue): number {
   let score = 0
   if (!issue.maintainerCommented) score += 15
@@ -121,6 +123,11 @@ export const useIssueStore = defineStore('issues', () => {
     buildParams,
   )
 
+  // Highlight cards — three independent server queries, paginated independently.
+  const assignedToMe = useHighlightSection<Issue>('/api/issues/assigned-to-me', HIGHLIGHT_PAGE_SIZE)
+  const mentioned = useHighlightSection<Issue>('/api/issues/mentioned', HIGHLIGHT_PAGE_SIZE)
+  const authoredByMe = useHighlightSection<Issue>('/api/issues/authored-by-me', HIGHLIGHT_PAGE_SIZE)
+
   // --- Derived ---
 
   // Layer 1 of magical-search (#277): instant ranking over already-loaded issues
@@ -172,23 +179,35 @@ export const useIssueStore = defineStore('issues', () => {
     return source
   })
 
-  const issuesBySection = computed(() => {
-    const buckets = createEmptyIssueBuckets()
-    const login = user.value?.login ?? null
-    for (const issue of section.data.value) {
-      buckets[categorizeIssue(issue, login)].push(issue)
-    }
-    // Sub-order within each bucket: newest-first by *substantial* activity.
-    // `lastSubstantialActivityAt` skips label and milestone-only edits so
-    // bot-driven re-tagging doesn't bubble dead threads to the top.
-    const activityAt = (issue: Issue) => new Date(issue.lastSubstantialActivityAt ?? issue.updatedAt).getTime()
-    for (const key of Object.keys(buckets) as Array<keyof typeof buckets>) {
-      buckets[key].sort((a, b) => activityAt(b) - activityAt(a))
-    }
-    return buckets
-  })
-
   // --- Actions ---
+  async function fetchHighlights() {
+    if (!selectedRepo.value) return
+    // Highlights only make sense for the open state.
+    if (stateFilter.value !== 'open') {
+      assignedToMe.reset()
+      mentioned.reset()
+      authoredByMe.reset()
+      return
+    }
+    await Promise.all([
+      assignedToMe.fetchPage(selectedRepo.value),
+      mentioned.fetchPage(selectedRepo.value),
+      authoredByMe.fetchPage(selectedRepo.value),
+    ])
+  }
+
+  async function loadHighlightNext(target: 'assigned' | 'mentioned' | 'authored') {
+    if (!selectedRepo.value) return
+    const s = target === 'assigned' ? assignedToMe : target === 'mentioned' ? mentioned : authoredByMe
+    await s.loadNext(selectedRepo.value)
+  }
+
+  async function loadHighlightPrevious(target: 'assigned' | 'mentioned' | 'authored') {
+    if (!selectedRepo.value) return
+    const s = target === 'assigned' ? assignedToMe : target === 'mentioned' ? mentioned : authoredByMe
+    await s.loadPrevious(selectedRepo.value)
+  }
+
   async function fetchOtherCount() {
     if (!selectedRepo.value) return
     const otherState = stateFilter.value === 'open' ? 'closed' : 'open'
@@ -208,7 +227,7 @@ export const useIssueStore = defineStore('issues', () => {
   async function fetchIssues() {
     if (!selectedRepo.value) return
     errorKey.value = null
-    await Promise.all([section.refresh(), fetchOtherCount()])
+    await Promise.all([section.refresh(), fetchOtherCount(), fetchHighlights()])
     if (section.error.value) {
       errorKey.value = 'fetchError'
       return
@@ -296,6 +315,9 @@ export const useIssueStore = defineStore('issues', () => {
     closedCount.value = null
     repoAuthors.value = []
     repoAssignees.value = []
+    assignedToMe.reset()
+    mentioned.reset()
+    authoredByMe.reset()
     await Promise.all([fetchIssues(), fetchPeoplePool()])
   }
 
@@ -314,6 +336,9 @@ export const useIssueStore = defineStore('issues', () => {
     searchResults.value = []
     openCount.value = null
     closedCount.value = null
+    assignedToMe.reset()
+    mentioned.reset()
+    authoredByMe.reset()
     await fetchIssues()
   }
 
@@ -345,8 +370,13 @@ export const useIssueStore = defineStore('issues', () => {
     searching,
     availableLabels,
     sortedIssues,
-    issuesBySection,
+    assignedToMe,
+    mentioned,
+    authoredByMe,
     fetchIssues,
+    fetchHighlights,
+    loadHighlightNext,
+    loadHighlightPrevious,
     loadNextPage: section.nextPage,
     loadPreviousPage: section.prevPage,
     selectRepo,
