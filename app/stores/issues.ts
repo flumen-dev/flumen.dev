@@ -92,15 +92,46 @@ export const useIssueStore = defineStore('issues', () => {
   )
 
   // --- Derived ---
+
+  // Layer 1 of magical-search (#277): instant ranking over already-loaded issues
+  // so the user sees relevance signals before the server search returns.
+  const clientFuzzyResults = computed<Issue[]>(() => {
+    const q = search.value.trim()
+    if (!q) return []
+    return rankIssues(section.data.value, q, user.value?.login ?? null)
+  })
+
+  // When search is active, merge instant client matches with the server's broader
+  // recall, deduped by id, client-first so the most likely hit lands at the top.
+  const mergedSearchResults = computed<Issue[]>(() => {
+    if (!search.value.trim()) return []
+    const seen = new Set<string>()
+    const out: Issue[] = []
+    for (const issue of clientFuzzyResults.value) {
+      if (seen.has(issue.id)) continue
+      seen.add(issue.id)
+      out.push(issue)
+    }
+    for (const issue of searchResults.value) {
+      if (seen.has(issue.id)) continue
+      seen.add(issue.id)
+      out.push(issue)
+    }
+    return out
+  })
+
   const availableLabels = computed(() => {
-    const source = search.value ? searchResults.value : section.data.value
+    const source = search.value.trim() ? mergedSearchResults.value : section.data.value
     if (!source.length) return []
     const set = new Set(source.flatMap(i => i.labels.map(l => l.name)))
     return [...set].sort()
   })
 
   const sortedIssues = computed(() => {
-    const source = search.value ? searchResults.value : section.data.value
+    // Search-mode keeps the relevance order from rankIssues — sortKey doesn't
+    // override it, otherwise the magical-search ranking would be discarded.
+    if (search.value.trim()) return mergedSearchResults.value
+    const source = section.data.value
     const s = sortKey.value
     if (s === 'critical') return [...source].sort((a, b) => criticalScore(b) - criticalScore(a))
     if (s === 'newest') return [...source].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
