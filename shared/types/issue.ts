@@ -31,6 +31,13 @@ export interface Issue {
   linkedPrCount: number
   maintainerCommented: boolean
 
+  /** The most recent comment, if any. Used for "needs response" signals and inline previews. */
+  lastComment: {
+    author: { login: string, avatarUrl: string }
+    snippet: string
+    createdAt: string
+  } | null
+
   repository: {
     nameWithOwner: string
     name: string
@@ -53,7 +60,14 @@ export interface GraphQLIssueNode {
   labels: { nodes: Array<{ name: string, color: string }> }
   assignees: { nodes: Array<{ login: string, avatarUrl: string }> }
   milestone: { title: string } | null
-  comments: { totalCount: number, nodes: Array<{ author: { login: string } | null }> }
+  comments: {
+    totalCount: number
+    nodes: Array<{
+      author: { login: string, avatarUrl: string } | null
+      body: string
+      createdAt: string
+    }>
+  }
   timelineItems: { totalCount: number }
   repository: { nameWithOwner: string, name: string, owner: { login: string } }
 }

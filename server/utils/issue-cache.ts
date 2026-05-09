@@ -15,7 +15,7 @@ const ISSUE_FIELDS = `
   labels(first: 10) { nodes { name color } }
   assignees(first: 5) { nodes { login avatarUrl } }
   milestone { title }
-  comments(first: 5) { totalCount nodes { author { login } } }
+  comments(last: 5) { totalCount nodes { author { login avatarUrl } body createdAt } }
   timelineItems(itemTypes: [CROSS_REFERENCED_EVENT], first: 0) { totalCount }
   repository { nameWithOwner name owner { login } }
 `
