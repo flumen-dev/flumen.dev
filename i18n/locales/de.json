@@ -30,8 +30,8 @@
       "expected": "CI erwartet"
     },
     "review": {
-      "approvedBy": "Approved von {logins}",
-      "changesRequestedBy": "Changes angefordert von {logins}"
+      "approvedBy": "Genehmigt von {logins}",
+      "changesRequestedBy": "Änderungen angefordert von {logins}"
     },
     "merge": {
       "conflicting": "Merge-Konflikt — Rebase nötig"
