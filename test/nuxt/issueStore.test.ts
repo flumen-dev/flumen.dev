@@ -224,4 +224,58 @@ describe('issueStore', () => {
       expect(store.availableLabels).toEqual(['bug', 'urgent'])
     })
   })
+
+  describe('filter actions', () => {
+    it('toggleFilter adds a filter when not present', async () => {
+      await withStore(async (store) => {
+        await store.selectRepo('org/repo')
+        store.toggleFilter('hasMilestone')
+        expect(store.activeFilters).toContain('hasMilestone')
+      })
+    })
+
+    it('toggleFilter removes a filter when already active', async () => {
+      await withStore(async (store) => {
+        await store.selectRepo('org/repo')
+        store.toggleFilter('hasMilestone')
+        store.toggleFilter('hasMilestone')
+        expect(store.activeFilters).not.toContain('hasMilestone')
+      })
+    })
+
+    it('toggleFilter swaps mutually exclusive filters (assignedToMe ↔ unassigned)', async () => {
+      await withStore(async (store) => {
+        await store.selectRepo('org/repo')
+        store.toggleFilter('assignedToMe')
+        expect(store.activeFilters).toContain('assignedToMe')
+        store.toggleFilter('unassigned')
+        expect(store.activeFilters).toContain('unassigned')
+        expect(store.activeFilters).not.toContain('assignedToMe')
+      })
+    })
+
+    it('clearFilters resets active filters and search', async () => {
+      await withStore(async (store) => {
+        await store.selectRepo('org/repo')
+        store.activeFilters = ['hasMilestone', 'label:bug']
+        store.search = 'login'
+        store.clearFilters()
+        expect(store.activeFilters).toHaveLength(0)
+        expect(store.search).toBe('')
+      })
+    })
+
+    it('hasActiveFilters is true when any filter or non-empty search is set', async () => {
+      await withStore((store) => {
+        expect(store.hasActiveFilters).toBe(false)
+        store.activeFilters = ['hasMilestone']
+        expect(store.hasActiveFilters).toBe(true)
+        store.activeFilters = []
+        store.search = 'bug'
+        expect(store.hasActiveFilters).toBe(true)
+        store.search = '   '
+        expect(store.hasActiveFilters).toBe(false)
+      })
+    })
+  })
 })
