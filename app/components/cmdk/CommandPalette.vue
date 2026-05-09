@@ -27,7 +27,6 @@ defineShortcuts({
   arrowdown: { handler: () => { if (cmdk.open) cmdk.selectNext() }, usingInput: true },
   arrowup: { handler: () => { if (cmdk.open) cmdk.selectPrev() }, usingInput: true },
   enter: { handler: () => { if (cmdk.open) cmdk.executeSelected() }, usingInput: true },
-  tab: { handler: () => { if (cmdk.open) cmdk.toggleScope() }, usingInput: true },
 })
 
 watch(() => cmdk.open, async (isOpen) => {
@@ -151,10 +150,6 @@ watch(() => cmdk.selectedIndex, async () => {
               <span class="flex items-center gap-1">
                 <kbd class="bg-default px-1.5 py-0.5 rounded border border-default">↵</kbd>
                 {{ $t('cmdk.footerSelect') }}
-              </span>
-              <span class="flex items-center gap-1">
-                <kbd class="bg-default px-1.5 py-0.5 rounded border border-default">⇥</kbd>
-                {{ $t('cmdk.footerScope') }}
               </span>
             </div>
             <span class="flex items-center gap-1">
