@@ -153,15 +153,16 @@ describe('issueStore', () => {
     })
   })
 
-  it('search returns empty when no server results', async () => {
+  it('search surfaces a local match by issue number before the server responds', async () => {
     await withStore((store) => {
       store.issues = [
         { ...mockIssue, id: 'I_1', number: 42 },
         { ...mockIssue, id: 'I_2', number: 99 },
       ]
       store.search = '#99'
-      // No searchResults set — sortedIssues returns empty
-      expect(store.sortedIssues).toHaveLength(0)
+      // Layer 1 (#277): client-side ranking finds issue #99 instantly even with no server response yet.
+      expect(store.sortedIssues).toHaveLength(1)
+      expect(store.sortedIssues[0]?.id).toBe('I_2')
     })
   })
 
