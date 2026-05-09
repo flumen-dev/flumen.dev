@@ -1389,6 +1389,12 @@
             },
             "backToTemplates": {
               "type": "string"
+            },
+            "similarHeading": {
+              "type": "string"
+            },
+            "similarHint": {
+              "type": "string"
             }
           },
           "additionalProperties": false

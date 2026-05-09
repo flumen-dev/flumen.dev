@@ -460,7 +460,9 @@
       "chooseTemplate": "Choose a template",
       "blankIssue": "Blank issue",
       "blankIssueDescription": "Start from scratch with an empty issue.",
-      "backToTemplates": "Back to templates"
+      "backToTemplates": "Back to templates",
+      "similarHeading": "Possibly related issues",
+      "similarHint": "Open one to check before creating — avoid duplicates."
     },
     "error": {
       "fetchError": {

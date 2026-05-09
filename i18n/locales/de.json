@@ -460,7 +460,9 @@
       "chooseTemplate": "Vorlage auswählen",
       "blankIssue": "Leeres Issue",
       "blankIssueDescription": "Von Grund auf ein neues Issue erstellen.",
-      "backToTemplates": "Zurück zu Vorlagen"
+      "backToTemplates": "Zurück zu Vorlagen",
+      "similarHeading": "Möglicherweise verwandte Issues",
+      "similarHint": "Bitte vor dem Erstellen ansehen — vermeide Duplikate."
     },
     "error": {
       "fetchError": {
