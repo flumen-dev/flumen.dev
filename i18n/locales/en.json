@@ -16,6 +16,37 @@
     "error": "Error",
     "removeItem": "Remove {item}"
   },
+  "pulls": {
+    "selectRepo": "Select a repository to see pull requests.",
+    "open": "Open",
+    "merged": "Merged",
+    "closed": "Closed",
+    "empty": "No pull requests in this state.",
+    "highlight": {
+      "readyToMerge": "Ready to merge",
+      "readyToMergeEmpty": "Nothing of yours is fully green right now.",
+      "reviewsRequested": "Reviews requested",
+      "reviewsRequestedEmpty": "No one is waiting on your review here."
+    },
+    "error": {
+      "sessionExpired": {
+        "title": "Session expired",
+        "description": "Please sign in again to continue."
+      },
+      "rateLimited": {
+        "title": "GitHub rate limit reached",
+        "description": "Try again in a minute."
+      },
+      "notFound": {
+        "title": "Repository not found",
+        "description": "Check the repo name or your access permissions."
+      },
+      "generic": {
+        "title": "Something went wrong",
+        "description": "We could not load pull requests. Please try again."
+      }
+    }
+  },
   "bookmark": {
     "title": "Bookmarks",
     "add": "Bookmark",
@@ -44,7 +75,7 @@
     "subtitlePrivateFork": "Private · Fork",
     "scopeMine": "My repos",
     "scopeGlobal": "All of GitHub",
-    "scopeHintGlobal": "Searching all of GitHub — may be slower.",
+    "scopeHintGlobal": "Searching all of GitHub - may be slower.",
     "scopeAriaToggle": "Toggle search scope",
     "footerNavigate": "navigate",
     "footerSelect": "select"
@@ -58,6 +89,7 @@
     "settings": "Settings",
     "search": "Search...",
     "focus": "Focus",
+    "pulls": "Pull Requests",
     "bookmarks": "Bookmarks",
     "profile": "Profile",
     "logout": "Log out"
@@ -79,7 +111,7 @@
       "focus": {
         "badge": "Focus",
         "title": "Your dashboard, your flow",
-        "description": "Everything you care about — issues, pull requests, notifications — in one clean overview. No clutter, no noise.",
+        "description": "Everything you care about - issues, pull requests, notifications - in one clean overview. No clutter, no noise.",
         "mockup": {
           "merged": "merged",
           "review": "review",
@@ -104,7 +136,7 @@
       "profile": {
         "badge": "Profile",
         "title": "Your identity, at a glance",
-        "description": "Edit your GitHub profile, README, status, and social links — all from one place. No context switching."
+        "description": "Edit your GitHub profile, README, status, and social links - all from one place. No context switching."
       }
     },
     "openSource": {
@@ -209,7 +241,7 @@
       "forkedFrom": "Forked from",
       "lists": "Lists",
       "workItems": "Work Items",
-      "workItemsHint": "Issues and pull requests combined — sorted by priority.",
+      "workItemsHint": "Issues and pull requests combined - sorted by priority.",
       "specialFiles": {
         "readme": "README",
         "codeOfConduct": "Code of Conduct",
@@ -252,7 +284,7 @@
       },
       "ownBanner": {
         "title": "This is Flumen",
-        "description": "The tool you're using right now. Built in the open, for maintainers who deserve better tools. No tracking, no paywalls — just focus.",
+        "description": "The tool you're using right now. Built in the open, for maintainers who deserve better tools. No tracking, no paywalls - just focus.",
         "goals": {
           "openSource": "Fully open source",
           "noTracking": "Zero tracking",
@@ -478,7 +510,7 @@
       "blankIssueDescription": "Start from scratch with an empty issue.",
       "backToTemplates": "Back to templates",
       "similarHeading": "Possibly related issues",
-      "similarHint": "Open one to check before creating — avoid duplicates."
+      "similarHint": "Open one to check before creating - avoid duplicates."
     },
     "error": {
       "fetchError": {
@@ -543,9 +575,9 @@
     },
     "merge": {
       "readyToMerge": "Ready to merge",
-      "hasConflicts": "Merge conflicts — resolve before merging",
+      "hasConflicts": "Merge conflicts - resolve before merging",
       "blocked": "Checks or reviews are blocking merge",
-      "blockedBypass": "Blocked — you can bypass as admin",
+      "blockedBypass": "Blocked - you can bypass as admin",
       "merge": "Merge",
       "keepAll": "Keep all commits",
       "keepAllDesc": "All {count} commits are added to the base branch with a merge commit.",
@@ -570,8 +602,8 @@
       "branchDeleteFailed": "Failed to delete branch",
       "error": {
         "forbidden": "You don't have permission to merge this pull request",
-        "notMergeable": "This pull request cannot be merged — checks, reviews, or branch protection may be blocking it",
-        "branchModified": "The branch was modified in the meantime — please review and try again",
+        "notMergeable": "This pull request cannot be merged - checks, reviews, or branch protection may be blocking it",
+        "branchModified": "The branch was modified in the meantime - please review and try again",
         "validationFailed": "Invalid merge parameters",
         "unknown": "An unexpected error occurred while merging"
       }
@@ -766,13 +798,13 @@
   "dashboard": {
     "description": "What needs your attention right now.",
     "waitingOnMe": {
-      "collapsed": "{count} items — avg. {days}d waiting"
+      "collapsed": "{count} items - avg. {days}d waiting"
     },
     "prHealth": {
       "title": "PR Health",
       "empty": "All your PRs are healthy.",
       "summary": "{issues} issues: {ci} CI failures, {conflicts} merge conflicts",
-      "collapsed": "{count} issues — {ci} CI, {conflicts} conflicts",
+      "collapsed": "{count} issues - {ci} CI, {conflicts} conflicts",
       "ageDays": "{days}d old",
       "reason": {
         "ci-failing": "CI is failing",
@@ -795,7 +827,7 @@
       "prsMerged": "PRs merged",
       "issuesClosed": "Issues closed",
       "moreItems": "+{count} more",
-      "collapsed": "{ratio}x — {resolved} resolved, {incoming} incoming"
+      "collapsed": "{ratio}x - {resolved} resolved, {incoming} incoming"
     }
   },
   "focus": {

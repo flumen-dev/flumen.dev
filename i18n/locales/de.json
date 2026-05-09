@@ -16,6 +16,37 @@
     "error": "Fehler",
     "removeItem": "{item} entfernen"
   },
+  "pulls": {
+    "selectRepo": "Wähle ein Repository, um Pull Requests zu sehen.",
+    "open": "Offen",
+    "merged": "Gemergt",
+    "closed": "Geschlossen",
+    "empty": "Keine Pull Requests in diesem Status.",
+    "highlight": {
+      "readyToMerge": "Bereit zum Mergen",
+      "readyToMergeEmpty": "Aktuell ist nichts von dir komplett grün.",
+      "reviewsRequested": "Reviews angefragt",
+      "reviewsRequestedEmpty": "Niemand wartet hier auf dein Review."
+    },
+    "error": {
+      "sessionExpired": {
+        "title": "Session abgelaufen",
+        "description": "Bitte melde dich erneut an."
+      },
+      "rateLimited": {
+        "title": "GitHub-Rate-Limit erreicht",
+        "description": "Bitte in einer Minute erneut versuchen."
+      },
+      "notFound": {
+        "title": "Repository nicht gefunden",
+        "description": "Prüfe den Repo-Namen oder deine Zugriffsrechte."
+      },
+      "generic": {
+        "title": "Etwas ist schiefgelaufen",
+        "description": "Pull Requests konnten nicht geladen werden. Bitte erneut versuchen."
+      }
+    }
+  },
   "bookmark": {
     "title": "Lesezeichen",
     "add": "Merken",
@@ -44,7 +75,7 @@
     "subtitlePrivateFork": "Privat · Fork",
     "scopeMine": "Meine Repos",
     "scopeGlobal": "Ganz GitHub",
-    "scopeHintGlobal": "Sucht in ganz GitHub — kann langsamer sein.",
+    "scopeHintGlobal": "Sucht in ganz GitHub - kann langsamer sein.",
     "scopeAriaToggle": "Such-Bereich umschalten",
     "footerNavigate": "navigieren",
     "footerSelect": "öffnen"
@@ -58,6 +89,7 @@
     "settings": "Einstellungen",
     "search": "Suchen...",
     "focus": "Fokus",
+    "pulls": "Pull Requests",
     "bookmarks": "Lesezeichen",
     "profile": "Profil",
     "logout": "Abmelden"
@@ -79,7 +111,7 @@
       "focus": {
         "badge": "Fokus",
         "title": "Dein Dashboard, dein Flow",
-        "description": "Alles, was dir wichtig ist — Issues, Pull Requests, Benachrichtigungen — in einer übersichtlichen Ansicht. Kein Durcheinander.",
+        "description": "Alles, was dir wichtig ist - Issues, Pull Requests, Benachrichtigungen - in einer übersichtlichen Ansicht. Kein Durcheinander.",
         "mockup": {
           "merged": "Gemergt",
           "review": "Review",
@@ -104,7 +136,7 @@
       "profile": {
         "badge": "Profil",
         "title": "Deine Identität auf einen Blick",
-        "description": "Bearbeite dein GitHub-Profil, README, Status und Social Links — alles an einem Ort. Kein Kontextwechsel."
+        "description": "Bearbeite dein GitHub-Profil, README, Status und Social Links - alles an einem Ort. Kein Kontextwechsel."
       }
     },
     "openSource": {
@@ -209,7 +241,7 @@
       "forkedFrom": "Geforkt von",
       "lists": "Listen",
       "workItems": "Work Items",
-      "workItemsHint": "Issues und Pull Requests kombiniert — nach Priorität sortiert.",
+      "workItemsHint": "Issues und Pull Requests kombiniert - nach Priorität sortiert.",
       "specialFiles": {
         "readme": "README",
         "codeOfConduct": "Verhaltensregeln",
@@ -252,7 +284,7 @@
       },
       "ownBanner": {
         "title": "Das ist Flumen",
-        "description": "Das Tool, das du gerade benutzt. Offen gebaut, für Maintainer die bessere Tools verdienen. Kein Tracking, keine Paywalls — nur Fokus.",
+        "description": "Das Tool, das du gerade benutzt. Offen gebaut, für Maintainer die bessere Tools verdienen. Kein Tracking, keine Paywalls - nur Fokus.",
         "goals": {
           "openSource": "Vollständig Open Source",
           "noTracking": "Kein Tracking",
@@ -478,7 +510,7 @@
       "blankIssueDescription": "Von Grund auf ein neues Issue erstellen.",
       "backToTemplates": "Zurück zu Vorlagen",
       "similarHeading": "Möglicherweise verwandte Issues",
-      "similarHint": "Bitte vor dem Erstellen ansehen — vermeide Duplikate."
+      "similarHint": "Bitte vor dem Erstellen ansehen - vermeide Duplikate."
     },
     "error": {
       "fetchError": {
@@ -543,9 +575,9 @@
     },
     "merge": {
       "readyToMerge": "Bereit zum Mergen",
-      "hasConflicts": "Merge-Konflikte — vor dem Mergen auflösen",
+      "hasConflicts": "Merge-Konflikte - vor dem Mergen auflösen",
       "blocked": "Checks oder Reviews blockieren den Merge",
-      "blockedBypass": "Blockiert — du kannst als Admin umgehen",
+      "blockedBypass": "Blockiert - du kannst als Admin umgehen",
       "merge": "Mergen",
       "keepAll": "Alle Commits behalten",
       "keepAllDesc": "Alle {count} Commits werden mit einem Merge-Commit in den Zielbranch übernommen.",
@@ -570,8 +602,8 @@
       "branchDeleteFailed": "Branch konnte nicht gelöscht werden",
       "error": {
         "forbidden": "Du hast keine Berechtigung, diesen Pull Request zu mergen",
-        "notMergeable": "Dieser Pull Request kann nicht gemergt werden — Checks, Reviews oder Branch-Schutzregeln blockieren den Merge",
-        "branchModified": "Der Branch wurde zwischenzeitlich geändert — bitte prüfen und erneut versuchen",
+        "notMergeable": "Dieser Pull Request kann nicht gemergt werden - Checks, Reviews oder Branch-Schutzregeln blockieren den Merge",
+        "branchModified": "Der Branch wurde zwischenzeitlich geändert - bitte prüfen und erneut versuchen",
         "validationFailed": "Ungültige Merge-Parameter",
         "unknown": "Beim Mergen ist ein unerwarteter Fehler aufgetreten"
       }
@@ -766,13 +798,13 @@
   "dashboard": {
     "description": "Was gerade deine Aufmerksamkeit braucht.",
     "waitingOnMe": {
-      "collapsed": "{count} Einträge — Ø {days}T Wartezeit"
+      "collapsed": "{count} Einträge - Ø {days}T Wartezeit"
     },
     "prHealth": {
       "title": "PR-Zustand",
       "empty": "Alle deine PRs sind gesund.",
       "summary": "{issues} Probleme: {ci} CI-Fehler, {conflicts} Merge-Konflikte",
-      "collapsed": "{count} Probleme — {ci} CI, {conflicts} Konflikte",
+      "collapsed": "{count} Probleme - {ci} CI, {conflicts} Konflikte",
       "ageDays": "{days}T alt",
       "reason": {
         "ci-failing": "CI schlägt fehl",
@@ -795,7 +827,7 @@
       "prsMerged": "PRs gemerged",
       "issuesClosed": "Issues geschlossen",
       "moreItems": "+{count} weitere",
-      "collapsed": "{ratio}x — {resolved} erledigt, {incoming} eingegangen"
+      "collapsed": "{ratio}x - {resolved} erledigt, {incoming} eingegangen"
     }
   },
   "focus": {
