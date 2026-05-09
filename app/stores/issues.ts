@@ -209,10 +209,18 @@ export const useIssueStore = defineStore('issues', () => {
     }
   }
 
-  async function fetchIssues() {
+  /**
+   * `refreshHighlights` defaults to `false` — user filter / search toggles do
+   * not change the highlight queries (they're fixed by GitHub-Search qualifier),
+   * so refetching them on every chip click is wasted bandwidth. Repo switches,
+   * state-filter switches and explicit refresh call with `true`.
+   */
+  async function fetchIssues({ refreshHighlights = false }: { refreshHighlights?: boolean } = {}) {
     if (!selectedRepo.value) return
     errorKey.value = null
-    await Promise.all([section.refresh(), fetchOtherCount(), fetchHighlights()])
+    const tasks: Array<Promise<unknown>> = [section.refresh(), fetchOtherCount()]
+    if (refreshHighlights) tasks.push(fetchHighlights())
+    await Promise.all(tasks)
     if (section.error.value) {
       errorKey.value = 'fetchError'
       return
@@ -221,6 +229,12 @@ export const useIssueStore = defineStore('issues', () => {
     if (stateFilter.value === 'open') openCount.value = section.totalCount.value
     else closedCount.value = section.totalCount.value
     loaded.value = true
+  }
+
+  async function setStateFilter(state: 'open' | 'closed') {
+    if (stateFilter.value === state) return
+    stateFilter.value = state
+    await fetchIssues({ refreshHighlights: true })
   }
 
   async function searchIssues(q: string) {
@@ -303,7 +317,7 @@ export const useIssueStore = defineStore('issues', () => {
     assignedToMe.resetPagination()
     mentioned.resetPagination()
     authoredByMe.resetPagination()
-    await Promise.all([fetchIssues(), fetchPeoplePool()])
+    await Promise.all([fetchIssues({ refreshHighlights: true }), fetchPeoplePool()])
   }
 
   function updateIssue(repo: string, number: number, patch: Partial<Issue>) {
@@ -324,7 +338,7 @@ export const useIssueStore = defineStore('issues', () => {
     assignedToMe.resetPagination()
     mentioned.resetPagination()
     authoredByMe.resetPagination()
-    await fetchIssues()
+    await fetchIssues({ refreshHighlights: true })
   }
 
   return {
@@ -360,6 +374,7 @@ export const useIssueStore = defineStore('issues', () => {
     authoredByMe,
     fetchIssues,
     fetchHighlights,
+    setStateFilter,
     loadNextPage: section.nextPage,
     loadPreviousPage: section.prevPage,
     selectRepo,

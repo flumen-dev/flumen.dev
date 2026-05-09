@@ -9,9 +9,7 @@ const localePath = useLocalePath()
 const store = useIssueStore()
 
 async function setFilter(state: 'open' | 'closed') {
-  if (store.stateFilter === state) return
-  store.stateFilter = state
-  await store.fetchIssues()
+  await store.setStateFilter(state)
 }
 </script>
 

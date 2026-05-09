@@ -43,8 +43,18 @@ const maxListHeight = computed(() => `${ROW_HEIGHT_REM * HIGHLIGHT_CARD_VISIBLE_
       </span>
     </header>
 
+    <div
+      v-if="loading && !items.length"
+      class="px-3 sm:px-4 py-6 flex items-center justify-center"
+    >
+      <UIcon
+        name="i-lucide-loader"
+        class="size-4 text-muted animate-spin"
+      />
+    </div>
+
     <ul
-      v-if="items.length"
+      v-else-if="items.length"
       class="divide-y divide-default flex-1 overflow-y-auto"
       :style="{ maxHeight: maxListHeight }"
     >
