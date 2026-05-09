@@ -47,8 +47,8 @@ function navigate() {
     tabindex="0"
     class="group flex items-start gap-3 px-4 py-3 hover:bg-elevated transition-colors cursor-pointer focus-visible:outline-none focus-visible:bg-elevated"
     @click="navigate"
-    @keydown.enter="navigate"
-    @keydown.space.prevent="navigate"
+    @keydown.enter.self="navigate"
+    @keydown.space.self.prevent="navigate"
   >
     <!-- State icon -->
     <UIcon
@@ -68,7 +68,7 @@ function navigate() {
           :repo="issue.repository.nameWithOwner"
           :number="issue.number"
           :labels="localLabels"
-          add-button-class="opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-150"
+          add-button-class="opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto group-focus-within:opacity-100 group-focus-within:pointer-events-auto transition-opacity duration-150"
           @added="onLabelAdded"
           @removed="onLabelRemoved"
         />
@@ -148,7 +148,7 @@ function navigate() {
 
     <!-- Right side: Assign + Assignees -->
     <div class="flex items-center gap-1 shrink-0">
-      <span class="opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-150">
+      <span class="opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto group-focus-within:opacity-100 group-focus-within:pointer-events-auto transition-opacity duration-150">
         <UiAssignButton
           :repo="repo"
           :number="issue.number"
