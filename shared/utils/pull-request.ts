@@ -1,4 +1,4 @@
-import type { Mergeable, PullRequest, PullRequestState, ReviewDecision } from '../types/pull-request'
+import type { Mergeable, PullRequest, PullRequestState, ReviewDecision, ReviewState } from '../types/pull-request'
 import type { CIStatus } from '../types/waiting-on-me'
 
 export interface GraphQLPullRequestNode {
@@ -27,6 +27,12 @@ export interface GraphQLPullRequestNode {
   }
   comments: { totalCount: number }
   closingIssuesReferences: { totalCount: number }
+  latestReviews: {
+    nodes: Array<{
+      state: ReviewState
+      author: { login: string, avatarUrl: string } | null
+    }>
+  }
   commits: {
     nodes: Array<{
       commit: { statusCheckRollup: { state: string } | null }
@@ -70,6 +76,9 @@ export function toPullRequest(node: GraphQLPullRequestNode): PullRequest {
     reviewDecision: node.reviewDecision,
     ciStatus: extractCIStatus(node),
     mergeable: node.mergeable,
+    latestReviews: (node.latestReviews?.nodes ?? [])
+      .filter(r => r.author !== null)
+      .map(r => ({ state: r.state, author: r.author! })),
     additions: node.additions,
     deletions: node.deletions,
     changedFiles: node.changedFiles,

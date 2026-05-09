@@ -28,6 +28,7 @@ function makeNode(overrides: Partial<GraphQLPullRequestNode> = {}): GraphQLPullR
     comments: { totalCount: 0 },
     closingIssuesReferences: { totalCount: 0 },
     commits: { nodes: [{ commit: { statusCheckRollup: null } }] },
+    latestReviews: { nodes: [] },
     repository: {
       nameWithOwner: 'org/repo',
       name: 'repo',
@@ -127,5 +128,33 @@ describe('toPullRequest', () => {
     }))
     expect(pr.reviewDecision).toBe('APPROVED')
     expect(pr.mergeable).toBe('CONFLICTING')
+  })
+
+  it('maps latestReviews into the row-level shape', () => {
+    const pr = toPullRequest(makeNode({
+      latestReviews: {
+        nodes: [
+          { state: 'APPROVED', author: { login: 'alice', avatarUrl: 'a.png' } },
+          { state: 'CHANGES_REQUESTED', author: { login: 'bob', avatarUrl: 'b.png' } },
+        ],
+      },
+    }))
+    expect(pr.latestReviews).toEqual([
+      { state: 'APPROVED', author: { login: 'alice', avatarUrl: 'a.png' } },
+      { state: 'CHANGES_REQUESTED', author: { login: 'bob', avatarUrl: 'b.png' } },
+    ])
+  })
+
+  it('drops latestReviews entries whose author is null (deleted accounts)', () => {
+    const pr = toPullRequest(makeNode({
+      latestReviews: {
+        nodes: [
+          { state: 'APPROVED', author: { login: 'alice', avatarUrl: 'a.png' } },
+          { state: 'COMMENTED', author: null },
+        ],
+      },
+    }))
+    expect(pr.latestReviews).toHaveLength(1)
+    expect(pr.latestReviews[0]?.author.login).toBe('alice')
   })
 })

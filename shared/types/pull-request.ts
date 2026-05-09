@@ -4,6 +4,7 @@ import type { CIStatus } from './waiting-on-me'
 export type PullRequestState = 'OPEN' | 'CLOSED' | 'MERGED'
 export type Mergeable = 'MERGEABLE' | 'CONFLICTING' | 'UNKNOWN'
 export type ReviewDecision = 'APPROVED' | 'CHANGES_REQUESTED' | 'REVIEW_REQUIRED' | null
+export type ReviewState = 'APPROVED' | 'CHANGES_REQUESTED' | 'COMMENTED' | 'PENDING' | 'DISMISSED'
 
 /**
  * List-row representation of a pull request. Keep this lighter than the
@@ -44,6 +45,12 @@ export interface PullRequest {
   reviewDecision: ReviewDecision
   ciStatus: CIStatus
   mergeable: Mergeable
+
+  /** Most recent review per reviewer — used to render the approval counter. */
+  latestReviews: Array<{
+    state: ReviewState
+    author: { login: string, avatarUrl: string }
+  }>
 
   additions: number
   deletions: number
