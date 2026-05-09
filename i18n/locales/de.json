@@ -19,7 +19,7 @@
   "pulls": {
     "selectRepo": "Wähle ein Repository, um Pull Requests zu sehen.",
     "open": "Offen",
-    "merged": "Gemerged",
+    "merged": "Gemergt",
     "closed": "Geschlossen",
     "empty": "Keine Pull Requests in diesem Status.",
     "highlight": {

@@ -40,24 +40,32 @@ function createHighlightSection(endpoint: string, pageSize: number) {
     hasMore.value = false
   }
 
+  // Monotonic request id — only the most recent fetch is allowed to mutate
+  // observable state. Protects against stale responses winning when the user
+  // switches repos / pages quickly.
+  let fetchSeq = 0
+
   async function fetchPage(repo: string) {
+    const id = ++fetchSeq
     loading.value = true
     try {
       const after = cursorStack.value[cursorStack.value.length - 1]
       const response = await apiFetch<PullRequestListResponse>(endpoint, {
         params: { repo, first: pageSize, after: after ?? undefined },
       })
+      if (id !== fetchSeq) return
       items.value = response.items
       totalCount.value = response.totalCount
       hasMore.value = response.pageInfo.hasNextPage
       nextCursor.value = response.pageInfo.endCursor
     }
     catch {
+      if (id !== fetchSeq) return
       // Highlights are an enhancement — fail silently, leave empty.
       reset()
     }
     finally {
-      loading.value = false
+      if (id === fetchSeq) loading.value = false
     }
   }
 
@@ -136,10 +144,15 @@ export const usePullRequestStore = defineStore('pullRequests', () => {
     return 'generic'
   }
 
+  // Monotonic request id for the main list — protects against stale responses
+  // overwriting newer state on rapid repo / state switches.
+  let fetchPrsSeq = 0
+
   async function fetchPrs(opts: FetchOptions = {}) {
     if (!selectedRepo.value) return
     if (loading.value && !opts.refresh) return
 
+    const id = ++fetchPrsSeq
     loading.value = true
     errorKey.value = null
     try {
@@ -152,6 +165,7 @@ export const usePullRequestStore = defineStore('pullRequests', () => {
           after: after ?? undefined,
         },
       })
+      if (id !== fetchPrsSeq) return
       prs.value = response.items
       totalCount.value = response.totalCount
       hasMore.value = response.pageInfo.hasNextPage
@@ -159,11 +173,12 @@ export const usePullRequestStore = defineStore('pullRequests', () => {
       loaded.value = true
     }
     catch (err) {
+      if (id !== fetchPrsSeq) return
       errorKey.value = mapErrorKey(err)
       prs.value = []
     }
     finally {
-      loading.value = false
+      if (id === fetchPrsSeq) loading.value = false
     }
   }
 
