@@ -23,6 +23,7 @@
     "closed": "Closed",
     "empty": "No pull requests in this state.",
     "linkedIssues": "{count} linked issue | {count} linked issues",
+    "linkedIssuesEmpty": "No linked issues found.",
     "ci": {
       "success": "CI passing",
       "failure": "CI failing",
