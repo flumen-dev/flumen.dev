@@ -16,7 +16,30 @@ const ISSUE_FIELDS = `
   assignees(first: 5) { nodes { login avatarUrl } }
   milestone { title }
   comments(last: 5) { totalCount nodes { author { login avatarUrl } body createdAt } }
-  timelineItems(itemTypes: [CROSS_REFERENCED_EVENT], first: 0) { totalCount }
+  linkedPrs: timelineItems(itemTypes: [CROSS_REFERENCED_EVENT], first: 0) { totalCount }
+  substantialActivity: timelineItems(
+    itemTypes: [
+      ISSUE_COMMENT,
+      CLOSED_EVENT,
+      REOPENED_EVENT,
+      ASSIGNED_EVENT,
+      UNASSIGNED_EVENT,
+      CROSS_REFERENCED_EVENT,
+      REFERENCED_EVENT
+    ],
+    last: 1
+  ) {
+    nodes {
+      __typename
+      ... on IssueComment { createdAt }
+      ... on ClosedEvent { createdAt }
+      ... on ReopenedEvent { createdAt }
+      ... on AssignedEvent { createdAt }
+      ... on UnassignedEvent { createdAt }
+      ... on CrossReferencedEvent { createdAt }
+      ... on ReferencedEvent { createdAt }
+    }
+  }
   repository { nameWithOwner name owner { login } }
 `
 

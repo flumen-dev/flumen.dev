@@ -30,6 +30,16 @@ export function toIssue(node: GraphQLIssueNode, maintainerLogin: string): Issue 
       }
     : null
 
+  // `linkedPrs` is the aliased timelineItems(CROSS_REFERENCED_EVENT) count.
+  // Fall back to the pre-alias `timelineItems` shape for cache entries written
+  // before the rename — defensive, lets older cached nodes still render.
+  const linkedPrCount = node.linkedPrs?.totalCount ?? node.timelineItems?.totalCount ?? 0
+
+  // Latest substantial activity event timestamp (excludes label/milestone-only edits).
+  const substantialEvents = node.substantialActivity?.nodes ?? []
+  const latestEvent = substantialEvents[substantialEvents.length - 1]
+  const lastSubstantialActivityAt = latestEvent?.createdAt ?? null
+
   return {
     id: node.id,
     number: node.number,
@@ -45,9 +55,10 @@ export function toIssue(node: GraphQLIssueNode, maintainerLogin: string): Issue 
     assignees: node.assignees.nodes,
     milestone: node.milestone?.title ?? null,
     commentCount: node.comments.totalCount,
-    linkedPrCount: node.timelineItems.totalCount,
+    linkedPrCount,
     maintainerCommented: commentNodes.some(c => c.author?.login === maintainerLogin),
     lastComment,
+    lastSubstantialActivityAt,
     repository: {
       nameWithOwner: node.repository.nameWithOwner,
       name: node.repository.name,

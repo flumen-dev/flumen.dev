@@ -38,6 +38,15 @@ export interface Issue {
     createdAt: string
   } | null
 
+  /**
+   * Timestamp of the latest substantial timeline event (comment, state change,
+   * assignment, cross-reference, etc.). Excludes label and milestone changes
+   * so bot-driven re-tagging doesn't bubble dead threads to the top.
+   * Falls back to `null` when no such event exists — sort consumers should use
+   * `lastSubstantialActivityAt ?? updatedAt`.
+   */
+  lastSubstantialActivityAt: string | null
+
   repository: {
     nameWithOwner: string
     name: string
@@ -68,7 +77,17 @@ export interface GraphQLIssueNode {
       createdAt: string
     }>
   }
-  timelineItems: { totalCount: number }
+  /** Aliased timelineItems for linked PR count (cross-references). */
+  linkedPrs?: { totalCount: number }
+  /** Aliased timelineItems for the latest substantial activity event. */
+  substantialActivity?: {
+    nodes: Array<{
+      __typename: string
+      createdAt: string
+    }>
+  }
+  /** Legacy alias kept for cached entries written before the rename. */
+  timelineItems?: { totalCount: number }
   repository: { nameWithOwner: string, name: string, owner: { login: string } }
 }
 

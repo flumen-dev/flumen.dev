@@ -166,7 +166,7 @@ function navigate() {
 
     <!-- Right side: Assign + Assignees -->
     <div class="flex items-center gap-1 shrink-0">
-      <span class="opacity-100 sm:opacity-0 sm:pointer-events-none sm:group-hover:opacity-100 sm:group-hover:pointer-events-auto sm:group-focus-within:opacity-100 sm:group-focus-within:pointer-events-auto transition-opacity duration-150">
+      <span class="opacity-100 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:pointer-events-none [@media(hover:hover)]:group-hover:opacity-100 [@media(hover:hover)]:group-hover:pointer-events-auto [@media(hover:hover)]:group-focus-within:opacity-100 [@media(hover:hover)]:group-focus-within:pointer-events-auto transition-opacity duration-150">
         <UiAssignButton
           :repo="repo"
           :number="issue.number"

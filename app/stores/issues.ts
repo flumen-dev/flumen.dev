@@ -179,9 +179,9 @@ export const useIssueStore = defineStore('issues', () => {
       buckets[categorizeIssue(issue, login)].push(issue)
     }
     // Sub-order within each bucket: newest-first by *substantial* activity.
-    // Prefer the latest comment timestamp over `updatedAt` so label-only edits
-    // (often bot-triggered) don't bubble dead threads to the top.
-    const activityAt = (issue: Issue) => new Date(issue.lastComment?.createdAt ?? issue.updatedAt).getTime()
+    // `lastSubstantialActivityAt` skips label and milestone-only edits so
+    // bot-driven re-tagging doesn't bubble dead threads to the top.
+    const activityAt = (issue: Issue) => new Date(issue.lastSubstantialActivityAt ?? issue.updatedAt).getTime()
     for (const key of Object.keys(buckets) as Array<keyof typeof buckets>) {
       buckets[key].sort((a, b) => activityAt(b) - activityAt(a))
     }
