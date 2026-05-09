@@ -30,6 +30,40 @@ export const useIssueStore = defineStore('issues', () => {
   const openCount = ref<number | null>(null)
   const closedCount = ref<number | null>(null)
 
+  const EXCLUSIVE_FILTERS = ['assignedToMe', 'unassigned']
+
+  const hasActiveFilters = computed(() =>
+    search.value.trim().length > 0 || activeFilters.value.length > 0,
+  )
+
+  // Debounced refetch so rapid filter toggles collapse into a single request.
+  const refetchAfterFilterChange = useDebounceFn(() => {
+    fetchIssues()
+    if (search.value.trim()) searchIssues(search.value)
+  }, 200)
+
+  function toggleFilter(key: string) {
+    let current = activeFilters.value
+    if (current.includes(key)) {
+      activeFilters.value = current.filter(f => f !== key)
+    }
+    else {
+      // Mutually exclusive: enabling one disables its pair
+      if (EXCLUSIVE_FILTERS.includes(key)) {
+        current = current.filter(f => !EXCLUSIVE_FILTERS.includes(f))
+      }
+      activeFilters.value = [...current, key]
+    }
+    refetchAfterFilterChange()
+  }
+
+  function clearFilters() {
+    if (!hasActiveFilters.value) return
+    activeFilters.value = []
+    search.value = ''
+    refetchAfterFilterChange()
+  }
+
   // --- Server search ---
   const searchResults = ref<Issue[]>([])
   const searching = ref(false)
@@ -126,13 +160,19 @@ export const useIssueStore = defineStore('issues', () => {
     const requestId = ++searchRequestId
     searching.value = true
     try {
-      const results = await apiFetch<Issue[]>('/api/issues/search', {
-        params: {
-          repo: selectedRepo.value,
-          state: stateFilter.value,
-          q: q.trim(),
-        },
-      })
+      const params: Record<string, string | number> = {
+        repo: selectedRepo.value,
+        state: stateFilter.value,
+        q: q.trim(),
+      }
+      // Compose active filters with the search term so search runs *within* the filter set.
+      if (activeFilters.value.includes('assignedToMe')) params.assignedToMe = 1
+      if (activeFilters.value.includes('unassigned')) params.unassigned = 1
+      if (activeFilters.value.includes('hasMilestone')) params.milestone = '*'
+      const labels = activeFilters.value.filter(f => f.startsWith('label:')).map(f => f.slice(6))
+      if (labels.length) params.label = labels.join(',')
+
+      const results = await apiFetch<Issue[]>('/api/issues/search', { params })
       if (requestId !== searchRequestId) return
       searchResults.value = results
     }
@@ -195,6 +235,9 @@ export const useIssueStore = defineStore('issues', () => {
     search,
     sortKey,
     activeFilters,
+    hasActiveFilters,
+    toggleFilter,
+    clearFilters,
     openCount,
     closedCount,
     totalCount: section.totalCount,

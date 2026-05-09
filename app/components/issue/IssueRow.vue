@@ -62,7 +62,10 @@ function navigate() {
       <!-- Row 1: Title + labels -->
       <div class="flex items-center gap-2 flex-wrap">
         <span class="font-medium text-highlighted hover:underline">
-          {{ issue.title }}
+          <UiHighlightedText
+            :text="issue.title"
+            :query="issueStore.search"
+          />
         </span>
         <UiLabelManager
           :repo="issue.repository.nameWithOwner"

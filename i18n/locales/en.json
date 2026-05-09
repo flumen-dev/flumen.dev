@@ -368,7 +368,12 @@
     "filter": {
       "assignedToMe": "Assigned to me",
       "unassigned": "Unassigned",
-      "hasMilestone": "Milestone"
+      "hasMilestone": "Milestone",
+      "clear": "Clear filters"
+    },
+    "filtered": {
+      "heading": "Filtered results",
+      "empty": "No issues match your filters."
     },
     "sort": {
       "critical": "Needs attention",

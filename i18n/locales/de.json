@@ -368,7 +368,12 @@
     "filter": {
       "assignedToMe": "Mir zugewiesen",
       "unassigned": "Nicht zugewiesen",
-      "hasMilestone": "Meilenstein"
+      "hasMilestone": "Meilenstein",
+      "clear": "Filter zurücksetzen"
+    },
+    "filtered": {
+      "heading": "Gefilterte Treffer",
+      "empty": "Keine Issues passen zu deinen Filtern."
     },
     "sort": {
       "critical": "Braucht Aufmerksamkeit",

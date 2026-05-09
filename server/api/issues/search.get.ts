@@ -21,20 +21,48 @@ interface MinimalSearchResult {
   }
 }
 
+function escapeGitHubQuery(value: string): string {
+  return value.replace(/\\/g, '\\\\').replace(/"/g, '\\"')
+}
+
 export default defineEventHandler(async (event): Promise<Issue[]> => {
   const { token, login } = await getSessionToken(event)
-  const { repo, state = 'open', q } = getQuery<{
+  const { repo, state = 'open', q, assignedToMe, unassigned, label, milestone } = getQuery<{
     repo?: string
     state?: string
     q?: string
+    assignedToMe?: string
+    unassigned?: string
+    label?: string
+    milestone?: string
   }>(event)
 
   if (!repo || !q || !/^[\w.-]+\/[\w.-]+$/.test(repo)) {
     throw createError({ statusCode: 400, message: 'Missing or invalid repo/q query parameter' })
   }
 
+  const isAssignedToMe = assignedToMe === '1' || assignedToMe === 'true'
+  const isUnassigned = unassigned === '1' || unassigned === 'true'
+
+  if (isAssignedToMe && isUnassigned) {
+    throw createError({ statusCode: 400, message: 'assignedToMe and unassigned are mutually exclusive' })
+  }
+
   const stateQ = state === 'closed' ? 'is:closed' : 'is:open'
-  const query = `is:issue ${stateQ} repo:${repo} ${q} in:title,body sort:updated-desc`
+  let query = `is:issue ${stateQ} repo:${repo} ${q} in:title,body sort:updated-desc`
+  if (isAssignedToMe) query += ` assignee:${login}`
+  if (isUnassigned) query += ` no:assignee`
+  if (milestone === '*') {
+    query += ` milestone:*`
+  }
+  else if (milestone) {
+    query += ` milestone:"${escapeGitHubQuery(String(milestone))}"`
+  }
+  if (label) {
+    for (const l of String(label).split(',')) {
+      if (l.trim()) query += ` label:"${escapeGitHubQuery(l.trim())}"`
+    }
+  }
 
   const data = await githubGraphQL<MinimalSearchResult>(token, MINIMAL_SEARCH_QUERY, {
     query,

@@ -109,8 +109,40 @@ async function setFilter(state: 'open' | 'closed') {
           </div>
         </div>
 
-        <!-- Sections -->
+        <!-- Filter bar (search + chips + clear) -->
+        <IssueFilterBar />
+
+        <!-- Filtered flat list (when search/filters active) -->
         <div
+          v-if="store.hasActiveFilters"
+          class="space-y-3 transition-opacity duration-150"
+          :class="store.loading || store.searching ? 'opacity-50 pointer-events-none' : ''"
+        >
+          <div class="px-1 text-xs font-medium text-muted uppercase tracking-wider">
+            {{ t('issues.filtered.heading') }}
+            <span class="text-muted/70">({{ store.sortedIssues.length }})</span>
+          </div>
+          <div
+            v-if="store.sortedIssues.length"
+            class="rounded-lg border border-default divide-y divide-default overflow-hidden"
+          >
+            <IssueRow
+              v-for="issue in store.sortedIssues"
+              :key="issue.id"
+              :issue="issue"
+            />
+          </div>
+          <p
+            v-else
+            class="px-4 py-8 text-center text-sm text-muted"
+          >
+            {{ t('issues.filtered.empty') }}
+          </p>
+        </div>
+
+        <!-- Smart sections (default) -->
+        <div
+          v-else
           class="space-y-3 transition-opacity duration-150"
           :class="store.loading ? 'opacity-50 pointer-events-none' : ''"
         >
@@ -138,9 +170,9 @@ async function setFilter(state: 'open' | 'closed') {
           </IssueSection>
         </div>
 
-        <!-- Pagination -->
+        <!-- Pagination (only in default section view; search uses its own flat list without paging) -->
         <UiPaginator
-          v-if="store.sortedIssues.length"
+          v-if="!store.hasActiveFilters && store.sortedIssues.length"
           :current-page="store.currentPage"
           :total-pages="store.totalPages"
           :has-more="store.hasMore"
