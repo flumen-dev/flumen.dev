@@ -16,6 +16,18 @@
     "error": "Fehler",
     "removeItem": "{item} entfernen"
   },
+  "bookmark": {
+    "title": "Lesezeichen",
+    "add": "Merken",
+    "remove": "Lesezeichen entfernen",
+    "empty": "Noch keine Lesezeichen. Klick auf das Lesezeichen-Icon bei einem Issue, PR oder Repo, um es hier zu sammeln.",
+    "sectionEmpty": "Hier ist noch nichts.",
+    "section": {
+      "issues": "Issues",
+      "pulls": "Pull Requests",
+      "repos": "Repositories"
+    }
+  },
   "cmdk": {
     "placeholder": "Suchen oder durchstöbern…",
     "loading": "Lädt…",
@@ -46,6 +58,7 @@
     "settings": "Einstellungen",
     "search": "Suchen...",
     "focus": "Fokus",
+    "bookmarks": "Lesezeichen",
     "profile": "Profil",
     "logout": "Abmelden"
   },
