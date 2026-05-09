@@ -171,6 +171,12 @@ const mainItems = computed<NavigationMenuItem[]>(() => [
     disabled: !loggedIn.value,
   },
   {
+    label: t('nav.bookmarks'),
+    icon: 'i-lucide-bookmark',
+    to: localePath('/bookmarks'),
+    disabled: !loggedIn.value,
+  },
+  {
     label: t('nav.settings'),
     icon: 'i-lucide-settings',
     to: localePath('/settings'),
