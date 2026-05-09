@@ -41,7 +41,8 @@ export const useLinkedIssuesStore = defineStore('linkedIssues', () => {
       cache.value.set(prId, data)
     }
     catch {
-      cache.value.set(prId, [])
+      // Leave cache untouched so the next toggle retries instead of showing a
+      // stale empty state forever.
     }
     finally {
       loading.value = new Set([...loading.value].filter(id => id !== prId))
