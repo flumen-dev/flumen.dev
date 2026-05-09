@@ -45,7 +45,7 @@ function navigate() {
   <div
     role="link"
     tabindex="0"
-    class="flex items-start gap-3 px-4 py-3 hover:bg-elevated transition-colors cursor-pointer"
+    class="group flex items-start gap-3 px-4 py-3 hover:bg-elevated transition-colors cursor-pointer focus-visible:outline-none focus-visible:bg-elevated"
     @click="navigate"
     @keydown.enter="navigate"
     @keydown.space.prevent="navigate"
@@ -68,6 +68,7 @@ function navigate() {
           :repo="issue.repository.nameWithOwner"
           :number="issue.number"
           :labels="localLabels"
+          add-button-class="opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-150"
           @added="onLabelAdded"
           @removed="onLabelRemoved"
         />
@@ -94,13 +95,13 @@ function navigate() {
           <UAvatar
             :src="issue.author.avatarUrl"
             :alt="issue.author.login"
-            size="3xs"
+            size="xs"
           />
           {{ issue.author.login }}
         </button>
         <span>#{{ issue.number }}</span>
         <span>{{ createdAgo }}</span>
-        <span>{{ updatedAgo }}</span>
+        <span class="text-default">{{ updatedAgo }}</span>
 
         <span
           v-if="issue.commentCount"
@@ -147,13 +148,15 @@ function navigate() {
 
     <!-- Right side: Assign + Assignees -->
     <div class="flex items-center gap-1 shrink-0">
-      <UiAssignButton
-        :repo="repo"
-        :number="issue.number"
-        :assignees="issue.assignees"
-        @assigned="onAssigned"
-        @unassigned="onUnassigned"
-      />
+      <span class="opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-150">
+        <UiAssignButton
+          :repo="repo"
+          :number="issue.number"
+          :assignees="issue.assignees"
+          @assigned="onAssigned"
+          @unassigned="onUnassigned"
+        />
+      </span>
       <UTooltip
         v-for="assignee in issue.assignees"
         :key="assignee.login"
