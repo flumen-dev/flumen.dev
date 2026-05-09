@@ -76,6 +76,9 @@
         "linkedIssues": {
           "type": "string"
         },
+        "linkedIssuesEmpty": {
+          "type": "string"
+        },
         "ci": {
           "type": "object",
           "properties": {

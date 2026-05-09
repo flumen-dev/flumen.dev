@@ -23,6 +23,7 @@
     "closed": "Geschlossen",
     "empty": "Keine Pull Requests in diesem Status.",
     "linkedIssues": "{count} verknüpftes Issue | {count} verknüpfte Issues",
+    "linkedIssuesEmpty": "Keine verknüpften Issues gefunden.",
     "ci": {
       "success": "CI grün",
       "failure": "CI rot",
