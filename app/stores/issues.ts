@@ -30,6 +30,12 @@ export const useIssueStore = defineStore('issues', () => {
   const openCount = ref<number | null>(null)
   const closedCount = ref<number | null>(null)
 
+  // Repo-wide people pool (sampled across recent issues, server-cached).
+  // Used by the author/assignee filter pickers — broader than the first 20 loaded issues.
+  interface RepoPerson { login: string, avatarUrl: string, name?: string | null, count: number }
+  const repoAuthors = ref<RepoPerson[]>([])
+  const repoAssignees = ref<RepoPerson[]>([])
+
   const EXCLUSIVE_FILTERS = ['assignedToMe', 'unassigned']
 
   const hasActiveFilters = computed(() =>
@@ -48,12 +54,32 @@ export const useIssueStore = defineStore('issues', () => {
       activeFilters.value = current.filter(f => f !== key)
     }
     else {
-      // Mutually exclusive: enabling one disables its pair
+      // Mutually exclusive: enabling assignedToMe/unassigned disables the pair
+      // AND any specific assignee:* picker.
       if (EXCLUSIVE_FILTERS.includes(key)) {
-        current = current.filter(f => !EXCLUSIVE_FILTERS.includes(f))
+        current = current.filter(f =>
+          !EXCLUSIVE_FILTERS.includes(f) && !f.startsWith('assignee:'),
+        )
       }
       activeFilters.value = [...current, key]
     }
+    refetchAfterFilterChange()
+  }
+
+  /**
+   * Set a single-value filter under a given prefix (e.g. `author`, `assignee`).
+   * Pass `value === null` to clear it. Replaces any existing filter for that prefix.
+   * For `assignee`, also clears the assignedToMe/unassigned pair.
+   */
+  function setUniqueFilter(prefix: 'author' | 'assignee', value: string | null) {
+    let next = activeFilters.value.filter(f => !f.startsWith(`${prefix}:`))
+    if (prefix === 'assignee') {
+      next = next.filter(f => !EXCLUSIVE_FILTERS.includes(f))
+    }
+    if (value) next = [...next, `${prefix}:${value}`]
+    if (next.length === activeFilters.value.length
+      && next.every((v, i) => v === activeFilters.value[i])) return
+    activeFilters.value = next
     refetchAfterFilterChange()
   }
 
@@ -81,6 +107,10 @@ export const useIssueStore = defineStore('issues', () => {
     if (activeFilters.value.includes('hasMilestone')) p.milestone = '*'
     const labels = activeFilters.value.filter(f => f.startsWith('label:')).map(f => f.slice(6))
     if (labels.length) p.label = labels.join(',')
+    const author = activeFilters.value.find(f => f.startsWith('author:'))?.slice(7)
+    if (author) p.author = author
+    const assignee = activeFilters.value.find(f => f.startsWith('assignee:'))?.slice(9)
+    if (assignee) p.assignee = assignee
     return p
   }
 
@@ -145,8 +175,15 @@ export const useIssueStore = defineStore('issues', () => {
   const issuesBySection = computed(() => {
     const buckets = createEmptyIssueBuckets()
     const login = user.value?.login ?? null
-    for (const issue of sortedIssues.value) {
+    for (const issue of section.data.value) {
       buckets[categorizeIssue(issue, login)].push(issue)
+    }
+    // Sub-order within each bucket: newest-first by *substantial* activity.
+    // Prefer the latest comment timestamp over `updatedAt` so label-only edits
+    // (often bot-triggered) don't bubble dead threads to the top.
+    const activityAt = (issue: Issue) => new Date(issue.lastComment?.createdAt ?? issue.updatedAt).getTime()
+    for (const key of Object.keys(buckets) as Array<keyof typeof buckets>) {
+      buckets[key].sort((a, b) => activityAt(b) - activityAt(a))
     }
     return buckets
   })
@@ -202,6 +239,10 @@ export const useIssueStore = defineStore('issues', () => {
       if (activeFilters.value.includes('hasMilestone')) params.milestone = '*'
       const labels = activeFilters.value.filter(f => f.startsWith('label:')).map(f => f.slice(6))
       if (labels.length) params.label = labels.join(',')
+      const author = activeFilters.value.find(f => f.startsWith('author:'))?.slice(7)
+      if (author) params.author = author
+      const assignee = activeFilters.value.find(f => f.startsWith('assignee:'))?.slice(9)
+      if (assignee) params.assignee = assignee
 
       const results = await apiFetch<Issue[]>('/api/issues/search', { params })
       if (requestId !== searchRequestId) return
@@ -227,6 +268,24 @@ export const useIssueStore = defineStore('issues', () => {
     searchDebounceTimer = setTimeout(() => searchIssues(q), 300)
   })
 
+  async function fetchPeoplePool() {
+    if (!selectedRepo.value) return
+    const [owner, name] = selectedRepo.value.split('/')
+    if (!owner || !name) return
+    try {
+      const data = await apiFetch<{ authors: RepoPerson[], assignees: RepoPerson[] }>(
+        `/api/repository/${owner}/${name}/issue-people`,
+      )
+      repoAuthors.value = data.authors
+      repoAssignees.value = data.assignees
+    }
+    catch {
+      // Best-effort — FilterBar falls back to the in-view derived pool.
+      repoAuthors.value = []
+      repoAssignees.value = []
+    }
+  }
+
   async function selectRepo(repo: string) {
     if (repo === selectedRepo.value && loaded.value) return
     selectedRepo.value = repo
@@ -235,7 +294,9 @@ export const useIssueStore = defineStore('issues', () => {
     searchResults.value = []
     openCount.value = null
     closedCount.value = null
-    await fetchIssues()
+    repoAuthors.value = []
+    repoAssignees.value = []
+    await Promise.all([fetchIssues(), fetchPeoplePool()])
   }
 
   function updateIssue(repo: string, number: number, patch: Partial<Issue>) {
@@ -268,7 +329,10 @@ export const useIssueStore = defineStore('issues', () => {
     activeFilters,
     hasActiveFilters,
     toggleFilter,
+    setUniqueFilter,
     clearFilters,
+    repoAuthors,
+    repoAssignees,
     openCount,
     closedCount,
     totalCount: section.totalCount,

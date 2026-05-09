@@ -9,6 +9,29 @@ const filterChips = computed(() => [
   { key: 'hasMilestone', label: t('issues.filter.hasMilestone'), icon: 'i-lucide-milestone' },
 ])
 
+interface PersonStat {
+  login: string
+  avatarUrl: string
+  count: number
+}
+
+function tally(getPeople: (issue: { author: { login: string, avatarUrl: string }, assignees: { login: string, avatarUrl: string }[] }) => Array<{ login: string, avatarUrl: string }>): PersonStat[] {
+  const counts = new Map<string, PersonStat>()
+  for (const issue of store.issues) {
+    for (const person of getPeople(issue)) {
+      const existing = counts.get(person.login)
+      if (existing) existing.count++
+      else counts.set(person.login, { login: person.login, avatarUrl: person.avatarUrl, count: 1 })
+    }
+  }
+  return [...counts.values()].sort((a, b) => b.count - a.count)
+}
+
+// Prefer the repo-wide people pool (sampled across all issues, server-cached).
+// Fall back to in-view-derived counts if the pool fetch is still loading or empty.
+const authors = computed(() => store.repoAuthors.length ? store.repoAuthors : tally(issue => [issue.author]))
+const assignees = computed(() => store.repoAssignees.length ? store.repoAssignees : tally(issue => issue.assignees))
+
 // `/` focuses the search input — GitHub-style. Skip when typing in any input.
 onKeyStroke('/', (e) => {
   const target = e.target as HTMLElement | null
@@ -70,6 +93,17 @@ onKeyStroke('/', (e) => {
         />
         {{ chip.label }}
       </button>
+
+      <IssueUserPicker
+        filter-prefix="author"
+        :people="authors"
+        :placeholder="t('issues.filter.author')"
+      />
+      <IssueUserPicker
+        filter-prefix="assignee"
+        :people="assignees"
+        :placeholder="t('issues.filter.assignee')"
+      />
 
       <!-- Label chips (when available) -->
       <div

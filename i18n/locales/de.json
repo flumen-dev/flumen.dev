@@ -369,6 +369,9 @@
       "assignedToMe": "Mir zugewiesen",
       "unassigned": "Nicht zugewiesen",
       "hasMilestone": "Meilenstein",
+      "author": "Von…",
+      "assignee": "Zugewiesen…",
+      "noPeople": "Noch keine Personen in dieser Ansicht.",
       "clear": "Filter zurücksetzen"
     },
     "filtered": {

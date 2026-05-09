@@ -27,7 +27,7 @@ function escapeGitHubQuery(value: string): string {
 
 export default defineEventHandler(async (event): Promise<Issue[]> => {
   const { token, login } = await getSessionToken(event)
-  const { repo, state = 'open', q, assignedToMe, unassigned, label, milestone } = getQuery<{
+  const { repo, state = 'open', q, assignedToMe, unassigned, label, milestone, author, assignee } = getQuery<{
     repo?: string
     state?: string
     q?: string
@@ -35,6 +35,8 @@ export default defineEventHandler(async (event): Promise<Issue[]> => {
     unassigned?: string
     label?: string
     milestone?: string
+    author?: string
+    assignee?: string
   }>(event)
 
   if (!repo || !q || !/^[\w.-]+\/[\w.-]+$/.test(repo)) {
@@ -64,6 +66,9 @@ export default defineEventHandler(async (event): Promise<Issue[]> => {
       if (l.trim()) query += ` label:"${escapeGitHubQuery(l.trim())}"`
     }
   }
+  const LOGIN_RE = /^(?!.*--)[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,37}[a-zA-Z0-9])?$/
+  if (author && LOGIN_RE.test(String(author))) query += ` author:${author}`
+  if (assignee && LOGIN_RE.test(String(assignee))) query += ` assignee:${assignee}`
 
   const data = await githubGraphQL<MinimalSearchResult>(token, MINIMAL_SEARCH_QUERY, {
     query,

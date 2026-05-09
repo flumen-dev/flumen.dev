@@ -369,6 +369,9 @@
       "assignedToMe": "Assigned to me",
       "unassigned": "Unassigned",
       "hasMilestone": "Milestone",
+      "author": "From…",
+      "assignee": "Assigned…",
+      "noPeople": "No people in this view yet.",
       "clear": "Clear filters"
     },
     "filtered": {

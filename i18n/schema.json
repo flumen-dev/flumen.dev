@@ -1114,6 +1114,15 @@
             "hasMilestone": {
               "type": "string"
             },
+            "author": {
+              "type": "string"
+            },
+            "assignee": {
+              "type": "string"
+            },
+            "noPeople": {
+              "type": "string"
+            },
             "clear": {
               "type": "string"
             }
