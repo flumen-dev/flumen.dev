@@ -94,53 +94,11 @@
         "error": {
           "type": "object",
           "properties": {
-            "sessionExpired": {
-              "type": "object",
-              "properties": {
-                "title": {
-                  "type": "string"
-                },
-                "description": {
-                  "type": "string"
-                }
-              },
-              "additionalProperties": false
+            "title": {
+              "type": "string"
             },
-            "rateLimited": {
-              "type": "object",
-              "properties": {
-                "title": {
-                  "type": "string"
-                },
-                "description": {
-                  "type": "string"
-                }
-              },
-              "additionalProperties": false
-            },
-            "notFound": {
-              "type": "object",
-              "properties": {
-                "title": {
-                  "type": "string"
-                },
-                "description": {
-                  "type": "string"
-                }
-              },
-              "additionalProperties": false
-            },
-            "generic": {
-              "type": "object",
-              "properties": {
-                "title": {
-                  "type": "string"
-                },
-                "description": {
-                  "type": "string"
-                }
-              },
-              "additionalProperties": false
+            "description": {
+              "type": "string"
             }
           },
           "additionalProperties": false

@@ -29,22 +29,8 @@
       "reviewsRequestedEmpty": "No one is waiting on your review here."
     },
     "error": {
-      "sessionExpired": {
-        "title": "Session expired",
-        "description": "Please sign in again to continue."
-      },
-      "rateLimited": {
-        "title": "GitHub rate limit reached",
-        "description": "Try again in a minute."
-      },
-      "notFound": {
-        "title": "Repository not found",
-        "description": "Check the repo name or your access permissions."
-      },
-      "generic": {
-        "title": "Something went wrong",
-        "description": "We could not load pull requests. Please try again."
-      }
+      "title": "Something went wrong",
+      "description": "We could not load pull requests. Please try again."
     }
   },
   "bookmark": {

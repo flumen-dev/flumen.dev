@@ -29,22 +29,8 @@
       "reviewsRequestedEmpty": "Niemand wartet hier auf dein Review."
     },
     "error": {
-      "sessionExpired": {
-        "title": "Session abgelaufen",
-        "description": "Bitte melde dich erneut an."
-      },
-      "rateLimited": {
-        "title": "GitHub-Rate-Limit erreicht",
-        "description": "Bitte in einer Minute erneut versuchen."
-      },
-      "notFound": {
-        "title": "Repository nicht gefunden",
-        "description": "Prüfe den Repo-Namen oder deine Zugriffsrechte."
-      },
-      "generic": {
-        "title": "Etwas ist schiefgelaufen",
-        "description": "Pull Requests konnten nicht geladen werden. Bitte erneut versuchen."
-      }
+      "title": "Etwas ist schiefgelaufen",
+      "description": "Pull Requests konnten nicht geladen werden. Bitte erneut versuchen."
     }
   },
   "bookmark": {

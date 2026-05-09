@@ -1,10 +1,6 @@
-import type { PullRequest, PullRequestListResponse } from '~~/shared/types/pull-request'
+import type { PullRequest } from '~~/shared/types/pull-request'
 
 export type PrStateFilter = 'open' | 'closed' | 'merged'
-
-interface FetchOptions {
-  refresh?: boolean
-}
 
 const PAGE_SIZE = 20
 const HIGHLIGHT_PAGE_SIZE = HIGHLIGHT_CARD_VISIBLE_ITEMS
@@ -13,175 +9,73 @@ export const usePullRequestStore = defineStore('pullRequests', () => {
   const apiFetch = useRequestFetch()
 
   const selectedRepo = ref<string | null>(null)
-  const prs = shallowRef<PullRequest[]>([])
-  const loaded = ref(false)
-  const loading = ref(false)
+  const stateFilter = ref<PrStateFilter>('open')
   const errorKey = ref<string | null>(null)
 
-  const stateFilter = ref<PrStateFilter>('open')
+  const mainList = usePaginatedSection<PullRequest>(
+    apiFetch,
+    '/api/pull-requests',
+    PAGE_SIZE,
+    () => ({ repo: selectedRepo.value ?? '', state: stateFilter.value }),
+  )
 
-  const totalCount = ref<number | null>(null)
-  const cursorStack = ref<(string | null)[]>([null])
-  const nextCursor = ref<string | null>(null)
-  const hasMore = ref(false)
-  const paging = ref<'next' | 'prev' | null>(null)
+  const readyToMerge = usePaginatedSection<PullRequest>(
+    apiFetch,
+    '/api/pull-requests/ready-to-merge',
+    HIGHLIGHT_PAGE_SIZE,
+    () => ({ repo: selectedRepo.value ?? '' }),
+  )
 
-  const readyToMerge = useHighlightSection<PullRequest>('/api/pull-requests/ready-to-merge', HIGHLIGHT_PAGE_SIZE)
-  const reviewsRequested = useHighlightSection<PullRequest>('/api/pull-requests/reviews-requested', HIGHLIGHT_PAGE_SIZE)
+  const reviewsRequested = usePaginatedSection<PullRequest>(
+    apiFetch,
+    '/api/pull-requests/reviews-requested',
+    HIGHLIGHT_PAGE_SIZE,
+    () => ({ repo: selectedRepo.value ?? '' }),
+  )
 
-  const currentPage = computed(() => Math.max(1, cursorStack.value.length))
-  const hasPrevious = computed(() => currentPage.value > 1)
-  const totalPages = computed(() => {
-    if (totalCount.value === null) return 1
-    return Math.max(1, Math.ceil(totalCount.value / PAGE_SIZE))
-  })
+  const loaded = computed(() => mainList.fetchedAt.value !== null)
 
-  function mapErrorKey(err: unknown): string {
-    const status = (err as { statusCode?: number }).statusCode
-    if (status === 401) return 'sessionExpired'
-    if (status === 403) return 'rateLimited'
-    if (status === 404) return 'notFound'
-    return 'generic'
-  }
-
-  // Monotonic request id for the main list — protects against stale responses
-  // overwriting newer state on rapid repo / state switches.
-  let fetchPrsSeq = 0
-
-  async function fetchPrs(opts: FetchOptions = {}) {
+  async function fetchAll() {
     if (!selectedRepo.value) return
-    if (loading.value && !opts.refresh) return
-
-    const id = ++fetchPrsSeq
-    loading.value = true
     errorKey.value = null
-    try {
-      const after = cursorStack.value[cursorStack.value.length - 1]
-      const response = await apiFetch<PullRequestListResponse>('/api/pull-requests', {
-        params: {
-          repo: selectedRepo.value,
-          state: stateFilter.value,
-          first: PAGE_SIZE,
-          after: after ?? undefined,
-        },
-      })
-      if (id !== fetchPrsSeq) return
-      prs.value = response.items
-      totalCount.value = response.totalCount
-      hasMore.value = response.pageInfo.hasNextPage
-      nextCursor.value = response.pageInfo.endCursor
-      loaded.value = true
+    const tasks: Array<Promise<unknown>> = [mainList.refresh()]
+    if (stateFilter.value === 'open') {
+      tasks.push(readyToMerge.refresh(), reviewsRequested.refresh())
     }
-    catch (err) {
-      if (id !== fetchPrsSeq) return
-      errorKey.value = mapErrorKey(err)
-      prs.value = []
+    else {
+      readyToMerge.resetPagination()
+      reviewsRequested.resetPagination()
     }
-    finally {
-      if (id === fetchPrsSeq) loading.value = false
-    }
-  }
-
-  async function fetchHighlights() {
-    if (!selectedRepo.value) return
-    if (stateFilter.value !== 'open') {
-      readyToMerge.reset()
-      reviewsRequested.reset()
-      return
-    }
-    await Promise.all([
-      readyToMerge.fetchPage(selectedRepo.value),
-      reviewsRequested.fetchPage(selectedRepo.value),
-    ])
+    await Promise.all(tasks)
+    if (mainList.error.value) errorKey.value = 'generic'
   }
 
   async function selectRepo(repo: string) {
     if (repo === selectedRepo.value && loaded.value) return
     selectedRepo.value = repo
-    cursorStack.value = [null]
-    readyToMerge.reset()
-    reviewsRequested.reset()
-    loaded.value = false
-    await Promise.all([fetchPrs({ refresh: true }), fetchHighlights()])
+    await fetchAll()
   }
 
   async function setStateFilter(state: PrStateFilter) {
     if (stateFilter.value === state) return
     stateFilter.value = state
-    cursorStack.value = [null]
-    readyToMerge.reset()
-    reviewsRequested.reset()
-    await Promise.all([fetchPrs({ refresh: true }), fetchHighlights()])
-  }
-
-  async function loadNextPage() {
-    if (!hasMore.value || paging.value || !nextCursor.value) return
-    paging.value = 'next'
-    try {
-      cursorStack.value.push(nextCursor.value)
-      await fetchPrs({ refresh: true })
-    }
-    finally {
-      paging.value = null
-    }
-  }
-
-  async function loadPreviousPage() {
-    if (!hasPrevious.value || paging.value) return
-    paging.value = 'prev'
-    try {
-      cursorStack.value.pop()
-      await fetchPrs({ refresh: true })
-    }
-    finally {
-      paging.value = null
-    }
+    await fetchAll()
   }
 
   async function refresh() {
-    cursorStack.value = [null]
-    readyToMerge.reset()
-    reviewsRequested.reset()
-    loaded.value = false
-    await Promise.all([fetchPrs({ refresh: true }), fetchHighlights()])
-  }
-
-  // Wrappers so callers don't need to thread `selectedRepo` through.
-  async function loadHighlightNext(section: 'ready' | 'reviews') {
-    if (!selectedRepo.value) return
-    const target = section === 'ready' ? readyToMerge : reviewsRequested
-    await target.loadNext(selectedRepo.value)
-  }
-
-  async function loadHighlightPrevious(section: 'ready' | 'reviews') {
-    if (!selectedRepo.value) return
-    const target = section === 'ready' ? readyToMerge : reviewsRequested
-    await target.loadPrevious(selectedRepo.value)
+    await fetchAll()
   }
 
   return {
     selectedRepo,
-    prs,
+    stateFilter,
+    errorKey,
+    loaded,
+    mainList,
     readyToMerge,
     reviewsRequested,
-    loaded,
-    loading,
-    errorKey,
-    stateFilter,
-    totalCount,
-    hasMore,
-    hasPrevious,
-    paging,
-    currentPage,
-    totalPages,
-    fetchPrs,
-    fetchHighlights,
     selectRepo,
     setStateFilter,
-    loadNextPage,
-    loadPreviousPage,
-    loadHighlightNext,
-    loadHighlightPrevious,
     refresh,
   }
 })

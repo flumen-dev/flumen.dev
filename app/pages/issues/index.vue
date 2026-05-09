@@ -68,7 +68,7 @@ async function setFilter(state: 'open' | 'closed') {
             :title="t('issues.highlight.assignedToMe')"
             icon-key="i-lucide-user-check"
             icon-class="text-emerald-500"
-            :items="store.assignedToMe.items"
+            :items="store.assignedToMe.data"
             :loading="store.assignedToMe.loading"
             :empty-text="t('issues.highlight.assignedToMeEmpty')"
             :total-count="store.assignedToMe.totalCount"
@@ -77,14 +77,14 @@ async function setFilter(state: 'open' | 'closed') {
             :has-more="store.assignedToMe.hasMore"
             :has-previous="store.assignedToMe.hasPrevious"
             :paging="store.assignedToMe.paging"
-            @next="store.loadHighlightNext('assigned')"
-            @previous="store.loadHighlightPrevious('assigned')"
+            @next="store.assignedToMe.nextPage()"
+            @previous="store.assignedToMe.prevPage()"
           />
           <IssueHighlightCard
             :title="t('issues.highlight.mentioned')"
             icon-key="i-lucide-at-sign"
             icon-class="text-rose-500"
-            :items="store.mentioned.items"
+            :items="store.mentioned.data"
             :loading="store.mentioned.loading"
             :empty-text="t('issues.highlight.mentionedEmpty')"
             :total-count="store.mentioned.totalCount"
@@ -93,14 +93,14 @@ async function setFilter(state: 'open' | 'closed') {
             :has-more="store.mentioned.hasMore"
             :has-previous="store.mentioned.hasPrevious"
             :paging="store.mentioned.paging"
-            @next="store.loadHighlightNext('mentioned')"
-            @previous="store.loadHighlightPrevious('mentioned')"
+            @next="store.mentioned.nextPage()"
+            @previous="store.mentioned.prevPage()"
           />
           <IssueHighlightCard
             :title="t('issues.highlight.authoredByMe')"
             icon-key="i-lucide-pencil"
             icon-class="text-blue-500"
-            :items="store.authoredByMe.items"
+            :items="store.authoredByMe.data"
             :loading="store.authoredByMe.loading"
             :empty-text="t('issues.highlight.authoredByMeEmpty')"
             :total-count="store.authoredByMe.totalCount"
@@ -109,8 +109,8 @@ async function setFilter(state: 'open' | 'closed') {
             :has-more="store.authoredByMe.hasMore"
             :has-previous="store.authoredByMe.hasPrevious"
             :paging="store.authoredByMe.paging"
-            @next="store.loadHighlightNext('authored')"
-            @previous="store.loadHighlightPrevious('authored')"
+            @next="store.authoredByMe.nextPage()"
+            @previous="store.authoredByMe.prevPage()"
           />
         </div>
 

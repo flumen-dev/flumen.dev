@@ -124,9 +124,10 @@ export const useIssueStore = defineStore('issues', () => {
   )
 
   // Highlight cards — three independent server queries, paginated independently.
-  const assignedToMe = useHighlightSection<Issue>('/api/issues/assigned-to-me', HIGHLIGHT_PAGE_SIZE)
-  const mentioned = useHighlightSection<Issue>('/api/issues/mentioned', HIGHLIGHT_PAGE_SIZE)
-  const authoredByMe = useHighlightSection<Issue>('/api/issues/authored-by-me', HIGHLIGHT_PAGE_SIZE)
+  const highlightParams = () => ({ repo: selectedRepo.value ?? '' })
+  const assignedToMe = usePaginatedSection<Issue>(apiFetch, '/api/issues/assigned-to-me', HIGHLIGHT_PAGE_SIZE, highlightParams)
+  const mentioned = usePaginatedSection<Issue>(apiFetch, '/api/issues/mentioned', HIGHLIGHT_PAGE_SIZE, highlightParams)
+  const authoredByMe = usePaginatedSection<Issue>(apiFetch, '/api/issues/authored-by-me', HIGHLIGHT_PAGE_SIZE, highlightParams)
 
   // --- Derived ---
 
@@ -184,28 +185,12 @@ export const useIssueStore = defineStore('issues', () => {
     if (!selectedRepo.value) return
     // Highlights only make sense for the open state.
     if (stateFilter.value !== 'open') {
-      assignedToMe.reset()
-      mentioned.reset()
-      authoredByMe.reset()
+      assignedToMe.resetPagination()
+      mentioned.resetPagination()
+      authoredByMe.resetPagination()
       return
     }
-    await Promise.all([
-      assignedToMe.fetchPage(selectedRepo.value),
-      mentioned.fetchPage(selectedRepo.value),
-      authoredByMe.fetchPage(selectedRepo.value),
-    ])
-  }
-
-  async function loadHighlightNext(target: 'assigned' | 'mentioned' | 'authored') {
-    if (!selectedRepo.value) return
-    const s = target === 'assigned' ? assignedToMe : target === 'mentioned' ? mentioned : authoredByMe
-    await s.loadNext(selectedRepo.value)
-  }
-
-  async function loadHighlightPrevious(target: 'assigned' | 'mentioned' | 'authored') {
-    if (!selectedRepo.value) return
-    const s = target === 'assigned' ? assignedToMe : target === 'mentioned' ? mentioned : authoredByMe
-    await s.loadPrevious(selectedRepo.value)
+    await Promise.all([assignedToMe.refresh(), mentioned.refresh(), authoredByMe.refresh()])
   }
 
   async function fetchOtherCount() {
@@ -315,9 +300,9 @@ export const useIssueStore = defineStore('issues', () => {
     closedCount.value = null
     repoAuthors.value = []
     repoAssignees.value = []
-    assignedToMe.reset()
-    mentioned.reset()
-    authoredByMe.reset()
+    assignedToMe.resetPagination()
+    mentioned.resetPagination()
+    authoredByMe.resetPagination()
     await Promise.all([fetchIssues(), fetchPeoplePool()])
   }
 
@@ -336,9 +321,9 @@ export const useIssueStore = defineStore('issues', () => {
     searchResults.value = []
     openCount.value = null
     closedCount.value = null
-    assignedToMe.reset()
-    mentioned.reset()
-    authoredByMe.reset()
+    assignedToMe.resetPagination()
+    mentioned.resetPagination()
+    authoredByMe.resetPagination()
     await fetchIssues()
   }
 
@@ -375,8 +360,6 @@ export const useIssueStore = defineStore('issues', () => {
     authoredByMe,
     fetchIssues,
     fetchHighlights,
-    loadHighlightNext,
-    loadHighlightPrevious,
     loadNextPage: section.nextPage,
     loadPreviousPage: section.prevPage,
     selectRepo,
