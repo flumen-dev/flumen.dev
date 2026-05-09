@@ -279,5 +279,45 @@ describe('issueStore', () => {
         expect(store.hasActiveFilters).toBe(false)
       })
     })
+
+    it('setUniqueFilter replaces any previous value for the same prefix', async () => {
+      await withStore(async (store) => {
+        await store.selectRepo('org/repo')
+        store.setUniqueFilter('author', 'alice')
+        store.setUniqueFilter('author', 'bob')
+        const authors = store.activeFilters.filter(f => f.startsWith('author:'))
+        expect(authors).toEqual(['author:bob'])
+      })
+    })
+
+    it('setUniqueFilter with null clears the filter', async () => {
+      await withStore(async (store) => {
+        await store.selectRepo('org/repo')
+        store.setUniqueFilter('author', 'alice')
+        store.setUniqueFilter('author', null)
+        expect(store.activeFilters.some(f => f.startsWith('author:'))).toBe(false)
+      })
+    })
+
+    it('setUniqueFilter("assignee", X) clears assignedToMe and unassigned', async () => {
+      await withStore(async (store) => {
+        await store.selectRepo('org/repo')
+        store.activeFilters = ['assignedToMe', 'hasMilestone']
+        store.setUniqueFilter('assignee', 'bob')
+        expect(store.activeFilters).toContain('assignee:bob')
+        expect(store.activeFilters).not.toContain('assignedToMe')
+        expect(store.activeFilters).toContain('hasMilestone')
+      })
+    })
+
+    it('toggleFilter("assignedToMe") clears any specific assignee:* filter', async () => {
+      await withStore(async (store) => {
+        await store.selectRepo('org/repo')
+        store.activeFilters = ['assignee:bob']
+        store.toggleFilter('assignedToMe')
+        expect(store.activeFilters).toContain('assignedToMe')
+        expect(store.activeFilters.some(f => f.startsWith('assignee:'))).toBe(false)
+      })
+    })
   })
 })
