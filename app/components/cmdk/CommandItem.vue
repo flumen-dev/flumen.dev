@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import type { CmdkResult } from '~/stores/cmdk'
-import HighlightedText from './HighlightedText.vue'
 
 defineProps<{
   result: CmdkResult
@@ -44,7 +43,7 @@ const cmdk = useCmdkStore()
     </div>
     <div class="flex-1 min-w-0">
       <div class="text-sm text-default truncate">
-        <HighlightedText
+        <UiHighlightedText
           :text="result.title"
           :query="cmdk.query"
         />
@@ -53,7 +52,7 @@ const cmdk = useCmdkStore()
         v-if="result.subtitle"
         class="text-xs text-muted truncate"
       >
-        <HighlightedText
+        <UiHighlightedText
           :text="result.subtitle"
           :query="cmdk.query"
         />
