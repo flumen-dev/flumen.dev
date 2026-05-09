@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { mountSuspended, registerEndpoint } from '@nuxt/test-utils/runtime'
 import { defineComponent, h } from 'vue'
-import { readBody as h3ReadBody } from 'h3'
+import { type H3Event, readBody as h3ReadBody } from 'h3'
 
 let serverState: Bookmark[] = []
 
@@ -21,7 +21,7 @@ registerEndpoint('/api/user/bookmarks', {
 
 registerEndpoint('/api/user/bookmarks', {
   method: 'DELETE',
-  handler: (event: { path: string }) => {
+  handler: (event: H3Event) => {
     const id = new URL(event.path, 'http://localhost').searchParams.get('id')
     if (id) serverState = serverState.filter(b => b.id !== id)
     return serverState

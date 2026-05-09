@@ -15,7 +15,11 @@ const { t } = useI18n()
 const store = useBookmarkStore()
 store.loadIfNeeded()
 
-const id = computed(() => bookmarkId(props.type, props.repo, props.number))
+const id = computed(() =>
+  props.type === 'repo'
+    ? bookmarkId('repo', props.repo)
+    : bookmarkId(props.type, props.repo, props.number!),
+)
 const active = computed(() => store.isBookmarked(id.value))
 
 function toggle(event: Event) {
