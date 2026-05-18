@@ -65,7 +65,7 @@
     "@nuxt/a11y": "1.0.0-alpha.1",
     "@nuxt/eslint": "1.15.2",
     "@nuxt/test-utils": "4.0.3",
-    "@tiptap/extension-image": "3.23.1",
+    "@tiptap/extension-image": "3.23.4",
     "@types/sanitize-html": "2.16.1",
     "@vitest/coverage-v8": "4.1.5",
     "@vue/language-core": "3.2.8",
