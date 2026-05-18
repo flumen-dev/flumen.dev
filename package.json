@@ -74,7 +74,7 @@
     "eslint": "10.3.0",
     "flat": "link:@nuxt/eslint-config/flat",
     "happy-dom": "20.9.0",
-    "knip": "6.12.1",
+    "knip": "6.14.1",
     "nuxt-echarts": "1.0.1",
     "playwright-core": "1.59.1",
     "tailwindcss": "4.2.4",
