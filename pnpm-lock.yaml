@@ -45,8 +45,8 @@ importers:
         specifier: 3.23.1
         version: 3.23.1(@tiptap/extension-list@3.23.1(@tiptap/core@3.23.1(@tiptap/pm@3.23.1))(@tiptap/pm@3.23.1))
       '@tiptap/extension-task-list':
-        specifier: 3.23.1
-        version: 3.23.1(@tiptap/extension-list@3.23.1(@tiptap/core@3.23.1(@tiptap/pm@3.23.1))(@tiptap/pm@3.23.1))
+        specifier: 3.23.4
+        version: 3.23.4(@tiptap/extension-list@3.23.1(@tiptap/core@3.23.1(@tiptap/pm@3.23.1))(@tiptap/pm@3.23.1))
       '@tiptap/pm':
         specifier: 3.23.1
         version: 3.23.1
@@ -2812,6 +2812,7 @@ packages:
   '@smithy/core@3.24.0':
     resolution: {integrity: sha512-rZ5YfycIXX6puoGjthnDiMpUgtKNOq3c7CndQYkCNYQTv26AiCrZQOJPy7ANSfZ6Okk3UvCRnmO1OYWlLnYZgg==}
     engines: {node: '>=18.0.0'}
+    deprecated: Deprecated due to incompatibility with Node.js 18 in some environments https://github.com/smithy-lang/smithy-typescript/issues/2022
 
   '@smithy/credential-provider-imds@4.2.14':
     resolution: {integrity: sha512-Au28zBN48ZAoXdooGUHemuVBrkE+Ie6RPmGNIAJsFqj33Vhb6xAgRifUydZ2aY+M+KaMAETAlKk5NC5h1G7wpg==}
@@ -3344,10 +3345,10 @@ packages:
     peerDependencies:
       '@tiptap/extension-list': 3.23.1
 
-  '@tiptap/extension-task-list@3.23.1':
-    resolution: {integrity: sha512-/xn49drozPBtuavlggiu+8lJG/gWdTol1T3QlK16W+P1tbSic/7xk9m+AAQcnlcBTXPq9BuCs9nIcgEYkX6e1w==}
+  '@tiptap/extension-task-list@3.23.4':
+    resolution: {integrity: sha512-WIz4MHvPZssS5pNTTn2BuriCNrHA6jeS1XiRIqJFrvRXj7Kc9scXtGpne3GmisXDDeDKcP1IjREwQO9nlD8mVw==}
     peerDependencies:
-      '@tiptap/extension-list': 3.23.1
+      '@tiptap/extension-list': 3.23.4
 
   '@tiptap/extension-text@3.22.5':
     resolution: {integrity: sha512-bzpDOdAEo1JeoVZDIyV0oY0jGXkEG+AzF70SzHoRSjOvFDtKWunyXf9eO1OnOr2/fmMcckT2qwUBNBMQplWBzw==}
@@ -10629,7 +10630,7 @@ snapshots:
     dependencies:
       '@tiptap/extension-list': 3.23.1(@tiptap/core@3.23.1(@tiptap/pm@3.23.1))(@tiptap/pm@3.23.1)
 
-  '@tiptap/extension-task-list@3.23.1(@tiptap/extension-list@3.23.1(@tiptap/core@3.23.1(@tiptap/pm@3.23.1))(@tiptap/pm@3.23.1))':
+  '@tiptap/extension-task-list@3.23.4(@tiptap/extension-list@3.23.1(@tiptap/core@3.23.1(@tiptap/pm@3.23.1))(@tiptap/pm@3.23.1))':
     dependencies:
       '@tiptap/extension-list': 3.23.1(@tiptap/core@3.23.1(@tiptap/pm@3.23.1))(@tiptap/pm@3.23.1)
 
