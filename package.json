@@ -71,7 +71,7 @@
     "@vue/language-core": "3.2.8",
     "@vue/test-utils": "2.4.10",
     "echarts": "6.0.0",
-    "eslint": "10.3.0",
+    "eslint": "10.4.0",
     "flat": "link:@nuxt/eslint-config/flat",
     "happy-dom": "20.9.0",
     "knip": "6.12.1",
