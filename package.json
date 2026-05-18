@@ -68,7 +68,7 @@
     "@tiptap/extension-image": "3.23.1",
     "@types/sanitize-html": "2.16.1",
     "@vitest/coverage-v8": "4.1.5",
-    "@vue/language-core": "3.2.8",
+    "@vue/language-core": "3.3.0",
     "@vue/test-utils": "2.4.10",
     "echarts": "6.0.0",
     "eslint": "10.3.0",
